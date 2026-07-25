@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bro Santa — Backend Course</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Yusei+Magic&family=Zen+Antique&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #12081A;
+      font-family: 'Noto Serif JP', serif;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .newspaper {
+      max-width: 900px;
+      width: 100%;
+      background: #F5EDE0;
+      padding: 2rem 2rem 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px #C4B09A inset;
+      position: relative;
+    }
+    .newspaper::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(107,47,160,0.03) 2px, rgba(107,47,160,0.03) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(90,40,140,0.02) 3px, rgba(90,40,140,0.02) 6px);
+      pointer-events: none;
+    }
+
+    .extra-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px double #6B2FA0;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      font-family: 'Yusei Magic', cursive;
+    }
+    .extra-banner .extra-left { font-size: 1.8rem; color: #C9A84C; letter-spacing: 0.3em; }
+    .extra-banner .extra-right { font-size: 0.85rem; color: #6B2FA0; }
+    .extra-banner .extra-price { font-size: 0.75rem; color: #666; }
+
+    .headline-wrap {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .headline-wrap::after {
+      content: '';
+      display: block;
+      width: 80px; height: 3px;
+      background: #6B2FA0;
+      margin: 0.5rem auto;
+    }
+    .headline-main {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 2.8rem;
+      color: #3D0F5C;
+      line-height: 1.3;
+      letter-spacing: 0.05em;
+    }
+    .headline-main .accent { color: #6B2FA0; font-size: 3.2rem; }
+    .headline-sub {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1rem;
+      color: #666;
+      margin-top: 0.3rem;
+      font-style: italic;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .character-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .character-img {
+      width: 150px;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .char-name {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.3rem;
+      color: #3D0F5C;
+      margin-top: 0.5rem;
+    }
+    .char-title { font-size: 0.75rem; color: #666; letter-spacing: 0.15em; }
+
+    .article { columns: 2; column-gap: 1.2rem; column-rule: 1px solid #C4B09A; }
+    .article p { font-size: 0.85rem; line-height: 1.9; margin-bottom: 0.8rem; text-align: justify; color: #333; text-indent: 1em; }
+    .article p:first-of-type { text-indent: 0; }
+    .article .dropcap::first-letter {
+      font-size: 2.8rem; float: left; line-height: 0.8; margin-right: 0.3rem;
+      font-family: 'Yusei Magic', cursive; color: #6B2FA0;
+    }
+
+    .curriculum {
+      border-top: 2px solid #6B2FA0;
+      padding-top: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .curriculum h3 {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.1rem;
+      color: #3D0F5C;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .curriculum-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem 1rem;
+    }
+    .curriculum-item {
+      font-size: 0.75rem;
+      padding: 0.3rem 0;
+      border-bottom: 1px dotted #C4B09A;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .curriculum-item .phase { color: #6B2FA0; font-weight: 700; white-space: nowrap; }
+
+    .hanko-wrap { text-align: center; margin-bottom: 1rem; }
+    .hanko {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      border: 3px solid #C9A84C;
+      border-radius: 50%;
+      font-family: 'Zen Antique', serif;
+      font-size: 1.4rem;
+      color: #C9A84C;
+      transform: rotate(-8deg);
+    }
+
+    .cta-wrap { text-align: center; margin-bottom: 1rem; }
+    .btn-start {
+      display: inline-block;
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.2rem;
+      color: #fff;
+      background: #6B2FA0;
+      padding: 0.8rem 2.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background 0.2s;
+      letter-spacing: 0.1em;
+    }
+    .btn-start:hover { background: #3D0F5C; }
+    .btn-start .sub { font-family: 'Noto Serif JP', serif; font-size: 0.7rem; opacity: 0.8; display: block; }
+
+    .quote-box {
+      text-align: center;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-left: 3px solid #6B2FA0;
+      background: rgba(107,47,160,0.06);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .footer {
+      border-top: 1px solid #C4B09A;
+      padding-top: 0.5rem;
+      text-align: center;
+      font-size: 0.7rem;
+      color: #999;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 700px) {
+      .newspaper { padding: 1rem; }
+      .content-grid { grid-template-columns: 1fr; }
+      .character-img { width: 120px; }
+      .article { columns: 1; }
+      .curriculum-grid { grid-template-columns: 1fr; }
+      .headline-main { font-size: 2rem; }
+      .extra-banner .extra-left { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="newspaper">
+
+  <div class="extra-banner">
+    <span class="extra-left">EXTRA</span>
+    <span class="extra-price">SPECIAL EDITION</span>
+    <span class="extra-right">BACKEND COURSE</span>
+  </div>
+
+  <div class="headline-wrap">
+    <div class="headline-main">
+      <span class="accent">Santa</span> Guard<br>
+      Backend Course
+    </div>
+    <div class="headline-sub">— Giving Season Never Ends: Backend Engineering with a Generous Spirit —</div>
+  </div>
+
+  <div class="content-grid">
+    <div class="character-box">
+      <img src="bro-santa.jpg" alt="Bro Santa" class="character-img">
+      <div class="char-name">Bro Santa</div>
+      <div class="char-title">The Gift Bringer</div>
+    </div>
+
+    <div class="article">
+      <p class="dropcap">Bro Santa doesn't wait for Christmas — he delivers when it matters most. Backend engineering is the same: the best systems arrive before anyone realizes they needed them. A well-designed API, a properly indexed database, a caching layer that anticipates the load — these are gifts that keep on giving.</p>
+      <p>Like a guardian who knows exactly what everyone needs, a backend engineer builds with foresight and generosity. This course equips you with every tool — from normalization to distributed systems — so you're never caught empty-handed when the holiday traffic spike hits or the holiday bugs roll in.</p>
+      <p>Bro Santa's philosophy: the best gift is reliability. Every lesson here is a present waiting to be unwrapped — quizzes, hands-on tasks, and real-world scenarios that prepare you for the mid-level engineer role. Ho ho ho, your journey starts now.</p>
+    </div>
+  </div>
+
+  <div class="curriculum">
+    <h3>CURRICULUM — 6 Phases / 23 Lessons</h3>
+    <div class="curriculum-grid">
+      <div class="curriculum-item"><span class="phase">Phase 1</span> Database Fundamentals</div>
+      <div class="curriculum-item"><span class="phase">Phase 2</span> API Design</div>
+      <div class="curriculum-item"><span class="phase">Phase 3</span> Caching &amp; Performance</div>
+      <div class="curriculum-item"><span class="phase">Phase 4</span> Scalability</div>
+      <div class="curriculum-item"><span class="phase">Phase 5</span> Security Fundamentals</div>
+      <div class="curriculum-item"><span class="phase">Phase 6</span> Interview Prep</div>
+    </div>
+  </div>
+
+  <div class="hanko-wrap">
+    <div class="hanko">贈</div>
+  </div>
+
+  <div class="quote-box">
+    "No naughty list here — every engineer gets the gift of knowledge." — Bro Santa
+  </div>
+
+  <div class="cta-wrap">
+    <a href="../lessons/course-1/0001-normalization-schema-design.html" class="btn-start">
+      START COURSE
+      <span class="sub">Begin your journey</span>
+    </a>
+  </div>
+
+  <div class="footer">
+    Backend Concepts &amp; System Design — Bro Santa Edition
+  </div>
+
+</div>
+</body>
+</html>
