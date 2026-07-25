@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0006: API Resources & Controllers</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Laravel Backend Foundations</strong> — Lesson 2 of 6
+      </div>
+
+      <h1>API Resources & Controllers</h1>
+      <p><em>Matutunan kung paano mag-structure ng RESTful controllers, gumamit ng API Resources para sa response shaping, at mag-implement ng Form Requests para sa validation.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong gumawa ng full CRUD endpoint para sa isang core entity gamit ang tamang Resource classes, Form Request validation, at RESTful controller structure.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>RESTful Controller Structure</h2>
+      <p>Ang <strong>RESTful controllers</strong> ay nag-oorganisa ng endpoints ayon sa HTTP verbs at resource paths. Sa Laravel, ito ang standard pattern:</p>
+
+      <pre><code>class PostController extends Controller
+{
+    // GET /posts
+    public function index()
+    {
+        $posts = Post::with('user')->latest()->paginate(15);
+        return PostResource::collection($posts);
+    }
+
+    // GET /posts/{id}
+    public function show(Post $post)
+    {
+        return new PostResource($post->load(['user', 'comments.user']));
+    }
+
+    // POST /posts
+    public function store(StorePostRequest $request)
+    {
+        $post = auth()->user()->posts()->create($request->validated());
+        return new PostResource($post);
+    }
+
+    // PUT/PATCH /posts/{id}
+    public function update(UpdatePostRequest $request, Post $post)
+    {
+        $post->update($request->validated());
+        return new PostResource($post);
+    }
+
+    // DELETE /posts/{id}
+    public function destroy(Post $post)
+    {
+        $post->delete();
+        return response()->noContent();
+    }
+}</code></pre>
+
+      <p><strong>Key Points:</strong></p>
+      <ul>
+        <li>Ang <strong>index()</strong> ay nag-return ng collection — gamitin ang <code>::collection()</code> ng Resource.</li>
+        <li>Ang <strong>show()</strong> ay nag-return ng single resource — gamitin ang <code>new Resource()</code>.</li>
+        <li>Ang <strong>store()</strong> at <strong>update()</strong> ay gumagamit ng Form Requests para sa validation.</li>
+        <li>Ang <strong>destroy()</strong> ay nag-return ng <code>204 No Content</code> kapag successful.</li>
+        <li>Palaging i-attach ang related models gamit ang <code>with()</code> para i-avoid ang N+1 query problem.</li>
+      </ul>
+
+      <!-- Section 2 -->
+      <h2>API Resources for Response Shaping</h2>
+      <p>Ang <strong>API Resources</strong> ang nag-sshape ng JSON response na ibabalik sa frontend. Ito ang "presentation layer" ng backend.</p>
+
+      <pre><code>// PostResource.php
+class PostResource extends JsonResource
+{
+    public function toArray($request)
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'body' => $this->body,
+            'status' => $this->status,
+            'slug' => $this->slug,
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
+            'user' => new UserResource($this->whenLoaded('user')),
+            'comments_count' => $this->whenCounted('comments'),
+            'comments' => CommentResource::collection($this->whenLoaded('comments')),
+        ];
+    }
+}
+
+// UserResource.php
+class UserResource extends JsonResource
+{
+    public function toArray($request)
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'avatar' => $this->avatar,
+            'created_at' => $this->created_at->toISOString(),
+        ];
+    }
+}</code></pre>
+
+      <p><strong>Mga Importanteng Methods:</strong></p>
+      <ul>
+        <li><code>$this->whenLoaded('relation')</code> — I-return lang ang data kapag naka-load ang relationship. Ito ang "conditional loading."</li>
+        <li><code>$this->whenCounted('relation')</code> — I-return lang ang count kapag na-count na ang relationship.</li>
+        <li><code>$this->merge($array)</code> — I-merge ang additional fields sa array.</li>
+        <li><code>$this->additional(['key' => 'value'])</code> — Magdagdag ng additional top-level fields.</li>
+      </ul>
+
+      <p><strong>Collection Resources:</strong></p>
+      <pre><code>// Kapag nag-return ka ng collection, pwede kang mag-customize
+PostResource::collection($posts)->additional([
+    'meta' => [
+        'current_page' => $posts->currentPage(),
+        'last_page' => $posts->lastPage(),
+        'per_page' => $posts->perPage(),
+        'total' => $posts->total(),
+    ]
+]);</code></pre>
+
+      <!-- Section 3 -->
+      <h2>Form Requests for Validation</h2>
+      <p>Ang <strong>Form Requests</strong> ay dedicated classes na nag-handle ng validation logic. Ito ay mas malinis kaysa mag-validate sa loob ng controller.</p>
+
+      <pre><code>// StorePostRequest.php
+class StorePostRequest extends FormRequest
+{
+    public function authorize()
+    {
+        return true; // or check permissions
+    }
+
+    public function rules()
+    {
+        return [
+            'title' => 'required|string|max:255',
+            'body' => 'nullable|string',
+            'status' => 'required|in:draft,published,archived',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'title.required' => 'Ang title ay required.',
+            'title.max' => 'Ang title ay hindi dapat lumagpas sa 255 characters.',
+            'status.in' => 'Ang status ay dapat draft, published, o archived.',
+        ];
+    }
+}</code></pre>
+
+      <p><strong>Mga Advanced Validation Rules:</strong></p>
+      <ul>
+        <li><code>unique:table,column</code> — Para sa uniqueness checks (e.g., unique email).</li>
+        <li><code>exists:table,column</code> — Para sa foreign key validation.</li>
+        <li><code>after:date</code> — Para sa date validation (e.g., start_date before end_date).</li>
+        <li><code>nullable</code> — Para sa optional fields.</li>
+        <li><code>required_with:field</code> — Required kapag may value ang specified field.</li>
+      </ul>
+
+      <!-- Section 4 -->
+      <h2>Practical: Full CRUD Endpoint</h2>
+      <p>Gamitin natin ang lahat ng natutunan para gumawa ng full CRUD para sa Posts:</p>
+
+      <pre><code>// Step 1: Create Form Requests
+php artisan make:request StorePostRequest
+php artisan make:request UpdatePostRequest
+
+// Step 2: Create API Resource
+php artisan make:resource PostResource
+
+// Step 3: Create Controller
+php artisan make:controller PostController --api --model=Post
+
+// Step 4: Define Routes
+Route::apiResource('posts', PostController::class);
+
+// Step 5: Test in Postman/Insomnia
+GET /api/posts → Collection with pagination
+GET /api/posts/1 → Single post with user and comments
+POST /api/posts → Create with validation
+PUT /api/posts/1 → Update with validation
+DELETE /api/posts/1 → Delete (204 No Content)</code></pre>
+
+      <p><strong>Tips para sa Real Projects:</strong></p>
+      <ul>
+        <li>Palaging gumamit ng API Resources — wag mong i-return ang raw model data.</li>
+        <li>I-separate ang validation sa Form Requests — wag mong i-mix sa controller.</li>
+        <li>Gamitin ang <code>apiResource()</code> sa routes para sa auto-generated RESTful routes.</li>
+        <li>Mag-add ng pagination sa index endpoints — wag mong i-return ang lahat ng records.</li>
+        <li>I-serialize ang dates gamit ang <code>->toISOString()</code> para sa consistent format.</li>
+      </ul>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>RESTful controllers</strong> ay nag-oorganisa ng endpoints ayon sa HTTP verbs (GET, POST, PUT, DELETE) at resource paths.</li>
+        <li>Ang <strong>API Resources</strong> ang nag-sshape ng JSON response — ang "presentation layer" ng backend.</li>
+        <li>Ang <strong>Form Requests</strong> ay dedicated classes para sa validation logic — mas malinis kaysa mag-validate sa controller.</li>
+        <li>Laging i-attach ang related models gamit ang <code>with()</code> para i-avoid ang N+1 query problem.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you structure your Laravel API endpoints?" — Gumagamit ako ng RESTful controllers na may apiResource routes, API Resources para sa response shaping, at Form Requests para sa validation. Ito ay mas maintainable at testable kaysa mag-validate sa controller.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel API Resources</strong> — Official docs ng Laravel para sa API Resources at response shaping. <a href="https://laravel.com/docs/11.x/api-resources" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Form Requests</strong> — Official docs ng Laravel para sa validation using Form Requests. <a href="https://laravel.com/docs/11.x/validation#form-request-validation" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0006';
+  var questions = [
+    {
+      question: 'Ano ang gamit ng API Resources sa Laravel?',
+      options: ['Para mag-handle ng validation', 'Para mag-sshape ng JSON response', 'Para mag-manage ng database connections', 'Para mag-run ng background jobs'],
+      correct: 'b',
+      answer: 'Ang API Resources ang nag-sshape ng JSON response — ito ang "presentation layer" ng backend na nag-de-decide kung ano ang ibabalik sa frontend.'
+    },
+    {
+      question: 'Kailangan mo mag-return ng collection o single resource kapag nag-index ka ng posts?',
+      options: ['Single resource para sa lahat', 'Collection para sa multiple posts', 'Raw model data', 'Array lang'],
+      correct: 'b',
+      answer: 'Kapag nag-index ka ng posts (GET /posts), gagamitin mo ang PostResource::collection() para i-return ang collection ng resources.'
+    },
+    {
+      question: 'Ano ang advantage ng Form Requests kaysa mag-validate sa controller?',
+      options: ['Mas mabilis', 'Mas malinis at testable — separated ang validation logic', 'Mas kaunti ang code', 'Auto-generate ng validation rules'],
+      correct: 'b',
+      answer: 'Ang Form Requests ay dedicated classes para sa validation — mas malinis, testable, at na-reuse sa ibang controllers.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

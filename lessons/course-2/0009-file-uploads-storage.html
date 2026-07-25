@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0009: File Uploads & Storage</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Laravel Backend Foundations</strong> — Lesson 5 of 6
+      </div>
+
+      <h1>File Uploads & Storage</h1>
+      <p><em>Matutunan kung paano i-handle ang file uploads gamit ang Laravel filesystem, i-configure ang local at cloud storage, at mag-implement ng image handling with validation.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-implement ang isang file upload endpoint na may tamang validation, storage configuration, at image processing.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Laravel Filesystem</h2>
+      <p>Ang <strong>Laravel filesystem</strong> ay nagpo-provide ng unified API para sa file operations. Ito ay nagpo-support ng iba't ibang storage drivers:</p>
+
+      <ul>
+        <li><strong>local</strong> — Local filesystem (storage/app directory).</li>
+        <li><strong>s3</strong> — Amazon S3 compatible storage (S3, DigitalOcean Spaces, MinIO).</li>
+        <li><strong>ftp</strong> — FTP server.</li>
+        <li><strong>sftp</strong> — SFTP server.</li>
+      </ul>
+
+      <pre><code>// Basic file operations
+use Illuminate\Support\Facades\Storage;
+
+// Store file
+$path = Storage::disk('local')->put('avatars', $request->file('avatar'));
+
+// Store with custom name
+$path = Storage::putFile('avatars', $request->file('avatar'), 'unique-name.jpg');
+
+// Store publicly
+$path = Storage::putFileAs('public/avatars', $request->file('avatar'), 'user-1.jpg');
+
+// Read file
+$contents = Storage::get('file.txt');
+
+// Delete file
+Storage::delete('file.txt');
+
+// Check if file exists
+if (Storage::exists('file.txt')) { ... }
+
+// Get file size
+$size = Storage::size('file.txt');
+
+// Get last modified
+$time = Storage::lastModified('file.txt');</code></pre>
+
+      <!-- Section 2 -->
+      <h2>Storage Configuration</h2>
+      <p>I-configure ang storage disks sa <code>config/filesystems.php</code>:</p>
+
+      <pre><code>// config/filesystems.php
+'disks' => [
+    'local' => [
+        'driver' => 'local',
+        'root' => storage_path('app/private'),
+        'serve' => true,
+        'throw' => false,
+    ],
+
+    'public' => [
+        'driver' => 'local',
+        'root' => storage_path('app/public'),
+        'url' => env('APP_URL').'/storage',
+        'visibility' => 'public',
+        'throw' => false,
+    ],
+
+    's3' => [
+        'driver' => 's3',
+        'key' => env('AWS_ACCESS_KEY_ID'),
+        'secret' => env('AWS_SECRET_ACCESS_KEY'),
+        'region' => env('AWS_DEFAULT_REGION'),
+        'bucket' => env('AWS_BUCKET'),
+        'url' => env('AWS_URL'),
+        'endpoint' => env('AWS_ENDPOINT'),
+        'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+        'throw' => false,
+    ],
+],
+
+// Default disk
+'default' => env('FILESYSTEM_DISK', 'local'),</code></pre>
+
+      <p><strong>Public vs Private Storage:</strong></p>
+      <ul>
+        <li><strong>public</strong> — Accessible via web. I-link ang storage: <code>php artisan storage:link</code>.</li>
+        <li><strong>private</strong> — Hindi accessible via web. Kailangan ng signed URL o response streaming.</li>
+        <li><strong>s3</strong> — Cloud storage. Mas scalable at reliable kaysa local.</li>
+      </ul>
+
+      <!-- Section 3 -->
+      <h2>File Upload Validation</h2>
+      <p>Palaging i-validate ang file uploads para sa security at data integrity:</p>
+
+      <pre><code>// Form Request for file upload
+class UploadAvatarRequest extends FormRequest
+{
+    public function rules()
+    {
+        return [
+            'avatar' => [
+                'required',
+                'file',
+                'image', // MIME type check
+                'max:2048', // 2MB max
+                'dimensions:max_width=2000,max_height=2000', // Image dimensions
+            ],
+            'document' => [
+                'nullable',
+                'file',
+                'mimes:pdf,doc,docx', // Allowed extensions
+                'max:10240', // 10MB max
+            ],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'avatar.required' => 'Ang avatar ay required.',
+            'avatar.image' => 'Ang avatar ay dapat image file.',
+            'avatar.max' => 'Ang avatar ay hindi dapat lumagpas sa 2MB.',
+            'document.mimes' => 'Ang document ay dapat PDF o Word document.',
+        ];
+    }
+}</code></pre>
+
+      <p><strong>Common Validation Rules:</strong></p>
+      <ul>
+        <li><code>file</code> — Valid file upload.</li>
+        <li><code>image</code> — MIME type: jpeg, png, bmp, gif, svg, webp.</li>
+        <li><code>mimes:jpg,png,pdf</code> — Specific file extensions.</li>
+        <li><code>max:2048</code> — Maximum file size in kilobytes.</li>
+        <li><code>dimensions:max_width=1920,max_height=1080</code> — Image dimensions.</li>
+      </ul>
+
+      <!-- Section 4 -->
+      <h2>Practical: Image Upload Endpoint</h2>
+      <p>Gumawa ng complete image upload endpoint:</p>
+
+      <pre><code>// Step 1: Create Form Request
+php artisan make:request UploadAvatarRequest
+
+// Step 2: Create Controller Method
+class UserController extends Controller
+{
+    public function updateAvatar(UploadAvatarRequest $request)
+    {
+        $user = auth()->user();
+        
+        // Delete old avatar if exists
+        if ($user->avatar) {
+            Storage::disk('public')->delete('avatars/' . $user->avatar);
+        }
+        
+        // Store new avatar
+        $file = $request->file('avatar');
+        $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+        
+        $path = $file->storeAs('avatars', $filename, 'public');
+        
+        // Update user record
+        $user->update(['avatar' => $filename]);
+        
+        return response()->json([
+            'message' => 'Avatar uploaded successfully',
+            'avatar_url' => Storage::disk('public')->url('avatars/' . $filename),
+        ]);
+    }
+}
+
+// Step 3: Define Route
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/user/avatar', [UserController::class, 'updateAvatar']);
+});
+
+// Step 4: Test
+// POST /api/user/avatar
+// FormData: { avatar: [file] }
+// Response: { message: "Avatar uploaded successfully", avatar_url: "..." }</code></pre>
+
+      <p><strong>Image Processing (Optional):</strong></p>
+      <pre><code>// Install Intervention Image
+composer require intervention/image
+
+// Resize image before storage
+use Intervention\Image\Facades\Image;
+
+public function updateAvatar(UploadAvatarRequest $request)
+{
+    $file = $request->file('avatar');
+    $filename = time() . '_' . auth()->id() . '.' . $file->getClientOriginalExtension();
+    
+    // Resize image
+    $img = Image::make($file);
+    $img->resize(300, 300, function ($constraint) {
+        $constraint->aspectRatio();
+        $constraint->upsize();
+    });
+    
+    // Store resized image
+    $img->storeAs('avatars', $filename, 'public');
+    
+    // ...
+}</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>Laravel filesystem</strong> ay nagpo-provide ng unified API para sa file operations — supports local, S3, FTP, SFTP.</li>
+        <li>Ang <strong>public storage</strong> ay accessible via web (kailangan ng storage:link), habang ang <strong>private</strong> ay kailangan ng signed URL.</li>
+        <li>Palaging i-validate ang file uploads gamit ang <code>image</code>, <code>mimes</code>, <code>max</code>, at <code>dimensions</code> rules.</li>
+        <li>I-store ang files gamit ang <code>Storage::putFileAs()</code> para sa custom filenames at organization.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you handle file uploads in Laravel?" — Gumagamit ako ng Laravel filesystem na may tamang validation (image, mimes, max rules). I-store ang files sa public o private disk depende sa use case, at gumagamit ng Intervention Image para sa image processing kapag kailangan.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel File Storage</strong> — Official docs ng Laravel para sa filesystem at file storage. <a href="https://laravel.com/docs/11.x/filesystem" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Intervention Image</strong> — Popular image handling library para sa Laravel. <a href="https://image.intervention.io/v2/introduction/installation.html" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0009';
+  var questions = [
+    {
+      question: 'Ano ang gamit ng Laravel filesystem?',
+      options: ['Para mag-handle ng database operations', 'Para sa unified API para sa file operations', 'Para mag-manage ng authentication', 'Para mag-run ng background jobs'],
+      correct: 'b',
+      answer: 'Ang Laravel filesystem ay nagpo-provide ng unified API para sa file operations — supports local, S3, FTP, at SFTP storage drivers.'
+    },
+    {
+      question: 'Kailangan mo mag-run ng php artisan storage:link para sa anong storage disk?',
+      options: ['private disk', 'public disk', 's3 disk', 'local disk'],
+      correct: 'b',
+      answer: 'Ang storage:link command ay nag-create ng symbolic link para sa public disk — para ma-access ang files via web URL.'
+    },
+    {
+      question: 'Ano ang validation rule para sa image uploads na may maximum na 2MB?',
+      options: ['file|max:2048', 'image|max:2048', 'required|file|image|max:2048', 'image|mimes:jpg,png|max:2048'],
+      correct: 'c',
+      answer: 'Ang tamang rule ay required|file|image|max:2048 — required ang field, valid file upload, image MIME type, at 2MB maximum size.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

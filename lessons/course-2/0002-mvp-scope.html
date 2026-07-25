@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0002: Define MVP Scope</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 0: Project Planning & Setup</strong> — Lesson 2 of 4
+      </div>
+
+      <h1>Define MVP Scope</h1>
+      <p><em>Matutunan kung paano i-scope ang iyong MVP — kung ano ang isasama, kung ano ang i-cut, at paano maiwasan ang scope creep habang ginagamit ang AI agents.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong mag-define ng tamang MVP scope para sa iyong project — maximum 5 core features — at i-validate ito gamit ang AI agent.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Bakit Kailangan ng MVP Scope?</h2>
+      <p>Ang <strong>MVP</strong> (Minimum Viable Product) ay ang pinakamaliit na version ng product na pwede mo nang i-release sa users. Ang problema ng karamihan: <strong>gustong gawin lahat agad.</strong></p>
+
+      <p>Kapag hindi ka nag-set ng scope, mangyayari ang mga ito:</p>
+      <ul>
+        <li><strong>Scope creep</strong> — Laging may "dagdag lang" feature, hindi matapos-tapos.</li>
+        <li><strong>Decision fatigue</strong> — Ang daming options, hindi alam kung ano uunahin.</li>
+        <li><strong>AI hallucination</strong> — Pag malawak ang scope, mas malaki ang chance na mag-imbento ng features ang AI na hindi mo kailangan.</li>
+        <li><strong>Burnout</strong> — Walang finish line, kaya nawawalan ng motivation.</li>
+      </ul>
+
+      <p>Ang solusyon: <strong>max 5 core features.</strong> Ito ang rule of thumb. Kung hindi mo ma-express ang MVP sa 5 features, masyado pa itong malaki.</p>
+
+      <h2>Ano ang "Core" Feature?</h2>
+      <p>Ang core feature ay <strong>functionality na kailangan para mabuhay ang product.</strong> Hindi "nice to have," hindi "later feature" — ito ang dapat meron para magamit ng user ang product.</p>
+
+      <p>Test para malaman kung core ba ang feature:</p>
+      <ol>
+        <li><strong>"Kung wala ito, hindi gumagana ang product?"</strong> — Kung hindi, hindi core.</li>
+        <li><strong>"Kung hindi ito gawin, may 80% ba ng users na aalis?"</strong> — Kung hindi, hindi core.</li>
+        <li><strong>"Kaya ko ba itong i-explain sa 1 sentence?"</strong> — Kung hindi, masyadong malaki.</li>
+      </ol>
+
+      <p>Heto ang example para sa isang e-commerce platform:</p>
+
+      <pre><code>## MVP Features (5 max)
+
+### Core (must have)
+1. User Registration/Login — Para makapag-login ang users
+2. Product Listing — Para makita ang mga products
+3. Shopping Cart — Para makapag-add at mag-checkout
+4. Payment (GCash/PayMaya) — Para makapag-bayad
+5. Order Confirmation — Para malaman ng user na na-process na
+
+### NOT in MVP (cut these first)
+- Reviews and ratings — Pwede sa v2
+- Wishlist — Nice to have
+- Admin dashboard — Manual muna
+- Notifications — Email muna, push later
+- Search/filter — Basic muna, advanced later</code></pre>
+
+      <h2>Paano Mag-Cut ng Features</h2>
+      <p>Ito ang framework para mag-decide kung i-cut ba ang feature:</p>
+
+      <p><strong>The ICE Framework:</strong></p>
+      <ul>
+        <li><strong>I = Impact</strong> — Gaano kalaki ang impact nito sa users? (1-10)</li>
+        <li><strong>C = Confidence</strong> — Gaano ka sigurado na ito ang tama? (1-10)</li>
+        <li><strong>E = Ease</strong> — Gaano kadali ito i-implement? (1-10)</li>
+      </ul>
+
+      <pre><code>## Feature Scoring Example
+
+| Feature           | Impact | Confidence | Ease | Total |
+|-------------------|--------|------------|------|-------|
+| User Registration | 9      | 10         | 8    | 27    |
+| Product Listing   | 9      | 9          | 7    | 25    |
+| Shopping Cart     | 8      | 9          | 6    | 23    |
+| Payment           | 10     | 8          | 5    | 23    |
+| Order Confirm     | 7      | 9          | 8    | 24    |
+| Reviews           | 5      | 5          | 4    | 10    |
+| Wishlist          | 3      | 4          | 6    | 7     |
+| Admin Dashboard   | 6      | 6          | 3    | 11    |
+
+→ Top 5 lang ang MVP. Cut ang rest.</code></pre>
+
+      <h2>Practical Exercise: Scope Your MVP</h2>
+      <p>Subukan mo ito gamit ang iyong side business o project idea:</p>
+
+      <pre><code>## Exercise: MVP Scoping
+
+1. List ALL features na gusto mo (kahit 20+ items)
+   
+2. I-score gamit ang ICE framework (Impact, Confidence, Ease)
+   
+3. I-rank mula pinakamataas hanggang pinakamababa
+   
+4. Kunin ang TOP 5 lang — ito ang iyong MVP
+   
+5. I-validate gamit ang AI agent:
+   "Here are my 5 MVP features: [list]
+    Can you review if:
+    - These are truly core (not nice-to-have)
+    - I'm missing any critical dependency
+    - The order of implementation makes sense
+    - These can be built in 2-4 weeks"
+   
+6. I-commit sa scope — write it down, freeze it,
+   at huwag mong baguhin hanggang hindi pa tapos ang MVP</code></pre>
+
+      <p><strong>Pro tip:</strong> Pagkatapos mo i-freeze ang scope, i-paste ang 5 features mo sa AI agent at sabihin: "Create a BMAD PRD for these features only. Do not add anything else." Ito ang paraan para maiwasan ang AI na magdagdag ng features na hindi mo hiningi.</p>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>MVP</strong> ay pinakamaliit na version ng product na pwede nang i-release — max 5 core features lang.</li>
+        <li>Ang <strong>ICE Framework</strong> (Impact, Confidence, Ease) ang gamitin para mag-rank at mag-cut ng features.</li>
+        <li>Kapag na-freeze na ang scope, <strong>wag nang baguhin</strong> hanggang hindi pa tapos ang MVP — iwasan ang scope creep.</li>
+        <li>Pwede mong i-validate ang scope gamit ang AI agent para malaman kung may kulang o mali.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you decide what to build first?" — I-use ang ICE framework para i-prioritize. Ang MVP ko ay laging naka-focus sa 5 core features na may pinakamataas na impact at confidence score. Pagkatapos, i-freeze ko ang scope at hindi na nagdadagdag hanggang hindi pa tapos.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>The Lean Startup by Eric Ries</strong> — The classic book on MVP methodology and validated learning. <a href="https://theleanstartup.com/" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>ICE Scoring Model</strong> — Sean Ellis' framework for prioritizing features by impact, confidence, and ease. <a href="https://www.intercom.com/blog/ice-score-prioritization-framework/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0002';
+  var questions = [
+    {
+      question: 'Ilang core features ang maximum para sa isang MVP?',
+      options: ['3 features', '5 features', '10 features', 'Walang limit'],
+      correct: 'b',
+      answer: 'Ang rule of thumb ay max 5 core features. Kung hindi mo ma-express ang MVP sa 5 features, masyado pa itong malaki at kailangan mong mag-cut.'
+    },
+    {
+      question: 'Ano ang ICE framework na ginagamit para mag-prioritize ng features?',
+      options: ['Input, Configure, Execute', 'Impact, Confidence, Ease', 'Integration, Compatibility, Efficiency', 'Implementation, Cost, Effort'],
+      correct: 'b',
+      answer: 'Ang ICE ay Impact (gaano kalaki ang impact), Confidence (gaano ka sigurado), at Ease (gaano kadali i-implement). Ito ang gamitin para mag-rank ng features.'
+    },
+    {
+      question: 'Kapag na-freeze na ang MVP scope, ano ang dapat gawin?',
+      options: ['Magdagdag ng features habang nagde-develop', 'Baguhin ang features kung may new idea', 'Huwag nang baguhin hanggang hindi pa tapos ang MVP', 'I-communicate sa team para mag-revote'],
+      correct: 'c',
+      answer: 'Ang scope ay dapat i-freeze at huwag nang baguhin hanggang hindi pa tapos ang MVP para maiwasan ang scope creep at ma-maintain ang focus.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

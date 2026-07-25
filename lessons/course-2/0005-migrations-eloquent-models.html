@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0005: Migrations & Eloquent Models</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Laravel Backend Foundations</strong> — Lesson 1 of 6
+      </div>
+
+      <h1>Migrations & Eloquent Models</h1>
+      <p><em>Matutunan kung paano i-structure ang database schema gamit ang Laravel migrations at i-map ito sa Eloquent models para sa malinis at maintainable na backend.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong gumawa ng database migrations mula sa Phase 0 schema, i-create ang mga Eloquent models na may tamang relationships, at ma-configure ang fillable/guarded properties.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Ano ang Laravel Migrations?</h2>
+      <p>Ang <strong>migrations</strong> ay parang version control para sa iyong database. Sa halip na manually mag-run ng SQL statements, gumagawa ka ng PHP classes na nag-declare ng schema changes. Ito ay:</p>
+      
+      <ul>
+        <li><strong>Reproducible</strong> — Pwede mong i-run ang migrations sa kahit anong environment (local, staging, production) at magkakaroon ka ng parehong schema.</li>
+        <li><strong>Collaborative</strong> — Kapag nag-commit ka ng migration files, pwedeng i-pull ng ibang developers at i-run ang migrations nila.</li>
+        <li><strong> reversible</strong> — Pwede mong i-rollback ang migrations gamit ang <code>php artisan migrate:rollback</code>.</li>
+      </ul>
+
+      <p>Ang file naming convention ay <code>YYYY_MM_DD_HHMMSS_create_users_table.php</code>. Ito ay auto-generated kapag gumamit ka ng <code>php artisan make:migration</code>.</p>
+
+      <pre><code>// Example migration for posts table
+Schema::create('posts', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->string('title');
+    $table->text('body')->nullable();
+    $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
+    $table->timestamps();
+    $table->softDeletes();
+});</code></pre>
+
+      <p><strong>Best Practices:</strong></p>
+      <ul>
+        <li>Laging gamitin ang <code>foreignId()->constrained()</code> para sa foreign keys — ito ay auto-ma-detect ang table at column name.</li>
+        <li>I-set ang <code>cascadeOnDelete()</code> o <code>restrictOnDelete()</code> depende sa business logic.</li>
+        <li>Magdagdag ng <code>softDeletes()</code> kung ayaw mong talagang i-delete ang records.</li>
+        <li>Pwede kang mag-add ng indexes gamit ang <code>$table->index('column')</code> para sa performance.</li>
+      </ul>
+
+      <!-- Section 2 -->
+      <h2>Eloquent Models & Relationships</h2>
+      <p>Ang <strong>Eloquent</strong> ay Laravel's ORM (Object-Relational Mapping). Bawat table sa database ay may corresponding na Model class. Ang models ang nag-handle ng business logic at relationships.</p>
+
+      <p><strong>Common Relationships:</strong></p>
+      
+      <pre><code>// User Model - has many posts
+class User extends Authenticatable
+{
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+    
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
+    }
+}
+
+// Post Model - belongs to user, has many comments
+class Post extends Model
+{
+    protected $fillable = ['title', 'body', 'status', 'user_id'];
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+    
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+}
+
+// Comment Model - belongs to post and user
+class Comment extends Model
+{
+    protected $fillable = ['body', 'user_id', 'post_id'];
+    
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
+    }
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}</code></pre>
+
+      <p><strong>Fillable vs Guarded:</strong></p>
+      <ul>
+        <li><strong>$fillable</strong> — Array ng columns na pwedeng i-mass assign. Ito ang "allow list."</li>
+        <li><strong>$guarded</strong> — Array ng columns na HINDI pwedeng i-mass assign. Ito ang "block list."</li>
+        <li>Piliin mo ang isa — wag mong gagamitin pareho sa iisang model.</li>
+        <li>Para sa security, mas mainam gamitin ang <code>$guarded = []</code> (walang guarded) kapag alam mo ang ginagawa.</li>
+      </ul>
+
+      <!-- Section 3 -->
+      <h2>Timestamps & Soft Deletes</h2>
+      <p>Ang Laravel ay auto-manage ng <code>created_at</code> at <code>updated_at</code> columns kapag gumamit ka ng <code>timestamps()</code> sa migration. Para i-disable:</p>
+      
+      <pre><code>class Post extends Model
+{
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
+    
+    // OR sa migration:
+    $table->timestamps(false); // walang timestamps
+}</code></pre>
+
+      <p>Para sa <strong>soft deletes</strong>, kailangan mong i-trait ang <code>SoftDeletes</code>:</p>
+      
+      <pre><code>use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Post extends Model
+{
+    use SoftDeletes;
+    
+    // Ito ay mag-a-add ng deleted_at column
+    // Kapag nag-call ka ng $post->delete(), hindi ito talagang ide-delete
+    // Kapag nag-call ka ng $post->forceDelete(), talagang ide-delete
+}</code></pre>
+
+      <!-- Section 4 -->
+      <h2>Practical: Implement Schema from Phase 0</h2>
+      <p>Gamitin natin ang database schema na ginawa mo sa Phase 0. Halimbawa, kung meron kang Users, Posts, at Comments tables:</p>
+
+      <pre><code>// Step 1: Create migrations
+php artisan make:migration create_users_table
+php artisan make:migration create_posts_table
+php artisan make:migration create_comments_table
+
+// Step 2: Create models
+php artisan make:model User
+php artisan make:model Post
+php artisan make:model Comment
+
+// Step 3: Run migrations
+php artisan migrate
+
+// Step 4: Test in Tinker
+php artisan tinker
+>>> $user = User::factory()->create();
+>>> $post = $user->posts()->create(['title' => 'Hello', 'body' => 'World']);
+>>> $post->user; // Returns the user
+>>> $user->posts; // Returns collection of posts</code></pre>
+
+      <p><strong>Tips para sa Real Projects:</strong></p>
+      <ul>
+        <li>Mag-create ng migration para sa lahat ng tables bago ka mag-create ng models.</li>
+        <li>Palaging i-check ang foreign key constraints — wag mong kalimutan ang <code>constrained()</code>.</li>
+        <li>Mag-add ng indexes sa columns na madalas ginagamit sa queries (like <code>user_id</code>, <code>status</code>).</li>
+        <li>Gamitin ang <code>php artisan migrate:fresh --seed</code> para mag-reset ng database during development.</li>
+      </ul>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>migrations</strong> ay version control para sa database schema — reproducible, collaborative, at reversible.</li>
+        <li>Ang <strong>Eloquent models</strong> ang nag-map ng database tables sa PHP classes, at nag-handle ng relationships (hasMany, belongsTo, belongsToMany).</li>
+        <li>Ang <strong>$fillable</strong> ay allow list para sa mass assignment, habang ang <strong>$guarded</strong> ay block list.</li>
+        <li>Ang <strong>timestamps</strong> at <strong>soft deletes</strong> ay auto-managed ng Laravel para sa audit trail at data recovery.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Explain the difference between $fillable and $guarded in Laravel." — Ang sagot: Ang $fillable ay allow list para sa mass assignment (safe columns lang), habang ang $blocked ay block list (lahat pwede maliban sa mga naka-list). Piliin mo ang isa para i-avoid ang mass assignment vulnerabilities.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Migrations Documentation</strong> — Official docs ng Laravel para sa migrations at schema builder. <a href="https://laravel.com/docs/11.x/migrations" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Eloquent Relationships</strong> — Official docs ng Laravel para sa lahat ng relationship types. <a href="https://laravel.com/docs/11.x/eloquent-relationships" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0005';
+  var questions = [
+    {
+      question: 'Ano ang gamit ng Laravel migrations sa database schema?',
+      options: ['Para mag-create ng models', 'Para mag-version control ang database schema', 'Para mag-validate ng data', 'Para mag-run ng raw SQL'],
+      correct: 'b',
+      answer: 'Ang migrations ay parang version control para sa database — nagpo-provide ng reproducible at reversible na schema changes.'
+    },
+    {
+      question: 'Ano ang pagkakaiba ng $fillable at $guarded sa Eloquent models?',
+      options: ['Pareho silang para sa validation', '$fillable = allow list, $guarded = block list para sa mass assignment', '$fillable = para sa forms, $guarded = para sa API', '$fillable = required fields, $guarded = optional fields'],
+      correct: 'b',
+      answer: 'Ang $fillable ay allow list (safe columns lang ang pwedeng i-mass assign), habang ang $guarded ay block list (lahat pwede maliban sa naka-list).'
+    },
+    {
+      question: 'Kailangan mo mag-add ng SoftDeletes trait kapag gumamit ka ng softDeletes() sa migration?',
+      options: ['Hindi, auto-detect ng Laravel', 'Oo, para ma-enable ang soft delete behavior', 'Oo, pero optional lang', 'Depende sa database driver'],
+      correct: 'b',
+      answer: 'Kailangan mong i-trait ang SoftDeletes sa model para ma-enable ang soft delete behavior — ang deleted_at column ay mag-a-auto-add ngunit ang behavior ay nasa trait.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

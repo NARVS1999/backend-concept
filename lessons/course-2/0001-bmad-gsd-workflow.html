@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0001: BMAD & GSD Workflow</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 0: Project Planning & Setup</strong> — Lesson 1 of 4
+      </div>
+
+      <h1>BMAD & GSD Workflow</h1>
+      <p><em>Matutunan kung paano gamitin ang BMAD framework at GSD workflow para maging structured at efficient ang iyong AI-driven development process.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-define at i-apply ang BMAD at GSD workflows sa isang real project — mula pag-gawa ng documents hanggang sa pag-implement gamit ang AI sub-agents.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Ano ang BMAD?</h2>
+      <p>Ang <strong>BMAD</strong> (Breakthrough Method for Agile AI-Driven Development) ay isang structured framework na nag-oorganisa ng AI-assisted development. Sa halip na i-prompt ang AI ng "build me an app," gumagawa ka muna ng mga documents na nagsisilbing contract between you and the AI agents.</p>
+
+      <p>Ito ang core documents na ginagawa ng BMAD:</p>
+      <ul>
+        <li><strong>PRD (Product Requirements Document)</strong> — Ang "what" ng project. Ano ang gagawin, para kanino, at bakit. Dito nakalista ang features, user stories, at success criteria.</li>
+        <li><strong>Architecture Document</strong> — Ang "how" ng project. Tech stack, folder structure, API design, database schema, at deployment strategy.</li>
+        <li><strong>Design Document</strong> — Ang "look and feel." UI/UX specifications, wireframes, component hierarchy, at design system decisions.</li>
+        <li><strong>Experience Document</strong> — Ang "journey." User flows, edge cases, error handling, at accessibility considerations.</li>
+        <li><strong>Spec File</strong> — Ang "nitty-gritty." Exact API contracts, data models, validation rules, at technical specifications.</li>
+        <li><strong>Error Handling Document</strong> — Ang "what if things go wrong." Error codes, retry logic, fallback strategies, at user-facing error messages.</li>
+      </ul>
+
+      <p>Ang idea ay simple: <strong>documents first, code second.</strong> Kapag malinaw ang documents, mas madali para sa AI agents na mag-produce ng tama at consistent na code.</p>
+
+      <h2>Ano ang GSD Workflow?</h2>
+      <p>Ang <strong>GSD</strong> (Get Shit Done) naman ay ang execution engine. Kung ang BMAD ang "planning phase," ang GSD ang "doing phase." Ito ang workflow na nag-oorganisa kung paano talaga mai-implement ang BMAD documents into working code.</p>
+
+      <p>Ang flow ay ganito:</p>
+      <ol>
+        <li><strong>BMAD creates documents</strong> — You (or the BMAD agent) produces the PRD, architecture, specs, etc.</li>
+        <li><strong>GSD reads documents</strong> — The GSD system ingests these documents as context.</li>
+        <li><strong>GSD dispatches sub-agents</strong> — Each sub-agent gets a specific task with the relevant document context.</li>
+        <li><strong>Sub-agents implement</strong> — They write code, tests, and configurations based on the specs.</li>
+        <li><strong>GSD validates</strong> — The system checks if the output matches the requirements.</li>
+      </ol>
+
+      <p>Ang key difference: <strong>BMAD = planning framework, GSD = execution framework.</strong> Magkasama sila para maging AI-driven ang buong development lifecycle.</p>
+
+      <!-- Section 3 -->
+      <h2>Paano Gamitin sa Laravel + Next.js Project</h2>
+      <p>Para sa ating Roxy project (Laravel API + Next.js frontend + MySQL), ganito ang practical application:</p>
+
+      <p><strong>Step 1: Gumawa ng PRD gamit ang BMAD</strong></p>
+      <p>Halimbawa, para sa user registration feature:</p>
+
+      <pre><code>## PRD: User Registration
+
+### User Story
+As a new user, I want to create an account using my email
+and password so that I can access the platform.
+
+### Acceptance Criteria
+- User can register with email + password
+- Email must be unique in the system
+- Password minimum 8 characters
+- User receives email verification after signup
+- User is redirected to dashboard after verification
+
+### Technical Notes
+- Laravel API endpoint: POST /api/register
+- Next.js form at /register
+- MySQL users table with email, password, verified_at
+- Use Laravel Breeze for auth scaffolding</code></pre>
+
+      <p><strong>Step 2: Gumawa ng Architecture Document</strong></p>
+
+      <pre><code>## Architecture: User Registration
+
+### API Layer (Laravel)
+- POST /api/register → RegisterController
+- Validates email uniqueness, password strength
+- Hashes password with bcrypt
+- Creates user record in MySQL
+- Dispatches verification email via Mailtrap
+
+### Frontend Layer (Next.js)
+- /register page with React Hook Form
+- Client-side validation (email format, password strength)
+- POST to /api/register
+- Show success message, redirect to /login
+
+### Database
+- users table: id, name, email, password, email_verified_at, timestamps</code></pre>
+
+      <p><strong>Step 3: I-deploy ang GSD para i-implement</strong></p>
+      <p>Pagkatapos mong maging OK sa documents, pwede mong sabihin sa GSD agent: "Implement user registration based on the PRD and architecture docs." Ang GSD na ang bahala mag-dispatch ng sub-agents para gumawa ng Laravel controller, migration, Next.js form, at tests.</p>
+
+      <!-- Section 4 -->
+      <h2>Mini-Project: BMAD Docs for Registration</h2>
+      <p>Subukan mo ito bilang exercise:</p>
+
+      <pre><code>## Exercise: Create BMAD Documents
+
+1. Gumawa ng PRD para sa "User Registration" feature
+   - 3 user stories
+   - Acceptance criteria per story
+   
+2. Gumawa ng Architecture Document
+   - API endpoints (Laravel)
+   - Frontend pages (Next.js)
+   - Database tables
+   
+3. Gumawa ng Spec File
+   - Exact request/response JSON format
+   - Validation rules
+   - Error codes
+   
+4. I-submit sa AI agent for review
+   - Ask: "Review this PRD for completeness"
+   - Ask: "What edge cases am I missing?"</code></pre>
+
+      <p>Ang goal ay maging comfortable ka sa pag-gawa ng structured documents bago ka mag-code. Sa totoong workflow, ito ang gagamitin mo para i-leverage ang AI agents ng todo.</p>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>BMAD</strong> ay planning framework — gumagawa ng documents (PRD, Architecture, Spec, etc.) na nagsisilbing contract sa AI agents.</li>
+        <li>Ang <strong>GSD</strong> ay execution framework — nagbabasa ng BMAD documents at nag-dispatch ng sub-agents para i-implement.</li>
+        <li>Ang flow: BMAD creates documents → GSD reads docs → sub-agents implement → system validates.</li>
+        <li>Sa Laravel + Next.js project, ang BMAD documents ang magiging source of truth ng lahat ng features.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you structure your AI-assisted development workflow?" — Ito ang pwedeng isagot: gumagamit ako ng BMAD framework para mag-plan at GSD workflow para mag-implement. Nagpo-produce ako ng structured documents bago mag-code para mas accurate at consistent ang output ng AI agents.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>BMAD Methodology Docs</strong> — Official documentation ng BMAD framework para sa AI-driven development. <a href="https://github.com/bmadcode/BMAD-METHOD" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Breeze Documentation</strong> — Quick auth scaffolding para sa Laravel projects. <a href="https://laravel.com/docs/11.x/starter-kits#breeze" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0001';
+  var questions = [
+    {
+      question: 'Ang BMAD framework ay gumagawa ng documents na nagsisilbing ano sa AI-assisted development?',
+      options: ['Code templates para sa AI', 'Contract between developer at AI agents', 'Database schema generator', 'Deployment scripts'],
+      correct: 'b',
+      answer: 'Ang BMAD documents ang nagsisilbing contract — malinaw na specification kung ano ang gagawin, kaya mas accurate ang output ng AI agents.'
+    },
+    {
+      question: 'Ano ang pagkakaiba ng BMAD at GSD?',
+      options: ['Pareho silang planning frameworks', 'BMAD = planning, GSD = execution', 'BMAD = execution, GSD = planning', 'Pareho silang execution frameworks'],
+      correct: 'b',
+      answer: 'Ang BMAD ay planning framework (gumagawa ng documents) at ang GSD ay execution framework (nag-implement gamit ang sub-agents).'
+    },
+    {
+      question: 'Sa Laravel + Next.js workflow, ano ang dapat gawin MUNA bago mag-code?',
+      options: ['Mag-setup ng database migration agad', 'Gumawa ng BMAD documents (PRD, Architecture, Spec)', 'Mag-install ng npm dependencies', 'Mag-create ng Git repository'],
+      correct: 'b',
+      answer: 'Documents first, code second. Ang BMAD documents ang source of truth kaya dapat ito ang unang gawin bago mag-implement.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

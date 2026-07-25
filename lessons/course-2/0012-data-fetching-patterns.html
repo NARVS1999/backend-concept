@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0012: Data Fetching Patterns</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 2: Next.js Frontend Foundations</strong> — Lesson 2 of 5
+      </div>
+
+      <h1>Data Fetching Patterns</h1>
+      <p><em>Matutunan kung paano mag-fetch ng data mula sa Laravel API gamit ang Next.js, kasama ang loading states, error handling, at caching behavior.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong mag-implement ng data fetching sa listing page na may loading skeleton at proper error handling.
+      </div>
+
+      <h2>Server-Side Data Fetching</h2>
+      <p>Ang pinaka-magandang bagay sa Next.js App Router ay ang server-side data fetching. Sa server components, pwede kang mag-<code>await</code> ng fetch calls nang hindi nag-aalala sa CORS o security issues — ang lahat ay nangyayari sa server bago i-render ang page.</p>
+
+      <pre><code>// app/listings/page.js — Server Component
+import api from '@/lib/api';
+import ListingCard from '@/components/listings/ListingCard';
+
+export default async function ListingsPage() {
+  // Direct fetch gamit ang Laravel API
+  const listings = await fetch('http://localhost:8000/api/listings', {
+    next: { revalidate: 60 } // ISR: revalidate every 60 seconds
+  }).then(res => res.json());
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Listings&lt;/h1&gt;
+      &lt;div className="grid"&gt;
+        {listings.map(listing =&gt; (
+          &lt;ListingCard key={listing.id} listing={listing} /&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p>Ang <code>next: { revalidate: 60 }</code> ay tumutukoy sa <strong>Incremental Static Regeneration (ISR)</strong>. Ibig sabihin, ang page ay naka-cache ng 60 seconds — pagkatapos non, ang susunod na visit ay magre-revalidate. Ito ay best of both worlds: mabilis gaya ng static pero updated pa rin.</p>
+
+      <h2>Loading States gamit ang Suspense</h2>
+      <p>Ang Next.js ay may built-in na paraan para magpakita ng loading state habang naglo-load ang data — gamit ang <code>loading.js</code> file. Ito ay gagamit ng React Suspense under the hood.</p>
+
+      <p>Lumikha ng <code>loading.js</code> sa same folder ng <code>page.js</code>:</p>
+
+      <pre><code>// app/listings/loading.js
+export default function ListingsLoading() {
+  return (
+    &lt;div className="skeleton-container"&gt;
+      &lt;div className="skeleton-header"&gt;
+        &lt;div className="skeleton skeleton-title" /&gt;
+      &lt;/div&gt;
+      &lt;div className="grid"&gt;
+        {Array.from({ length: 6 }).map((_, i) =&gt; (
+          &lt;div key={i} className="skeleton-card"&gt;
+            &lt;div className="skeleton skeleton-image" /&gt;
+            &lt;div className="skeleton skeleton-text" /&gt;
+            &lt;div className="skeleton skeleton-text short" /&gt;
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p>Pag nag-navigate ang user sa <code>/listings</code>, makikita niya agad ang skeleton habang naglo-load ang data. Hindi na kailangan ng manual <code>useState</code> para sa loading state — ginagawa na ito ng Next.js automatically.</p>
+
+      <h2>Error Handling</h2>
+      <p>Para sa error handling, gumamit ng <code>error.js</code> file. Ito ay mag-a-automatically wrap ang page sa error boundary:</p>
+
+      <pre><code>// app/listings/error.js
+'use client';
+
+export default function ListingsError({ error, reset }) {
+  return (
+    &lt;div className="error-container"&gt;
+      &lt;h2&gt;Nagkaroon ng problema!&lt;/h2&gt;
+      &lt;p&gt;Hindi ma-load ang listings. Please try again.&lt;/p&gt;
+      &lt;p className="error-message"&gt;{error.message}&lt;/p&gt;
+      &lt;button onClick={() =&gt; reset()}&gt;Try Again&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p>Pansinin na ang <code>error.js</code> ay kailangang maging client component — ito ang nagbibigay ng <code>reset</code> function para ma-retry ang rendering.</p>
+
+      <h2>Caching Behavior ng fetch</h2>
+      <p>Ang Next.js <code>fetch</code> ay may iba't ibang caching options:</p>
+
+      <ul>
+        <li><strong>Default (no options)</strong> — Ang data ay naka-cache sa request time at hindi magre-revalidate unless manual. Ang data ay static hanggang sa i-deploy mo ulit.</li>
+        <li><strong><code>next: { revalidate: N }</code></strong> — ISR mode. Ang data ay magre-revalidate pagkatapos ng N seconds.</li>
+        <li><strong><code>next: { tags: ['listings'] }</code></strong> — Tag-based revalidation. Pwede mong i-revalidate ang specific data gamit ang <code>revalidateTag('listings')</code>.</li>
+        <li><strong><code>cache: 'no-store'</code></strong> — Walang caching. Laging fresh data. Gamitin lang kapag talagang kailangan ng real-time data.</li>
+      </ul>
+
+      <pre><code>// Walang caching — laging fresh
+const res = await fetch('http://localhost:8000/api/listings', {
+  cache: 'no-store'
+});
+
+// Tag-based revalidation
+const res = await fetch('http://localhost:8000/api/listings', {
+  next: { tags: ['listings'] }
+});
+
+// Pagkatapos ng mutation, i-revalidate:
+import { revalidateTag } from 'next/cache';
+revalidateTag('listings');</code></pre>
+
+      <p>Para sa Laravel integration, ang pinaka-practical na approach ay gumamit ng <code>cache: 'no-store'</code> muna habang nagde-develop — para makita mo agad ang latest data. Pag production na, pwede kang mag-switch sa ISR o tag-based caching.</p>
+
+      <h2>Practical: Listing Page with Loading at Error States</h2>
+      <p>I-combine natin ang lahat ng natutunan sa isang complete listing page:</p>
+
+      <pre><code>// app/listings/page.js
+import api from '@/lib/api';
+import ListingCard from '@/components/listings/ListingCard';
+
+export default async function ListingsPage() {
+  let listings;
+
+  try {
+    const res = await fetch('http://localhost:8000/api/listings', {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch listings: ${res.status}`);
+    }
+
+    listings = await res.json();
+  } catch (error) {
+    return (
+      &lt;div className="error-container"&gt;
+        &lt;h2&gt;Hindi ma-load ang listings&lt;/h2&gt;
+        &lt;p&gt;{error.message}&lt;/p&gt;
+      &lt;/div&gt;
+    );
+  }
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;All Listings&lt;/h1&gt;
+      {listings.length === 0 ? (
+        &lt;p&gt;Walang listings pa.&lt;/p&gt;
+      ) : (
+        &lt;div className="grid"&gt;
+          {listings.map(listing =&gt; (
+            &lt;ListingCard key={listing.id} listing={listing} /&gt;
+          ))}
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p>Ito ang malinis na pattern: fetch sa server, handle ang error, at i-render ang data. Hindi mo kailangan ng <code>useEffect</code> o <code>useState</code> para sa data fetching — ginagawa na ito ng server component.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Server components ang pinaka-natural na paraan ng data fetching sa Next.js — walang CORS issues, walang extra JavaScript sa client.</li>
+        <li>Gamitin ang <code>loading.js</code> para sa automatic loading states at <code>error.js</code> para sa error boundaries.</li>
+        <li>Ang <code>fetch</code> sa Next.js ay may built-in caching — gamitin ang <code>cache: 'no-store'</code> para sa fresh data o ISR para sa performance.</li>
+        <li>I-push ang error handling sa server component — mas malinis at hindi nag-aalala sa client-side state.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Ano ang pagkakaiba ng SSR, SSG, at ISR sa Next.js? Kailan mo gagamitin ang bawat isa?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Next.js Docs — Fetching Data</strong> — Official guide sa data fetching patterns. <a href="https://nextjs.org/docs/app/building-your-application/data-fetching" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Next.js Docs — Caching</strong> — Deep dive sa fetch caching behavior. <a href="https://nextjs.org/docs/app/building-your-application/data-fetching/caching" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0012';
+  var questions = [
+    { question: 'Ano ang tawag sa technique na nagre-reload ng data sa background habang nagre-render ng cached version?', options: ['Server-Side Rendering', 'Incremental Static Regeneration', 'Static Site Generation'], correct: 'b', answer: 'Ang ISR (Incremental Static Regeneration) ay nagbibigay-daan para mag-revalidate ang data sa background — nagre-render ng fresh version habang nagse-serve ng cached version.' },
+    { question: 'Anong file ang gagamitin mo para magpakita ng loading state habang naglo-load ang data sa App Router?', options: ['loading.js', 'spinner.js', 'suspense.js'], correct: 'a', answer: 'Ang loading.js file ay automatic na naglo-load habang nag-a-render ang susunod na page segment — gamit ang React Suspense under the hood.' },
+    { question: 'Kailan mo gagamitin ang cache: "no-store" sa fetch?', options: ['Para sa static pages', 'Para sa real-time data na hindi dapat ma-cache', 'Para sa images'], correct: 'b', answer: 'Ang cache: "no-store" ay nagdi-disable ng caching — laging magfe-fetch ng fresh data mula sa server. Ito ay para sa real-time data na dapat laging updated.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

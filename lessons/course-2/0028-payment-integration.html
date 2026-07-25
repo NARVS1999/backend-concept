@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0028: Payment Integration</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 6: Business/Product Considerations</strong> — Lesson 1 of 3
+      </div>
+
+      <h1>Payment Integration</h1>
+      <p><em>Paano mo i-integrate ang payments sa Laravel app mo? Gumamit ng Stripe at PayMongo para sa real transactions.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-integrate ang Stripe at PayMongo payment gateway sa Laravel app, i-handle ang webhooks, i-design ang payment flow, at i-consider ang security best practices para sa payments.
+      </div>
+
+      <h2>Payment Gateway Options</h2>
+      <p>Kapag nagbubuo ka ng app na may monetization (subscriptions, one-time payments, e-commerce), kailangan mo ng payment gateway. Ito ang service na nagpo-process ng credit card payments at nagta-transfer ng pera sa bank account mo.</p>
+      <p><strong>Popular na payment gateways:</strong></p>
+      <ul>
+        <li><strong>Stripe</strong> — Ang pinaka-popular na developer-friendly na gateway. May excellent na API docs, Laravel integration (Cashier), at support sa maraming currencies. Ang transaction fee ay 2.9% + 30 cents per transaction.</li>
+        <li><strong>PayMongo</strong> — Ang pinaka-popular na payment gateway sa Philippines. May GCash, Maya (PayMaya), BPI, BDO, at credit/debit card support. Ang transaction fee ay 3.5% per transaction.</li>
+        <li><strong>PayPal</strong> — Kilala sa buong mundo pero mas mataas ang fees (4.4% + fixed fee). Madaling i-integrate pero hindi optimal para sa PH-based na apps.</li>
+        <li><strong>Xendit</strong> —东南亚 na payment gateway na may support sa PH. May GCash at bank transfer support.</li>
+      </ul>
+      <p><strong>Panatilihin ang Stripe at PayMongo</strong> — Ang Stripe ay para sa international payments at mas mura ang fees. Ang PayMongo ay para sa local PH payments (GCash, Maya). Sa Laravel, may Cashier package para sa Stripe na nagbibigay ng ready-to-use subscription at invoice management.</p>
+
+      <h2>Stripe Integration sa Laravel</h2>
+      <p>Ang <strong>Laravel Cashier</strong> ay official package para sa Stripe integration. Nagbibigay ito ng clean abstraction over Stripe's API — subscriptions, invoices, payment methods, at customer management.</p>
+      <p><strong>Setup:</strong></p>
+      <pre><code># I-install ang Laravel Cashier
+composer require laravel/cashier
+
+# I-add ang Stripe keys sa .env
+STRIPE_KEY=pk_test_xxxxx
+STRIPE_SECRET=sk_test_xxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+
+# I-run ang migration para sa cashier tables
+php artisan migrate</code></pre>
+      <p><strong>User model — add Billable trait:</strong></p>
+      <pre><code>// app/Models/User.php
+use Laravel\Cashier\Billable;
+
+class User extends Authenticatable
+{
+    use Billable;
+
+    // ... existing code
+}</code></pre>
+      <p><strong>Creating a checkout session (one-time payment):</strong></p>
+      <pre><code>// app/Http/Controllers/PaymentController.php
+use Stripe\Checkout\Session;
+use Stripe\Exception\ApiErrorException;
+
+class PaymentController extends Controller
+{
+    public function checkout(Request $request)
+    {
+        $user = auth()->user();
+
+        $session = Session::create([
+            'payment_method_types' => ['card'],
+            'customer_email' => $user->email,
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'usd',
+                    'product_data' => [
+                        'name' => 'Premium Plan',
+                        'description' => 'Monthly access to premium features',
+                    ],
+                    'unit_amount' => 1999, // $19.99 in cents
+                ],
+                'quantity' => 1,
+            ]],
+            'mode' => 'payment',
+            'success_url' => route('payment.success') . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => route('payment.cancel'),
+            'metadata' => [
+                'user_id' => $user->id,
+                'plan' => 'premium',
+            ],
+        ]);
+
+        return response()->json(['url' => $session->url]);
+    }
+
+    public function success()
+    {
+        return redirect('/dashboard')->with('success', 'Payment successful!');
+    }
+
+    public function cancel()
+    {
+        return redirect('/pricing')->with('error', 'Payment was cancelled.');
+    }
+}</code></pre>
+      <p><strong>Subscription-based payment:</strong></p>
+      <pre><code>// Subscription setup (requires Stripe Product & Price sa dashboard)
+class SubscriptionController extends Controller
+{
+    public function subscribe(Request $request)
+    {
+        $user = auth()->user();
+
+        // I-create ang subscription
+        $subscription = $user->newSubscription(
+            'default', // subscription name
+            'price_monthly_premium' // Stripe Price ID
+        )->create($request->paymentMethod);
+
+        return response()->json([
+            'message' => 'Subscription created successfully',
+            'subscription' => $subscription,
+        ]);
+    }
+
+    public function cancel()
+    {
+        $user = auth()->user();
+        $user->subscription('default')->cancel();
+
+        return response()->json(['message' => 'Subscription cancelled']);
+    }
+}</code></pre>
+
+      <h2>PayMongo Integration</h2>
+      <p>Para sa Philippine-based na payments (GCash, Maya), ang <strong>PayMongo</strong> ang pinaka-practical choice. Walang official Laravel package kaya manual integration — pero straightforward naman.</p>
+      <p><strong>Setup:</strong></p>
+      <pre><code># I-add ang PayMongo keys sa .env
+PAYMONGO_SECRET_KEY=sk_test_xxxxx
+PAYMONGO_PUBLIC_KEY=pk_test_xxxxx</code></pre>
+      <p><strong>PayMongo service class:</strong></p>
+      <pre><code>// app/Services/PayMongoService.php
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+
+class PayMongoService
+{
+    protected $secretKey;
+
+    public function __construct()
+    {
+        $this->secretKey = config('services.paymongo.secret_key');
+    }
+
+    public function createSource(float $amount, string $currency, string $type): array
+    {
+        $response = Http::withBasicAuth($this->secretKey, '')
+            ->post('https://api.paymongo.com/v1/sources', [
+                'data' => [
+                    'attributes' => [
+                        'amount' => $amount * 100, // PayMongo uses centavos
+                        'currency' => $currency,
+                        'type' => $type, // gcash, grab_pay, paymaya
+                    ],
+                ],
+            ]);
+
+        return $response->json()['data'];
+    }
+
+    public function createPayment(string $sourceId, float $amount): array
+    {
+        $response = Http::withBasicAuth($this->secretKey, '')
+            ->post('https://api.paymongo.com/v1/payments', [
+                'data' => [
+                    'attributes' => [
+                        'amount' => $amount * 100,
+                        'currency' => 'PHP',
+                        'source' => [
+                            'id' => $sourceId,
+                            'type' => 'source',
+                        ],
+                    ],
+                ],
+            ]);
+
+        return $response->json()['data'];
+    }
+}</code></pre>
+      <p><strong>Controller para sa PayMongo:</strong></p>
+      <pre><code>// app/Http/Controllers/PayMongoController.php
+class PayMongoController extends Controller
+{
+    public function createPayment(Request $request, PayMongoService $paymongo)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'payment_method' => 'required|in:gcash,paymaya,grab_pay',
+        ]);
+
+        $source = $paymongo->createSource(
+            $validated['amount'],
+            'PHP',
+            $validated['payment_method']
+        );
+
+        // Redirect user sa PayMongo checkout page
+        return response()->json([
+            'checkout_url' => $source['attributes']['redirect']['checkout_url'],
+            'source_id' => $source['id'],
+        ]);
+    }
+}</code></pre>
+
+      <h2>Webhook Handling</h2>
+      <p>Ang webhooks ay ang paraan kung paano nagno-notify ang payment gateway sa app mo kapag may nangyaring event (payment successful, subscription cancelled, refund processed). Hindi pwedeng mag-rely sa redirect lang — kailangan mo ng webhook para sa reliable payment confirmation.</p>
+      <p><strong>Stripe webhook handler sa Laravel:</strong></p>
+      <pre><code>// routes/web.php
+Route::post('/webhook/stripe', [WebhookController::class, 'handleWebhook'])
+    ->name('webhook.stripe');
+
+// app/Http/Controllers/WebhookController.php
+use Laravel\Cashier\Http\Controllers\WebhookController as CashierController;
+
+class WebhookController extends CashierController
+{
+    protected function handleCheckoutSessionCompleted(array $payload): void
+    {
+        $sessionId = $payload['data']['object']['id'];
+        $userId = $payload['data']['object']['metadata']['user_id'];
+
+        $user = User::findOrFail($userId);
+        $user->update(['purchased' => true]);
+
+        Log::info('Payment completed', [
+            'user_id' => $user->id,
+            'session_id' => $sessionId,
+        ]);
+    }
+
+    protected function handleInvoicePaymentFailed(array $payload): void
+    {
+        $customerId = $payload['data']['object']['customer'];
+
+        // I-notify ang user tungkol sa failed payment
+        $user = User::where('stripe_id', $customerId)->first();
+        if ($user) {
+            $user->notify(new PaymentFailedNotification());
+        }
+    }
+}</code></pre>
+      <p><strong>PayMongo webhook handler:</strong></p>
+      <pre><code>// app/Http/Controllers/PayMongoWebhookController.php
+class PayMongoWebhookController extends Controller
+{
+    public function handle(Request $request)
+    {
+        $payload = $request->all();
+        $eventType = $payload['data']['attributes']['type'];
+
+        switch ($eventType) {
+            case 'source.chargeable':
+                $this->handleSourceChargeable($payload);
+                break;
+
+            case 'payment.paid':
+                $this->handlePaymentPaid($payload);
+                break;
+
+            case 'payment.failed':
+                $this->handlePaymentFailed($payload);
+                break;
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    protected function handlePaymentPaid(array $payload): void
+    {
+        $sourceId = $payload['data']['attributes']['data']['id'];
+        $order = Order::where('paymongo_source_id', $sourceId)->first();
+
+        if ($order) {
+            $order->update(['status' => 'paid']);
+            // I-fulfill ang order (send product, activate subscription, etc.)
+        }
+    }
+}</code></pre>
+      <p><strong>Webhook security:</strong> Mag-verify laging ang webhook signature para hindi ma-spoof ang events. Ang Stripe ay nagbibigay ng signing secret — i-verify ang signature bago i-process ang payload. Ang PayMongo ay nagbibigay ng webhook secret sa dashboard.</p>
+
+      <h2>Security Considerations</h2>
+      <p>Ang payments ay sensitive na data — kailangan mong sundin ang security best practices:</p>
+      <ul>
+        <li><strong>Huwag i-store ang card details</strong> — Gumamit ng tokenization (Stripe/PayMongo ang nag-store ng card data). Hindi mo kailangang i-handle ang actual card numbers.</li>
+        <li><strong>Use HTTPS</strong> — Lahat ng payment endpoints ay dapat naka-HTTPS. Ito ay requirement ng Stripe at PayMongo.</li>
+        <li><strong>Verify webhook signatures</strong> — I-verify ang webhook signature para maiwasan ang spoofed requests.</li>
+        <li><strong>Server-side validation</strong> — Huwag mag-rely sa client-side validation lang. I-validate ang payment amount, currency, at status sa server.</li>
+        <li><strong>Idempotency</strong> — Gumamit ng unique IDs sa bawat transaction para maiwasan ang duplicate charges. Ang Stripe ay may built-in na idempotency keys.</li>
+        <li><strong>Environment variables</strong> — Hindi kailangang i-commit ang API keys sa git. I-store sa .env at huwag i-expose sa client-side code.</li>
+      </ul>
+      <p><strong>Payment flow design:</strong></p>
+      <pre><code>// Paraan ng payment flow:
+// 1. User clicks "Buy" -> Frontend sends request sa Laravel API
+// 2. Laravel creates checkout session sa Stripe/PayMongo
+// 3. Laravel returns checkout URL sa frontend
+// 4. Frontend redirects user sa payment page
+// 5. User completes payment
+// 6. Payment gateway redirects user sa success page
+// 7. Payment gateway sends webhook sa Laravel
+// 8. Laravel verifies payment at i-fulfills ang order
+
+// I-save ang transaction sa database:
+class OrderController extends Controller
+{
+    public function store(Request $request)
+    {
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'total' => $request->amount,
+            'status' => 'pending',
+            'payment_method' => $request->payment_method,
+            'stripe_session_id' => $session->id ?? null,
+            'paymongo_source_id' => $source->id ?? null,
+        ]);
+
+        return new OrderResource($order);
+    }
+}</code></pre>
+
+      <h2>Practical: Implement Basic Payment Flow</h2>
+      <p><strong>Step 1:</strong> Gumawa ng Stripe account at kunin ang test API keys (publishable at secret key). I-setup ang Laravel Cashier — i-install, i-configure ang .env, at i-run ang migrations.</p>
+      <p><strong>Step 2:</strong> Gumawa ng simple pricing page sa Next.js na may dalawang plans: Basic ($9.99/mo) at Premium ($19.99/mo). Mag-display ng checkout button per plan.</p>
+      <p><strong>Step 3:</strong> Sa Laravel, gumawa ng PaymentController na nagcre-create ng Stripe Checkout session. I-return ang checkout URL sa frontend. I-handle ang success at cancel redirects.</p>
+      <p><strong>Step 4:</strong> I-setup ang Stripe webhook endpoint sa Laravel. Mag-subscribe sa events: <code>checkout.session.completed</code> at <code>invoice.payment_failed</code>. I-verify ang webhook signature.</p>
+      <p><strong>Step 5:</strong> I-test gamit ang Stripe test cards: <code>4242 4242 4242 4242</code> (success), <code>4000 0000 0000 0002</code> (declined). I-verify na nagwo-work ang webhook at nag-u-update ang database.</p>
+      <p><strong>Step 6:</strong> Para sa PayMongo, gumawa ng account sa PayMongo dashboard. I-integrate ang GCash payment method — create source, redirect sa checkout, at handle ang webhook. I-test gamit ang PayMongo sandbox mode.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang Stripe ay ideal para sa international payments — may Laravel Cashier package na ready-to-use</li>
+        <li>Ang PayMongo ay para sa local PH payments — may GCash, Maya, at bank transfer support</li>
+        <li>Ang webhooks ay essential para sa reliable payment confirmation — huwag mag-rely sa redirect lang</li>
+        <li>I-verify laging ang webhook signatures para maiwasan ang spoofed requests</li>
+        <li>Huwag i-store ang card details — gumamit ng tokenization at i-store lang ang payment IDs</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-integrate ang payments sa Laravel at Next.js app?" — I-explain ang choice between Stripe at PayMongo, ang webhook handling para sa payment confirmation, ang security considerations (tokenization, HTTPS, signature verification), at ang payment flow design (checkout session -> redirect -> webhook -> fulfillment).
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Cashier Documentation</strong> — Official guide sa Stripe integration sa Laravel. <a href="https://laravel.com/docs/11.x/billing" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Stripe Documentation</strong> — Official Stripe API docs at integration guides. <a href="https://stripe.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>PayMongo Documentation</strong> — Official PayMongo API docs para sa PH payments. <a href="https://developers.paymongo.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0028';
+  var questions = [
+    { question: 'Bakit kailangan ng webhook sa payment integration, hindi lang basta redirect?', options: ['Dahil mas mabilis ang webhook kaysa sa redirect', 'Dahil ang webhook ay nagpo-confirm ng payment server-side — hindi mo ma-verify ang payment sa redirect lang dahil pwede itong i-falsify ng client', 'Dahil ang webhook ay optional lang at hindi required ng Stripe/PayMongo', 'Dahil ang webhook ay nagse-save ng card details sa database'], correct: 'b', answer: 'Ang webhook ay nagpo-confirm ng payment server-side. Ang redirect ay client-side at pwedeng i-falsify — kung mag-rely ka lang sa redirect, hindi mo makikita kung talagang nagbayad ang user. Ang payment gateway (Stripe/PayMongo) ay nagse-send ng webhook kapag confirmed na ang payment.' },
+    { question: 'Ano ang advantage ng PayMongo kaysa sa Stripe para sa Philippine-based na app?', options: ['Mas mura ang transaction fees ng PayMongo', 'Ang PayMongo ay may support sa GCash, Maya, at local bank transfers — hindi available sa Stripe', 'Ang PayMongo ay mas secure kaysa sa Stripe', 'Ang PayMongo ay may built-in na Laravel package'], correct: 'b', answer: 'Ang PayMongo ay may support sa local Philippine payment methods — GCash, Maya (PayMaya), BPI, BDO. Ang Stripe ay mostly para sa credit/debit cards at international payments. Para sa Filipino users na mas gusto ang GCash/Maya, ang PayMongo ay mas practical choice.' },
+    { question: 'Ano ang dapat i-store sa database kapag may payment?', options: ['Ang actual card number at CVV ng user', 'Ang payment gateway session ID, source ID, amount, status, at user ID — hindi ang card details', 'Ang lahat ng webhook payload para sa backup', 'Wala — i-delegate ang lahat sa payment gateway'], correct: 'b', answer: 'Hindi mo dapat i-store ang card details — gumagamit ka ng tokenization. I-store lang ang payment gateway IDs (session ID, source ID), amount, status, at user reference. Ito ay sapat na para i-verify at i-track ang payments. Ang card data ay naka-store sa Stripe/PayMongo servers.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0019: Backup & Data Integrity</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 3: MySQL Deep Dive</strong> — Lesson 4 of 4
+      </div>
+
+      <h1>Backup & Data Integrity</h1>
+      <p><em>Matutunan kung paano protektahan ang data mo gamit ang foreign key constraints, cascade strategies, backup strategies, at soft deletes.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-review ang foreign keys ng iyong app, pumili ng tamang cascade strategy (delete, restrict, o set null) para sa bawat relationship, at mag-setup ng basic backup strategy.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Foreign Key Constraints</h2>
+      <p>Ang <strong>foreign key constraints</strong> ay nag-e-ensure na ang data sa iyong database ay consistent at walang "orphaned" records. Kapag may foreign key, hindi ka puwedeng mag-delete ng parent record na may associated na child records — maliban kung may defined ka na cascade action.</p>
+
+      <pre><code>// Sa migration — gumamit ng constrained() para sa foreign keys
+Schema::create('posts', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('category_id')->constrained()->restrictOnDelete();
+    $table->string('title');
+    $table->timestamps();
+});
+
+// Ang constrained() ay auto-detect ang table at column name:
+// foreignId('user_id')->constrained() = foreign key sa users.id
+// Ito ay equivalent sa:
+$table->foreign('user_id')->references('id')->on('users');
+
+// Kapag walang constraint — pwede kang mag-delete ng user na may posts
+// Ito ay nag-ko-cause ng "orphaned" records!</code></pre>
+
+      <p><strong>Mga uri ng foreign key constraints:</strong></p>
+      <ul>
+        <li><strong>ON DELETE CASCADE</strong> — Kapag nag-delete ng parent, auto-delete ang mga child records.</li>
+        <li><strong>ON DELETE RESTRICT</strong> — HINDI puwedeng i-delete ang parent kung may child records — mag-throw ng error.</li>
+        <li><strong>ON DELETE SET NULL</strong> — Kapag nag-delete ng parent, i-set ang child's foreign key sa NULL.</li>
+        <li><strong>ON DELETE NO ACTION</strong> — Walang gagawin — default behavior ng MySQL (hindi nag-a-auto-delete).</li>
+      </ul>
+
+      <!-- Section 2 -->
+      <h2>Cascade Strategies: Alin ang Gamitin?</h2>
+      <p>Ang pagpili ng cascade strategy ay nakadepende sa business logic — walang "one size fits all" na sagot. Narito ang guidelines:</p>
+
+      <pre><code>// CASCADE — gamitin kapag ang child ay WALA nang kwenta kapag wala ang parent
+Schema::table('posts', function (Blueprint $table) {
+    // Kapag nag-delete ng user, auto-delete ang lahat ng posts niya
+    $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+});
+
+// Halimbawa: Comments sa Post
+// Kapag nag-delete ng post, auto-delete ang comments — walang silbi ang comments kapag wala ang post
+Schema::table('comments', function (Blueprint $table) {
+    $table->foreign('post_id')->references('id')->on('posts')->cascadeOnDelete();
+});
+
+// RESTRICT — gamitin kapag ayaw mong i-delete ang parent kung may child
+Schema::table('orders', function (Blueprint $table) {
+    // HINDI puwedeng i-delete ang user kung may orders pa
+    $table->foreign('user_id')->references('id')->on('users')->restrictOnDelete();
+});
+
+// Halimbawa: Orders sa User
+// Hindi puwedeng i-delete ang user kung may outstanding na orders
+Schema::table('orders', function (Blueprint $table) {
+    $table->foreign('user_id')->references('id')->on('users')->restrictOnDelete();
+});
+
+// SET NULL — gamitin kapag ang child ay puwedeng mabuhay nang walang parent
+Schema::table('posts', function (Blueprint $table) {
+    // Kapag nag-delete ng category, i-set ang category_id sa NULL
+    $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
+});
+
+// Halimbawa: Post sa Category
+// Kapag nag-delete ng category, ang post ay mababago ang category sa NULL
+// Hindi mawawala ang post — pwede pa rin i-reassign sa ibang category</code></pre>
+
+      <p><strong>Decision table para sa cascade strategies:</strong></p>
+      <ul>
+        <li><strong>Post → User</strong>: CASCADE — kapag nawala ang user, mawawala rin ang posts.</li>
+        <li><strong>Comment → Post</strong>: CASCADE — kapag nawala ang post, walang silbi ang comments.</li>
+        <li><strong>Order → User</strong>: RESTRICT — hindi puwedeng i-delete ang user kung may orders.</li>
+        <li><strong>Post → Category</strong>: SET NULL — pwedeng mabuhay ang post nang walang category.</li>
+        <li><strong>Profile → User</strong>: CASCADE — kapag nawala ang user, mawawala rin ang profile.</li>
+        <li><strong>Tag → Post</strong>: CASCADE — kapag nawala ang post, mawawala rin ang tag associations.</li>
+      </ul>
+
+      <pre><code>// Complete example: User deletion cascade strategy
+// Sa User model
+class User extends Authenticatable
+{
+    use SoftDeletes;
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
+    // I-delete ang user nang maayos
+    public function deleteUser(): bool
+    {
+        // Option 1: Cascade (posts deleted, orders blocked)
+        // Hindi puwedeng i-delete kung may orders
+        if ($this->orders()->exists()) {
+            throw new \Exception('Cannot delete user with existing orders.');
+        }
+
+        // I-archive ang posts imbis na i-delete
+        $this->posts()->update(['user_id' => null]);
+
+        // I-delete ang profile
+        $this->profile()->delete();
+
+        // I-soft delete ang user
+        return $this->delete();
+    }
+}</code></pre>
+
+      <!-- Section 3 -->
+      <h2>Backup Strategy</h2>
+      <p>Ang <strong>backup</strong> ay ang iyong insurance policy — kapag may nawala o na-corrupt, pwede mong i-restore ang data. Kahit simpleng backup strategy ay mas wala pa kaysa walang backup.</p>
+
+      <pre><code>// Basic MySQL backup command
+mysqldump -u root -p database_name > backup_$(date +%Y%m%d_%H%M%S).sql
+
+// Backup specific tables
+mysqldump -u root -p database_name users posts > partial_backup.sql
+
+// Backup with compression
+mysqldump -u root -p database_name | gzip > backup_$(date +%Y%m%d).sql.gz
+
+// Restore from backup
+mysql -u root -p database_name < backup_20240101.sql
+
+// Restore compressed backup
+gunzip < backup_20240101.sql.gz | mysql -u root -p database_name</code></pre>
+
+      <p><strong>Laravel backup setup:</strong></p>
+
+      <pre><code>// Gumamit ng spatie/laravel-backup package
+composer require spatie/laravel-backup
+
+// I-configure ang config/backup.php
+
+// Basic backup command
+php artisan backup:run
+
+// I-check ang backup status
+php artisan backup:check
+
+// I-restore ang backup
+php artisan backup:restore
+
+// Automated backup sa cron (daily)
+// Sa app/Console/Kernel.php
+protected function schedule(Schedule $schedule)
+{
+    $schedule->command('backup:run')->dailyAt('02:00');
+    $schedule->command('backup:clean')->dailyAt('03:00');
+}
+
+// Manual backup script (para sa server)
+// backup.sh
+#!/bin/bash
+BACKUP_DIR="/backups/mysql"
+DATE=$(date +%Y%m%d_%H%M%S)
+mysqldump -u root -p"$DB_PASSWORD" database_name | gzip > "$BACKUP_DIR/backup_$DATE.sql.gz"
+
+# I-delete ang mga backup na mas matagal sa 30 days
+find $BACKUP_DIR -name "*.sql.gz" -mtime +30 -delete</code></pre>
+
+      <!-- Section 4 -->
+      <h2>Soft Deletes</h2>
+      <p>Ang <strong>soft deletes</strong> ay hindi talaga nag-de-delete ng records — nag-a-add lang ng <code>deleted_at</code> timestamp. Ito ay nagpo-provide ng data recovery at audit trail.</p>
+
+      <pre><code>// Sa migration — gumamit ng softDeletes()
+Schema::table('posts', function (Blueprint $table) {
+    $table->softDeletes();
+});
+
+// Sa model — i-trait ang SoftDeletes
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Post extends Model
+{
+    use SoftDeletes;
+
+    // Ang Post::all() ay hindi na isasama ang soft-deleted records
+    // Ang Post::withTrashed() ay isasama ang lahat
+    // Ang Post::onlyTrashed() ay soft-deleted records lang
+
+    // I-restore ang soft-deleted record
+    public function restorePost(int $id): bool
+    {
+        return Post::withTrashed()->find($id)->restore();
+    }
+
+    // I-force delete (talagang ide-delete)
+    public function forceDeletePost(int $id): bool
+    {
+        return Post::withTrashed()->find($id)->forceDelete();
+    }
+}
+
+// Query sa soft-deleted records
+Post::all(); // Hindi isasama ang soft-deleted
+Post::withTrashed()->get(); // Isasama ang lahat
+Post::onlyTrashed()->get(); // Soft-deleted lang
+Post::where('status', 'published')->withTrashed()->get(); // With trashed + filter
+
+// Kapag nag-delete ng user na may posts
+// Kung cascade ang foreign key, auto-delete ang posts
+// Pero kung soft deletes ang user, hindi auto-delete ang posts
+// Kailangan mong i-handle manually</code></pre>
+
+      <p><strong>Soft deletes vs hard deletes:</strong></p>
+      <ul>
+        <li><strong>Soft deletes</strong> — Nag-ko-keep ng data para sa recovery at audit trail. Ang data ay nandoon pa pero "hidden."</li>
+        <li><strong>Hard deletes</strong> — Talagang nag-de-delete ng data. Hindi na ma-recover. Mas mabilis at mas malinis.</li>
+        <li><strong>Best practice:</strong> Gamitin ang soft deletes para sa important na data (users, posts, orders). Gamitin ang hard deletes para sa transient data (sessions, logs, cache).</li>
+      </ul>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>foreign key constraints</strong> ay nag-e-ensure ng data integrity — hindi ka puwedeng mag-delete ng parent record na may associated child records maliban kung may defined cascade action.</li>
+        <li>Ang <strong>CASCADE</strong> ay auto-delete ang children, <strong>RESTRICT</strong> ay nag-bblock sa delete, at <strong>SET NULL</strong> ay nagse-set ng foreign key sa NULL.</li>
+        <li>Laging mag-<strong>backup</strong> bago mag-migrate sa production — gamitin ang mysqldump o spatie/laravel-backup.</li>
+        <li>Ang <strong>soft deletes</strong> ay nag-ko-keep ng data para sa recovery — gamitin para sa important na data, i-hard delete para sa transient data.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you handle data deletion in a production Laravel application?" — Gumagamit ako ng soft deletes para sa important na data para may recovery option. I-set ang appropriate cascade strategy: CASCADE para sa dependent data (comments sa posts), RESTRICT para sa critical relationships (orders sa users), SET NULL para sa optional relationships (category sa posts). Laging may backup bago mag-migrate.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Soft Deletes</strong> — Official docs ng Laravel para sa soft deletes at data recovery. <a href="https://laravel.com/docs/11.x/eloquent#soft-deleting" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>MySQL Foreign Key Constraints</strong> — Official MySQL docs para sa foreign keys at referential integrity. <a href="https://dev.mysql.com/doc/refman/8.0/en/create-table-foreign-keys.html" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Spatie Laravel Backup</strong> — Package documentation para sa automated Laravel backups. <a href="https://spatie.be/docs/laravel-backup/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0019';
+  var questions = [
+    {
+      question: 'Ano ang gagawin kapag ayaw mong i-delete ang parent record kung may associated child records?',
+      options: [
+        'Gamitin ang CASCADE',
+        'Gamitin ang RESTRICT',
+        'Gamitin ang SET NULL',
+        'Gamitin ang NO ACTION'
+      ],
+      correct: 'b',
+      answer: 'Ang RESTRICT ay nag-bblock sa delete operation kapag may child records — mag-throw ng error. Ito ay ginagamit kapag ayaw mong i-delete ang parent (hal. User) kung may critical na child records (hal. Orders).'
+    },
+    {
+      question: 'Kapag nag-delete ng user na may soft deletes, at ang user ay may posts na naka-cascade ang foreign key, ano ang mangyayari sa posts?',
+      options: [
+        'Auto-delete ang posts',
+        'Hindi auto-delete ang posts — kailangan i-handle manually',
+        'Auto-soft-delete ang posts',
+        'Mag-e-error ang delete operation'
+      ],
+      correct: 'b',
+      answer: 'Kapag ang user ay naka-soft delete, hindi nag-to-trigger ang cascade delete — ang user ay hindi talagang nag-de-delete. Kailangan mong i-handle ang posts deletion manually o gumawa ng logic para i-archive ang posts.'
+    },
+    {
+      question: 'Alin ang pinaka-important na gawin bago mag-run ng migrate sa production?',
+      options: [
+        'I-configure ang .env file',
+        'Mag-backup ng database',
+        'I-update ang composer.json',
+        'I-clear ang cache'
+      ],
+      correct: 'b',
+      answer: 'Laging mag-backup ng database bago mag-migrate sa production — kapag may problema sa migration, pwede mong i-restore ang backup. Ang mysqldump o Laravel backup packages ay pwedeng gamitin.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

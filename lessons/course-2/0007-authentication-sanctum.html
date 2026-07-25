@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0007: Authentication with Sanctum</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Laravel Backend Foundations</strong> — Lesson 3 of 6
+      </div>
+
+      <h1>Authentication with Sanctum</h1>
+      <p><em>Matutunan kung paano i-setup ang Laravel Sanctum para sa SPA at token-based authentication, at kung kailan gamitin ang Sanctum kaysa Passport.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-setup ang Sanctum auth, gumawa ng login/register endpoints, at i-test ang authentication flow gamit ang frontend.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Ano ang Laravel Sanctum?</h2>
+      <p>Ang <strong>Sanctum</strong> ay Laravel's lightweight authentication package. Ito ay nagpo-provide ng dalawang authentication methods:</p>
+
+      <ul>
+        <li><strong>SPA Authentication</strong> — Cookie-based authentication para sa same-domain frontend (Laravel + Next.js sa iisang domain).</li>
+        <li><strong>Token Authentication</strong> — Bearer token authentication para sa mobile apps, third-party API consumers, o ibang domains.</li>
+      </ul>
+
+      <p><strong>Sanctum vs Passport:</strong></p>
+      <ul>
+        <li><strong>Sanctum</strong> — Lightweight, para sa first-party SPA/mobile apps. Hindi nagpo-provide ng OAuth2 flows.</li>
+        <li><strong>Passport</strong> — Full-featured OAuth2 server. Para sa third-party API access, may complex authorization flows.</li>
+        <li>Para sa ating Roxy project (Laravel API + Next.js frontend), <strong>Sanctum ang tamang choice</strong> — first-party app lang naman.</li>
+      </ul>
+
+      <pre><code>// Installation
+composer require laravel/sanctum
+
+// Publish config (optional)
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+
+// Run migrations
+php artisan migrate</code></pre>
+
+      <!-- Section 2 -->
+      <h2>SPA Authentication Setup</h2>
+      <p>Para sa SPA authentication, kailangan mong i-configure ang Laravel at Next.js na magkaka-domain. Sa development, ito ang setup:</p>
+
+      <pre><code>// 1. Add Sanctum middleware to api routes
+// routes/api.php
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
+
+// 2. AuthController.php
+class AuthController extends Controller
+{
+    public function register(RegisterRequest $request)
+    {
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    public function login(LoginRequest $request)
+    {
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'message' => 'Invalid credentials',
+            ], 401);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->noContent();
+    }
+}</code></pre>
+
+      <!-- Section 3 -->
+      <h2>Token Authentication for API</h2>
+      <p>Para sa token-based authentication (mobile apps o third-party consumers), ganito ang setup:</p>
+
+      <pre><code>// 1. User model - use HasApiTokens trait
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable;
+}
+
+// 2. Create token during login
+$token = $user->createToken(
+    'app-name', 
+    ['read', 'write'] // abilities
+)->plainTextToken;
+
+// 3. Protect routes with abilities
+Route::middleware('auth:sanctum:api')->group(function () {
+    Route::get('/posts', [PostController::class, 'index'])
+        ->middleware('ability:read');
+    
+    Route::post('/posts', [PostController::class, 'store'])
+        ->middleware('ability:write');
+});
+
+// 4. Check abilities in controller
+public function store(Request $request)
+{
+    if (!$request->user()->tokenCan('write')) {
+        abort(403, 'Unauthorized');
+    }
+    // ...
+}</code></pre>
+
+      <p><strong>Token Management:</strong></p>
+      <ul>
+        <li><code>$user->createToken('name')</code> — Gumawa ng bagong token.</li>
+        <li><code>$user->tokens</code> — I-return ang lahat ng tokens ng user.</li>
+        <li><code>$user->currentAccessToken()</code> — I-return ang current token.</li>
+        <li><code>$user->delete()</code> — I-delete ang user at ang lahat ng tokens.</li>
+        <li><code>$user->revokeAccessTo($appName)</code> — I-revoke ang specific token.</li>
+      </ul>
+
+      <!-- Section 4 -->
+      <h2>Practical: Auth Flow with Next.js Frontend</h2>
+      <p>Gamitin natin ang Sanctum sa ating Laravel + Next.js setup:</p>
+
+      <pre><code>// Laravel side - config/cors.php
+'paths' => ['api/*', 'sanctum/csrf-cookie'],
+'supports_credentials' => true,
+
+// Next.js side - lib/axios.js
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
+});
+
+// Intercept requests to add token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// pages/login.js
+const handleSubmit = async (data) => {
+  try {
+    const response = await api.post('/login', data);
+    localStorage.setItem('token', response.data.token);
+    router.push('/dashboard');
+  } catch (error) {
+    console.error('Login failed:', error.response.data.message);
+  }
+};</code></pre>
+
+      <p><strong>CSRF Protection:</strong></p>
+      <ul>
+        <li>Para sa SPA auth, kailangan mong i-visit ang <code>/sanctum/csrf-cookie</code> endpoint bago mag-login.</li>
+        <li>Ito ay naglo-load ng CSRF token para sa cookie-based authentication.</li>
+        <li>Ang Sanctum middleware ay auto-handle ng CSRF verification.</li>
+      </ul>
+
+      <pre><code>// Sa Next.js, i-visit ang CSRF endpoint bago mag-login
+await api.get('/sanctum/csrf-cookie');
+await api.post('/login', { email, password });</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>Sanctum</strong> ay lightweight authentication package ng Laravel — para sa SPA (cookie-based) at token-based authentication.</li>
+        <li>Ang <strong>SPA authentication</strong> ay gumagamit ng cookies at CSRF protection — para sa same-domain frontend.</li>
+        <li>Ang <strong>token authentication</strong> ay gumagamit ng Bearer tokens — para sa mobile apps o third-party API consumers.</li>
+        <li>Para sa Roxy project, Sanctum ang tamang choice kaysa Passport — first-party app lang naman.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Explain the difference between Sanctum and Passport." — Ang Sanctum ay lightweight at para sa first-party SPA/mobile apps (cookie o token auth), habang ang Passport ay full OAuth2 server para sa third-party API access. Para sa ating project, Sanctum ang gamit kasi first-party app lang.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Sanctum Documentation</strong> — Official docs ng Laravel para sa Sanctum authentication. <a href="https://laravel.com/docs/11.x/sanctum" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Sanctum SPA Authentication</strong> — Official docs ng Laravel para sa SPA authentication setup. <a href="https://laravel.com/docs/11.x/sanctum#spa-authentication" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0007';
+  var questions = [
+    {
+      question: 'Ano ang gamit ng Laravel Sanctum?',
+      options: ['Para mag-handle ng database migrations', 'Para sa lightweight authentication (SPA at token-based)', 'Para mag-manage ng file uploads', 'Para mag-run ng background jobs'],
+      correct: 'b',
+      answer: 'Ang Sanctum ay Laravel's lightweight authentication package — nagpo-provide ng SPA (cookie-based) at token-based authentication.'
+    },
+    {
+      question: 'Kailangan mong i-visit ang /sanctum/csrf-cookie endpoint bago mag-login sa SPA?',
+      options: ['Hindi, auto-detect ng Laravel', 'Oo, para i-load ang CSRF token para sa cookie-based auth', 'Oo, pero optional lang', 'Depende sa browser'],
+      correct: 'b',
+      answer: 'Para sa SPA authentication, kailangan mong i-visit ang /sanctum/csrf-cookie endpoint bago mag-login para ma-load ang CSRF token.'
+    },
+    {
+      question: 'Ano ang pagkakaiba ng Sanctum at Passport?',
+      options: ['Pareho silang OAuth2 servers', 'Sanctum = lightweight for first-party apps, Passport = full OAuth2 for third-party access', 'Sanctum = para sa mobile, Passport = para sa web', 'Walang pagkakaiba'],
+      correct: 'b',
+      answer: 'Ang Sanctum ay lightweight at para sa first-party SPA/mobile apps, habang ang Passport ay full OAuth2 server para sa third-party API access.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

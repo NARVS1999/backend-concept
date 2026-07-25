@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0021: Environment Configuration</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 4: Connecting the Full Stack</strong> — Lesson 2 of 4
+      </div>
+
+      <h1>Environment Configuration</h1>
+      <p><em>Paano ba i-manage ang mga settings at secrets nang tama sa Laravel at Next.js para sa iba't ibang environment?</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-set up nang tama ang environment variables sa Laravel at Next.js, maihiwalay ang dev/staging/production configurations, at maiwasan ang hardcoded secrets sa codebase.
+      </div>
+
+      <h2>Bakit Mahalaga ang Environment Variables?</h2>
+      <p>Ang environment variables ay mga values na nagbabago depende sa kung saan tumatakbo ang application. Ang database credentials, API keys, at URLs ay hindi dapat naka-hardcode sa codebase dahil:</p>
+      <p><strong>Security:</strong> Kapag naka-commit ang secrets sa Git repository, maa-access ito ng sinuman. Ito ay security vulnerability.</p>
+      <p><strong>Flexibility:</strong> Ang development URL ay iba sa production URL. Ang local database credentials ay iba sa production database credentials.</p>
+      <p><strong>Portability:</strong> Hindi mo kailangang baguhin ang code kapag nag-deploy sa ibang environment. Ang environment variables ang mag-a-adjust.</p>
+      <p>Kaya naman, ang best practice ay ilagay ang lahat ng configurable values sa <code>.env</code> files at huwag kailanman i-commit ang <code>.env</code> sa Git.</p>
+
+      <h2>.env Management sa Laravel</h2>
+      <p>Ang Laravel ay may built-in na support para sa environment variables gamit ang <code>.env</code> file. Narito ang karaniwang structure:</p>
+      <pre><code># .env (Laravel)
+APP_NAME="Roxy Store"
+APP_ENV=local
+APP_KEY=base64:xxxxx
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=roxy_store
+DB_USERNAME=root
+DB_PASSWORD=secret
+
+CACHE_DRIVER=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
+
+NEXTJS_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3000
+
+JWT_SECRET=your-jwt-secret-here</code></pre>
+      <p>Ang <code>.env.example</code> file ay committed sa Git bilang template. Ang actual na <code>.env</code> ay nasa <code>.gitignore</code>. Kapag nag-setup ang bagong developer, kopyahin lang nila ang <code>.env.example</code> papuntang <code>.env</code> at i-fill ang mga values.</p>
+      <p>Ang pag-access sa environment variables sa Laravel ay gamit ang <code>env()</code> helper o ang <code>config()</code> function. Gumamit ng config files para i-wrap ang environment variables:</p>
+      <pre><code>// config/services.php
+return [
+    'nextjs' => [
+        'url' => env('NEXTJS_URL', 'http://localhost:3000'),
+    ],
+
+    'jwt' => [
+        'secret' => env('JWT_SECRET'),
+    ],
+];
+
+// Usage sa code:
+$nextUrl = config('services.nextjs.url');</code></pre>
+      <p>Ang pattern na ito ay nagbibigay ng default value at nag-e-ensure na ang configuration ay organized sa iisang lugar.</p>
+
+      <h2>.env Management sa Next.js</h2>
+      <p>Ang Next.js ay may sariling paraan ng environment variable handling. Gumamit ng <code>.env.local</code> para sa local development variables:</p>
+      <pre><code># .env.local (Next.js)
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-nextauth-secret
+
+# Hindi lalabas sa browser (server-side only)
+DATABASE_URL=mysql://root:secret@localhost:3306/roxy_store
+
+# Lalabas sa browser (client-side)
+NEXT_PUBLIC_API_URL=http://localhost:8000/api</code></pre>
+      <p>Ang <code>NEXT_PUBLIC_</code> prefix ay nagpo-protocol na ang variable ay accessible sa browser. Ang mga walang prefix ay server-side lang — hindi ito makikita ng client code, kaya safe para sa sensitive data.</p>
+      <p>I-access ang variables sa Next.js:</p>
+      <pre><code>// Server-side (API routes, getServerSideProps)
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+// Client-side (React components)
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+// Sa next.config.js (build-time)
+module.exports = {
+  env: {
+    API_URL: process.env.NEXT_PUBLIC_API_URL,
+  },
+};</code></pre>
+
+      <h2>Separating Dev, Staging, and Production Configs</h2>
+      <p>Ang pinaka-common na approach ay gumamit ng iba't ibang <code>.env</code> files para sa iba't ibang environment:</p>
+      <p><strong>Laravel:</strong> Ang <code>APP_ENV</code> value ang nagdedetermine kung aling environment ang gamit. Ang <code>config:cache</code> ay nag-c-cached ng configuration para sa performance.</p>
+      <pre><code># Development
+APP_ENV=local
+APP_DEBUG=true
+DB_HOST=127.0.0.1
+
+# Production
+APP_ENV=production
+APP_DEBUG=false
+DB_HOST=production-db-host.com</code></pre>
+      <p><strong>Next.js:</strong> Ang <code>.env.development</code>, <code>.env.staging</code>, at <code>.env.production</code> ay auto-loaded depende sa <code>next build</code> o <code>next dev</code> command.</p>
+      <pre><code># .env.development
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+
+# .env.production
+NEXT_PUBLIC_API_URL=https://api.roxy.com/api</code></pre>
+      <p>Para sa deployment platforms tulad ng Vercel, i-set ang environment variables sa dashboard nila. Ang Vercel ay auto-detect ng <code>NEXT_PUBLIC_</code> variables at i-i-inject habang build.</p>
+
+      <h2>Practical: Set Up Environment Variables</h2>
+      <p>Sundin ang mga ito para sa iyong Laravel + Next.js project:</p>
+      <p><strong>Step 1:</strong> Sa Laravel, gumawa ng <code>.env</code> file mula sa <code>.env.example</code>. I-set ang lahat ng DB credentials, app URL, at NEXTJS_URL.</p>
+      <p><strong>Step 2:</strong> Gumawa ng config files sa <code>config/</code> directory para i-wrap ang environment variables. Halimbawa: <code>config/frontend.php</code> para sa Next.js URL.</p>
+      <p><strong>Step 3:</strong> Sa Next.js, gumawa ng <code>.env.local</code>. I-set ang <code>NEXT_PUBLIC_API_URL</code> pointing sa Laravel API.</p>
+      <p><strong>Step 4:</strong> Siguraduhin na ang <code>.env</code> at <code>.env.local</code> ay nasa <code>.gitignore</code>. I-commit lang ang <code>.env.example</code> at <code>.env.local.example</code>.</p>
+      <p><strong>Step 5:</strong> Gumawa ng <code>.env.production</code> para sa Next.js production settings. I-set ang production API URL.</p>
+      <p><strong>Step 6:</strong> I-test ang configuration. Gumawa ng simple API call mula sa Next.js papunta sa Laravel. Siguraduhin na ang URL ay galing sa environment variable, hindi hardcoded.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Huwag kailanman i-commit ang <code>.env</code> files sa Git — gumamit lang ng <code>.env.example</code> bilang template</li>
+        <li>Sa Next.js, ang <code>NEXT_PUBLIC_</code> prefix ay nagpo-protocol na accessible sa browser; walang prefix ay server-side lang</li>
+        <li>Gumamit ng config files sa Laravel para i-wrap ang env variables — mas organized at may default values</li>
+        <li>I-separate ang dev/staging/production configs gamit ang iba't ibang env files o deployment platform settings</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-manage ang environment variables sa isang full-stack project?" — I-explain ang .env files, NEXT_PUBLIC_ prefix, config wrapping sa Laravel, at kung paano maiwasan ang secret leakage.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Environment Configuration</strong> — Official docs sa .env handling. <a href="https://laravel.com/docs/configuration#environment-configuration" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Next.js Environment Variables</strong> — Official docs sa env variable patterns. <a href="https://nextjs.org/docs/basic-features/environment-variables" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0021';
+  var questions = [
+    { question: 'Bakit hindi dapat i-commit ang .env file sa Git?', options: ['Masyadong malaki ang file', 'Naglalaman ng secrets at credentials na security risk', 'Hindi supported ng Git', 'Mas mabagal ang repo kapag may .env'], correct: 'b', answer: 'Ang .env file ay naglalaman ng database credentials, API keys, at iba pang secrets. Kapag na-commit ito sa Git, maa-access ito ng sinuman na may access sa repository, kaya ito ay security vulnerability.' },
+    { question: 'Ano ang purpose ng NEXT_PUBLIC_ prefix sa Next.js environment variables?', options: ['Ginagawa itong mandatory', 'Ipinapahiwatig na accessible ito sa browser/client-side', 'Nag-e-encrypt ng value', 'Nag-co-convert ng variable sa constant'], correct: 'b', answer: 'Ang NEXT_PUBLIC_ prefix ay nagpo-protocol na ang environment variable ay accessible sa client-side (browser). Ang mga walang prefix ay server-side lang, kaya safe para sa sensitive data tulad ng database credentials.' },
+    { question: 'Ano ang dapat i-commit sa Git — .env o .env.example?', options: ['Pareho', 'Wala', '.env.example lang', '.env lang'], correct: 'c', answer: 'Ang .env.example ang dapat i-commit bilang template para sa ibang developers. Ang actual na .env ay nasa .gitignore dahil naglalaman ito ng tunay na credentials at secrets.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

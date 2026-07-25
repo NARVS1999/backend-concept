@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0014: Authentication Flow sa Frontend</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 2: Next.js Frontend Foundations</strong> — Lesson 4 of 5
+      </div>
+
+      <h1>Authentication Flow sa Frontend</h1>
+      <p><em>Matutunan kung paano i-handle ang authentication sa Next.js — mula sa pag-store ng tokens hanggang sa pag-protect ng routes gamit ang middleware.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong mag-implement ng complete login/logout flow at i-protect ang dashboard pages gamit ang Next.js middleware.
+      </div>
+
+      <h2>Storing Auth Tokens</h2>
+      <p>Kapag nag-login ang user sa Laravel API, nagre-return ito ng token (JWT o Sanctum token). Ang tanong: saan ito i-store?</p>
+
+      <p><strong>Option 1: localStorage (Client-Side)</strong> — Ito ang pinaka-simple. I-store ang token sa <code>localStorage</code> at i-attach sa bawat request headers.</p>
+
+      <pre><code>// lib/auth.js
+export const auth = {
+  getToken() {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('token');
+    }
+    return null;
+  },
+
+  setToken(token) {
+    localStorage.setItem('token', token);
+  },
+
+  removeToken() {
+    localStorage.removeItem('token');
+  },
+
+  isAuthenticated() {
+    return !!this.getToken();
+  }
+};
+
+// Usage sa API calls
+async function fetchWithAuth(endpoint, options = {}) {
+  const token = auth.getToken();
+
+  const res = await fetch(`http://localhost:8000/api${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : '',
+      ...options.headers,
+    },
+  });
+
+  if (res.status === 401) {
+    auth.removeToken();
+    window.location.href = '/login';
+    return;
+  }
+
+  return res.json();
+}</code></pre>
+
+      <p><strong>Option 2: HttpOnly Cookies (More Secure)</strong> — Kapag gumagamit ng Laravel Sanctum sa SPA mode, ang token ay naka-store sa httpOnly cookie. Hindi mo ito kailangan i-store sa localStorage — awtomatikong isesend ng browser ang cookie sa bawat request.</p>
+
+      <p>Para sa ating Laravel + Next.js setup, ang localStorage approach ay sapat na habang nagde-develop. Pag production, pwede mong i-switch sa httpOnly cookies para sa mas mataas na security.</p>
+
+      <h2>Login at Logout Flow</h2>
+      <p>Ito ang complete login flow — mula sa form hanggang sa Laravel API:</p>
+
+      <pre><code>'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { auth } from '@/lib/auth';
+
+export default function LoginForm() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('http://localhost:8000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || 'Invalid credentials');
+        return;
+      }
+
+      // I-store ang token
+      auth.setToken(data.token);
+
+      // I-store ang user info (optional pero useful)
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Redirect sa dashboard
+      router.push('/dashboard');
+      router.refresh();
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      {error &amp;&amp; &lt;div className="alert alert-error"&gt;{error}&lt;/div&gt;}
+
+      &lt;div className="form-group"&gt;
+        &lt;label htmlFor="email"&gt;Email&lt;/label&gt;
+        &lt;input id="email" type="email" value={email}
+               onChange={(e) =&gt; setEmail(e.target.value)} required /&gt;
+      &lt;/div&gt;
+
+      &lt;div className="form-group"&gt;
+        &lt;label htmlFor="password"&gt;Password&lt;/label&gt;
+        &lt;input id="password" type="password" value={password}
+               onChange={(e) =&gt; setPassword(e.target.value)} required /&gt;
+      &lt;/div&gt;
+
+      &lt;button type="submit" disabled={loading}&gt;
+        {loading ? 'Logging in...' : 'Login'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <p>Para naman sa logout:</p>
+
+      <pre><code>// components/layout/LogoutButton.js
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { auth } from '@/lib/auth';
+
+export default function LogoutButton() {
+  const router = useRouter();
+
+  async function handleLogout() {
+    try {
+      await fetch('http://localhost:8000/api/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${auth.getToken()}`,
+          'Accept': 'application/json',
+        },
+      });
+    } catch (err) {
+      // Kahit mag-fail ang API, i-clear pa rin ang local token
+    }
+
+    auth.removeToken();
+    localStorage.removeItem('user');
+    router.push('/login');
+    router.refresh();
+  }
+
+  return (
+    &lt;button onClick={handleLogout}&gt;Logout&lt;/button&gt;
+  );
+}</code></pre>
+
+      <h2>Auth Context</h2>
+      <p>Para hindi mo kailangan i-pass ang user info sa bawat component, gumamit ng React Context. Ito ang magse-set ng "sinong user ang naka-login" state:</p>
+
+      <pre><code>'use client';
+
+import { createContext, useContext, useState, useEffect } from 'react';
+import { auth } from '@/lib/auth';
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() =&gt; {
+    // Check kung may existing token
+    const token = auth.getToken();
+    const storedUser = localStorage.getItem('user');
+
+    if (token &amp;&amp; storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        auth.removeToken();
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  function login(userData, token) {
+    auth.setToken(token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  }
+
+  function logout() {
+    auth.removeToken();
+    localStorage.removeItem('user');
+    setUser(null);
+  }
+
+  return (
+    &lt;AuthContext.Provider value={{ user, loading, login, logout }}&gt;
+      {children}
+    &lt;/AuthContext.Provider&gt;
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}</code></pre>
+
+      <p>I-wrap ang entire app sa <code>AuthProvider</code> sa root layout:</p>
+
+      <pre><code>// app/layout.js
+import { AuthProvider } from '@/lib/auth-context';
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;body&gt;
+        &lt;AuthProvider&gt;
+          {children}
+        &lt;/AuthProvider&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+
+      <h2>Protected Routes gamit ang Middleware</h2>
+      <p>Ang Next.js middleware ay nagre-run sa server bago ang page render — perpekto ito para i-check ang auth status. Gumawa ng <code>middleware.js</code> sa root ng project:</p>
+
+      <pre><code>// middleware.js
+import { NextResponse } from 'next/server';
+
+export function middleware(request) {
+  const token = request.cookies.get('token')?.value;
+  const { pathname } = request.nextUrl;
+
+  // Public routes — walang auth required
+  const publicPaths = ['/login', '/register', '/'];
+  const isPublicPath = publicPaths.some(path =&gt; pathname === path);
+
+  // Kung hindi authenticated at hindi public path — redirect sa login
+  if (!token &amp;&amp; !isPublicPath) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // Kung authenticated at nasa login/register — redirect sa dashboard
+  if (token &amp;&amp; (pathname === '/login' || pathname === '/register')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+    '/listings/new',
+    '/profile/:path*',
+    '/login',
+    '/register',
+  ],
+};</code></pre>
+
+      <p><strong>Important:</strong> Ang middleware sa Next.js ay nagre-run sa server, kaya hindi mo maa-access ang <code>localStorage</code>. Sa halip, gumamit ng cookies. Kapag nag-login ka, i-set mo rin ang token bilang cookie:</p>
+
+      <pre><code>// Pagkatapos ng login, i-set ang cookie
+document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Lax`;</code></pre>
+
+      <p>Ito ang mas secure na approach — ang token ay naka-cookie at hindi accessible sa JavaScript, pero nasesend ng browser sa bawat request automatically.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>I-store ang auth token sa localStorage (simple) o httpOnly cookie (mas secure). Sa middleware, gumamit ng cookies dahil hindi accessible ang localStorage.</li>
+        <li>Ang login flow ay: POST sa Laravel API, i-store ang token, i-redirect sa dashboard. Ang logout flow ay: POST sa API, i-clear ang token, i-redirect sa login.</li>
+        <li>Gumamit ng AuthContext para i-manage ang user state sa buong app — hindi mo kailangan i-pass ang user sa bawat component.</li>
+        <li>Ang Next.js middleware ay perpekto para sa route protection — nagre-run sa server bago ang page render.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Ano ang pagkakaiba ng localStorage at httpOnly cookies para sa auth tokens? Alin ang mas secure at bakit?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Next.js Docs — Middleware</strong> — Official guide sa middleware. <a href="https://nextjs.org/docs/app/building-your-application/routing/middleware" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Sanctum</strong> — Official docs para sa Laravel API authentication. <a href="https://laravel.com/docs/11.x/sanctum" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0014';
+  var questions = [
+    { question: 'Bakit hindi mo maa-access ang localStorage sa Next.js middleware?', options: ['Dahil hindi supported ang localStorage sa Next.js', 'Dahil ang middleware ay nagre-run sa server bago ang page render', 'Dahil ang localStorage ay deprecated na'], correct: 'b', answer: 'Ang middleware ay nagre-run sa server side — hindi nag-e-execute ang JavaScript sa browser. Kaya hindi mo maa-access ang localStorage, pero pwede mong i-access ang cookies.' },
+    { question: 'Anong token storage ang pinaka-secure para sa authentication?', options: ['localStorage', 'sessionStorage', 'HttpOnly cookies'], correct: 'c', answer: 'Ang httpOnly cookies ay hindi accessible sa JavaScript — hindi maa-access ng XSS attacks. Ang localStorage naman ay accessible sa JavaScript kaya mas vulnerable sa attacks.' },
+    { question: 'Ano ang tawag sa Next.js feature na nagre-run bago ang page render para mag-check ng auth status?', options: ['Server Action', 'Middleware', 'Route Handler'], correct: 'b', answer: 'Ang middleware ay nagre-run sa server bago ang page render — perpekto para sa authentication checks, redirects, at other routing logic.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

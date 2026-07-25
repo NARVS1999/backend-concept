@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0013: Forms & Mutations</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 2: Next.js Frontend Foundations</strong> — Lesson 3 of 5
+      </div>
+
+      <h1>Forms & Mutations</h1>
+      <p><em>Matutunan kung paano mag-handle ng forms sa Next.js at mag-send ng POST, PUT, DELETE requests sa Laravel API.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong gumawa ng create/edit form para sa core entity na may validation at error display mula sa Laravel.
+      </div>
+
+      <h2>Client-Side Forms sa Next.js</h2>
+      <p>Ang forms ay kailangang maging client components dahil nangangailangan sila ng <code>useState</code>, <code>onChange</code> handlers, at event handling. Ang pattern ay simple: i-mark ang form component bilang <code>'use client'</code>, i-manage ang form state, at i-submit sa Laravel API.</p>
+
+      <pre><code>'use client';
+
+import { useState } from 'react';
+
+export default function ListingForm({ initialData, onSubmit }) {
+  const [formData, setFormData] = useState({
+    title: initialData?.title || '',
+    description: initialData?.description || '',
+    price: initialData?.price || '',
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev =&gt; ({ ...prev, [name]: value }));
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev =&gt; ({ ...prev, [name]: '' }));
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;div&gt;
+        &lt;label htmlFor="title"&gt;Title&lt;/label&gt;
+        &lt;input
+          id="title"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+        /&gt;
+        {errors.title &amp;&amp; &lt;p className="error"&gt;{errors.title}&lt;/p&gt;}
+      &lt;/div&gt;
+      {/* ... more fields ... */}
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <p>Ang key pattern dito ay: (1) i-manage ang form state gamit ang <code>useState</code>, (2) i-handle ang <code>onChange</code> para i-update ang state, at (3) i-display ang errors mula sa Laravel validation.</p>
+
+      <h2>Sending Data sa Laravel API</h2>
+      <p>Para sa mutations (create, update, delete), gumamit ng <code>fetch</code> sa client side. Ito ang complete pattern para sa form submission:</p>
+
+      <pre><code>'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function CreateListingForm() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setErrors({});
+
+    try {
+      const res = await fetch('http://localhost:8000/api/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Laravel validation errors
+        if (res.status === 422 && data.errors) {
+          setErrors(data.errors);
+          return;
+        }
+        throw new Error(data.message || 'Something went wrong');
+      }
+
+      // Success — redirect sa listing page
+      router.push(`/listings/${data.id}`);
+      router.refresh(); // I-refresh ang server components
+
+    } catch (error) {
+      setErrors({ general: error.message });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      {errors.general &amp;&amp; (
+        &lt;div className="alert alert-error"&gt;{errors.general}&lt;/div&gt;
+      )}
+      {/* form fields */}
+      &lt;button type="submit" disabled={loading}&gt;
+        {loading ? 'Saving...' : 'Create Listing'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <p>Ang <code>router.refresh()</code> ay mahalaga — ito ang nag-t-trigger ng re-render ng server components para makita agad ang bagong data. Hindi mo na kailangan ng manual state update para sa list.</p>
+
+      <h2>Handling Laravel Validation Errors</h2>
+      <p>Ang Laravel ay nagre-return ng 422 status code kapag may validation errors, na may format na ganito:</p>
+
+      <pre><code>{
+  "message": "The given data was invalid.",
+  "errors": {
+    "title": ["The title field is required."],
+    "price": ["The price must be a number."]
+  }
+}</code></pre>
+
+      <p>I-display ang mga errors na ito sa form. Ang pattern ay i-map ang error keys sa corresponding fields:</p>
+
+      <pre><code>function FieldError({ errors, field }) {
+  if (!errors[field]) return null;
+  return (
+    &lt;ul className="error-list"&gt;
+      {errors[field].map((error, i) =&gt; (
+        &lt;li key={i} className="error"&gt;{error}&lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+// Sa form:
+&lt;div&gt;
+  &lt;label htmlFor="title"&gt;Title&lt;/label&gt;
+  &lt;input id="title" name="title" value={formData.title} onChange={handleChange} /&gt;
+  &lt;FieldError errors={errors} field="title" /&gt;
+&lt;/div&gt;</code></pre>
+
+      <p>Ito ang cleanest na approach — reusable na field error component na nagre-render ng validation messages mula sa Laravel.</p>
+
+      <h2>Update at Delete Mutations</h2>
+      <p>Para sa update at delete, ang pattern ay halos kapareho — iba lang ang HTTP method at URL:</p>
+
+      <pre><code>// Update — PUT request
+async function handleUpdate(id, formData) {
+  const res = await fetch(`http://localhost:8000/api/listings/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.message || 'Update failed');
+  }
+
+  return res.json();
+}
+
+// Delete — DELETE request
+async function handleDelete(id) {
+  const res = await fetch(`http://localhost:8000/api/listings/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Delete failed');
+  }
+}</code></pre>
+
+      <p>Para sa delete, laging mag-confirm muna bago mag-send ng request. Pwede mong gamitin ang <code>window.confirm()</code> o isang custom modal component.</p>
+
+      <h2>Practical: Complete Create Listing Flow</h2>
+      <p>Ito ang buong flow — mula sa form hanggang sa Laravel API. Ito ang gagamitin mo sa actual project:</p>
+
+      <pre><code>// app/listings/new/page.js
+import CreateListingForm from '@/components/listings/CreateListingForm';
+
+export default function NewListingPage() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Create New Listing&lt;/h1&gt;
+      &lt;CreateListingForm /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// components/listings/CreateListingForm.js
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function CreateListingForm() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    category: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setErrors({});
+
+    try {
+      const res = await fetch('http://localhost:8000/api/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        if (res.status === 422 && data.errors) {
+          setErrors(data.errors);
+          return;
+        }
+        throw new Error(data.message || 'Failed to create listing');
+      }
+
+      const data = await res.json();
+      router.push(`/listings/${data.id}`);
+      router.refresh();
+    } catch (error) {
+      setErrors({ general: [error.message] });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    &lt;form onSubmit={handleSubmit} className="listing-form"&gt;
+      {errors.general &amp;&amp; (
+        &lt;div className="alert alert-error"&gt;{errors.general[0]}&lt;/div&gt;
+      )}
+
+      &lt;div className="form-group"&gt;
+        &lt;label htmlFor="title"&gt;Title&lt;/label&gt;
+        &lt;input id="title" name="title" value={formData.title}
+               onChange={(e) =&gt; setFormData(p =&gt; ({...p, title: e.target.value}))} /&gt;
+        {errors.title &amp;&amp; &lt;p className="error"&gt;{errors.title[0]}&lt;/p&gt;}
+      &lt;/div&gt;
+
+      &lt;div className="form-group"&gt;
+        &lt;label htmlFor="description"&gt;Description&lt;/label&gt;
+        &lt;textarea id="description" name="description" value={formData.description}
+                   onChange={(e) =&gt; setFormData(p =&gt; ({...p, description: e.target.value}))} /&gt;
+        {errors.description &amp;&amp; &lt;p className="error"&gt;{errors.description[0]}&lt;/p&gt;}
+      &lt;/div&gt;
+
+      &lt;div className="form-group"&gt;
+        &lt;label htmlFor="price"&gt;Price&lt;/label&gt;
+        &lt;input id="price" name="price" type="number" value={formData.price}
+               onChange={(e) =&gt; setFormData(p =&gt; ({...p, price: e.target.value}))} /&gt;
+        {errors.price &amp;&amp; &lt;p className="error"&gt;{errors.price[0]}&lt;/p&gt;}
+      &lt;/div&gt;
+
+      &lt;button type="submit" disabled={loading}&gt;
+        {loading ? 'Creating...' : 'Create Listing'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang forms ay kailangang maging client components — gumagamit ng <code>useState</code>, event handlers, at browser interaction.</li>
+        <li>I-send ang form data gamit ang <code>fetch</code> with appropriate HTTP methods (POST, PUT, DELETE) at headers.</li>
+        <li>I-handle ang Laravel 422 validation errors — ang errors object ay may field names as keys at array of messages as values.</li>
+        <li>Gamitin ang <code>router.refresh()</code> pagkatapos ng mutation para i-update ang server-rendered data.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo hine-handle ang form validation errors mula sa backend? Paano mo i-display ang errors sa tamang field?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Next.js Docs — Forms</strong> — Official guide sa form handling. <a href="https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Docs — Validation</strong> — Laravel validation rules at error formatting. <a href="https://laravel.com/docs/11.x/validation" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0013';
+  var questions = [
+    { question: 'Bakit kailangang maging client component ang forms sa Next.js App Router?', options: ['Dahil nagre-render sila sa server', 'Dahil nangangailangan sila ng useState at event handlers', 'Dahil hindi sila nag-fetch ng data'], correct: 'b', answer: 'Ang forms ay nangangailangan ng useState para sa form state, onChange handlers, at event handling — lahat ng ito ay browser-side features na nangangailangan ng client component.' },
+    { question: 'Anong status code ang nagre-return ang Laravel kapag may validation errors?', options: ['400 Bad Request', '422 Unprocessable Entity', '500 Internal Server Error'], correct: 'b', answer: 'Ang Laravel ay nagre-return ng 422 Unprocessable Entity kapag may validation errors, kasama ang error messages na naka-organize per field.' },
+    { question: 'Ano ang gagawin mo pagkatapos ng successful form submission para makita agad ang bagong data?', options: ['I-reload ang page gamit ang window.location.reload()', 'I-call ang router.refresh() para i-update ang server components', 'I-manually i-update ang state'], correct: 'b', answer: 'Ang router.refresh() ay nag-t-trigger ng re-render ng server components — hindi kailangan ng full page reload o manual state update.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0029: Analytics & User Behavior</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 6: Business/Product Considerations</strong> — Lesson 2 of 3
+      </div>
+
+      <h1>Analytics & User Behavior</h1>
+      <p><em>Paano mo malalaman kung paano ginagamit ng users ang app mo? Setup analytics at i-track ang user behavior.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-setup ang analytics (Plausible o PostHog), i-track ang key metrics (signups, conversions, drop-offs), i-implement ang custom event tracking, at basahin ang data para sa product decisions.
+      </div>
+
+      <h2>Bakit Kailangan ng Analytics?</h2>
+      <p>Kapag na-deploy na ang app mo, kailangan mong malaman kung paano ito ginagamit ng users. Walang analytics = walang data para sa decisions. Hindi mo malalaman kung alin ang nagwo-work at kung alin ang kailangang baguhin.</p>
+      <p><strong>Mga tanong na masasagot ng analytics:</strong></p>
+      <ul>
+        <li>Ilan ang nag-signup per day/week/month? — Ito ang growth rate mo.</li>
+        <li>Saan nag-drop-off ang users? — Saan sila umaalis bago mag-complete ng action?</li>
+        <li>Anong features ang most used? — Alin ang nagbibigay ng value sa users?</li>
+        <li>Anong device/browser ang gamit? — Para sa compatibility testing.</li>
+        <li>Saan nanggagaling ang users? — Organic search, social media, o direct?</li>
+        <li>Ano ang conversion rate? — Ilan ang nag-signup sa ilalim ng total visitors?</li>
+      </ul>
+      <p><strong>Ano ang dapat i-track:</strong></p>
+      <ul>
+        <li><strong>Signups</strong> — Ilang bago nag-create ng account per period.</li>
+        <li><strong>Logins</strong> — Ilang users ang bumabalik (returning users).</li>
+        <li><strong>Conversions</strong> — Ilan ang nag-upgrade sa paid plan, nag-purchase, o nag-complete ng key action.</li>
+        <li><strong>Drop-off points</strong> — Saan umaalis ang users sa funnel (signup -> onboarding -> first action -> payment).</li>
+        <li><strong>Feature usage</strong> — Aling features ang most/least used.</li>
+      </ul>
+
+      <h2>Plausible — Privacy-First Analytics</h2>
+      <p>Ang <strong>Plausible</strong> ay lightweight, privacy-friendly na analytics alternative sa Google Analytics. Hindi ito gumagamit ng cookies, hindi nagta-track ng personal data, at GDPR/CCPA compliant agad. Para sa Laravel + Next.js app, ito ang simplest option.</p>
+      <p><strong>Setup sa Next.js:</strong></p>
+      <pre><code># I-install ang Plausible client
+npm install @plausible-analytics/tracker
+
+# Sa app/layout.tsx, i-add ang Plausible script
+import PlausibleProvider from 'next-plausible'
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;PlausibleProvider domain="roxy.com"&gt;
+      {children}
+    &lt;/PlausibleProvider&gt;
+  );
+}</code></pre>
+      <p><strong>Custom event tracking sa Next.js:</strong></p>
+      <pre><code>// app/components/SignupForm.tsx
+'use client'
+
+import { plausible } from 'next-plausible'
+
+export default function SignupForm() {
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    // I-track ang signup attempt
+    plausible('Signup Attempt', {
+      props: {
+        plan: selectedPlan,
+        source: window.location.pathname,
+      },
+    })
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(formData),
+      })
+
+      if (res.ok) {
+        // I-track ang successful signup
+        plausible('Signup Success', {
+          props: { plan: selectedPlan },
+        })
+      }
+    } catch (error) {
+      plausible('Signup Failed', {
+        props: { error: error.message },
+      })
+    }
+  }
+
+  return &lt;form onSubmit={handleSubmit}&gt;...&lt;/form&gt;
+}</code></pre>
+      <p><strong>Plausible dashboard features:</strong></p>
+      <ul>
+        <li><strong>Top pages</strong> — Aling pages ang may pinaka-views.</li>
+        <li><strong>Referrers</strong> — Saan nanggagaling ang traffic (Google, Twitter, direct).</li>
+        <li><strong>Devices</strong> — Desktop vs mobile vs tablet breakdown.</li>
+        <li><strong>Countries</strong> — Geographic distribution ng users.</li>
+        <li><strong>Goals</strong> — Custom conversions (signups, purchases) na naka-track.</li>
+      </ul>
+      <p><strong>Setup goals sa Plausible dashboard:</strong> Pumunta sa Site Settings -> Goals -> Add Goal. I-set ang custom events na na-track mo sa code (hal. "Signup Success", "Payment Completed"). Ito ang magpapakita ng conversion metrics sa dashboard.</p>
+
+      <h2>PostHog — Product Analytics</h2>
+      <p>Ang <strong>PostHog</strong> ay mas powerful kaysa sa Plausible — may session recordings, feature flags, A/B testing, at cohort analysis. Para sa apps na kailangan ng deep product insights, ito ang better choice. May self-hosted option para sa full data control.</p>
+      <p><strong>Setup sa Next.js:</strong></p>
+      <pre><code># I-install ang PostHog
+npm install posthog-js
+
+# lib/posthog.ts
+import posthog from 'posthog-js'
+
+if (typeof window !== 'undefined') {
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+    loaded: (ph) => {
+      if (process.env.NODE_ENV === 'development') ph.opt_out_capturing()
+    },
+  })
+}
+
+export default posthog</code></pre>
+      <p><strong>PostHog provider sa app:</strong></p>
+      <pre><code>// app/providers.tsx
+'use client'
+
+import { PostHogProvider } from 'posthog-js/react'
+import posthog from '@/lib/posthog'
+
+export default function Providers({ children }) {
+  return (
+    &lt;PostHogProvider client={posthog}&gt;
+      {children}
+    &lt;/PostHogProvider&gt;
+  )
+}</code></pre>
+      <p><strong>Custom event tracking sa PostHog:</strong></p>
+      <pre><code>// app/dashboard/page.tsx
+'use client'
+
+import posthog from '@/lib/posthog'
+import { useUser } from '@/lib/auth'
+
+export default function Dashboard() {
+  const user = useUser()
+
+  const handleFeatureClick = (featureName) => {
+    posthog.capture('feature_clicked', {
+      feature: featureName,
+      user_plan: user.plan,
+      dashboard_section: 'main',
+    })
+  }
+
+  const handleUpgrade = () => {
+    posthog.capture('upgrade_initiated', {
+      current_plan: user.plan,
+      target_plan: 'pro',
+      page: window.location.pathname,
+    })
+  }
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={() => handleFeatureClick('analytics')}&gt;View Analytics&lt;/button&gt;
+      &lt;button onClick={handleUpgrade}&gt;Upgrade to Pro&lt;/button&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+      <p><strong>PostHog features na useful:</strong></p>
+      <ul>
+        <li><strong>Session recordings</strong> — I-record ang actual user sessions para makita kung paano ginagamit ang app (with consent).</li>
+        <li><strong>Feature flags</strong> — I-toggle ang features sa live na hindi nagde-deploy. I-release ang new features sa certain users lang.</li>
+        <li><strong>A/B testing</strong> — I-compare ang dalawang versions ng feature para malaman kung alin ang mas effective.</li>
+        <li><strong>Funnels</strong> — I-visualize ang user journey at makita kung saan nag-drop-off.</li>
+        <li><strong>Cohorts</strong> — I-group ang users based sa behavior (e.g., users na nag-login ng 3+ times sa nakaraang linggo).</li>
+      </ul>
+
+      <h2>Custom Event Tracking sa Laravel</h2>
+      <p>Ang Laravel ay may built-in na event system na pwedeng gamitin para sa custom analytics. I-log ang important business events sa database para sa reporting.</p>
+      <p><strong>Event model at migration:</strong></p>
+      <pre><code>// migration: create_events_table
+Schema::create('events', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->nullable();
+    $table->string('event_name'); // signup, purchase, feature_used
+    $table->json('properties')->nullable(); // additional data
+    $table->string('ip_address', 45)->nullable();
+    $table->string('user_agent')->nullable();
+    $table->timestamps();
+
+    $table->index(['event_name', 'created_at']);
+});</code></pre>
+      <p><strong>Event tracking service:</strong></p>
+      <pre><code>// app/Services/AnalyticsService.php
+namespace App\Services;
+
+use App\Models\Event;
+
+class AnalyticsService
+{
+    public function track(string $eventName, array $properties = []): Event
+    {
+        return Event::create([
+            'user_id' => auth()->id(),
+            'event_name' => $eventName,
+            'properties' => $properties,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
+    public function getSignupCount(string $period = 'day'): int
+    {
+        return Event::where('event_name', 'signup')
+            ->where('created_at', '>=', now()->subDay($period === 'day' ? 1 : 7))
+            ->count();
+    }
+
+    public function getConversionRate(): float
+    {
+        $visits = Event::where('event_name', 'page_visit')->count();
+        $signups = Event::where('event_name', 'signup')->count();
+
+        return $visits > 0 ? ($signups / $visits) * 100 : 0;
+    }
+
+    public function getFeatureUsage(): array
+    {
+        return Event::where('event_name', 'feature_used')
+            ->select('properties->feature as feature', \DB::raw('count(*) as total'))
+            ->groupBy('feature')
+            ->orderByDesc('total')
+            ->pluck('total', 'feature')
+            ->toArray();
+    }
+}</code></pre>
+      <p><strong>Controller usage:</strong></p>
+      <pre><code>// app/Http/Controllers/Auth/RegisterController.php
+use App\Services\AnalyticsService;
+
+class RegisterController extends Controller
+{
+    public function store(Request $request, AnalyticsService $analytics)
+    {
+        $user = User::create($validated);
+
+        $analytics->track('signup', [
+            'plan' => $request->plan,
+            'referral_source' => $request->referrer,
+        ]);
+
+        return new UserResource($user);
+    }
+}
+
+// app/Http/Controllers/AnalyticsController.php
+class AnalyticsController extends Controller
+{
+    public function index(AnalyticsService $analytics)
+    {
+        return response()->json([
+            'signups_today' => $analytics->getSignupCount('day'),
+            'signups_this_week' => $analytics->getSignupCount('week'),
+            'conversion_rate' => $analytics->getConversionRate(),
+            'feature_usage' => $analytics->getFeatureUsage(),
+        ]);
+    }
+}</code></pre>
+
+      <h2>Reading Analytics Data for Decisions</h2>
+      <p>Hindi sapat na mag-collect ng data — kailangan mong basahin ito at gawing decisions. Ito ang practical framework para sa pag-interpret ng analytics:</p>
+      <p><strong>Key metrics na dapat mong tingnan:</strong></p>
+      <ul>
+        <li><strong>Daily Active Users (DAU) / Monthly Active Users (MAU)</strong> — Ito ang health metric ng app mo. Kung bumababa ang DAU, may problema sa retention.</li>
+        <li><strong>Conversion Funnel</strong> — Signup -> Onboarding -> First Action -> Payment. Kung mataas ang drop-off sa onboarding, i-simplify ang flow.</li>
+        <li><strong>Feature Adoption</strong> — Aling features ang ginagamit ng users? Kung hindi ginagamit ang isang feature, baka hindi ito valuable o hindi lang alam ng users.</li>
+        <li><strong>Retention Rate</strong> — Ilan ang bumabalik after 1 day, 7 days, 30 days? Ang target ay 40%+ sa day 1 at 10%+ sa day 30.</li>
+      </ul>
+      <p><strong>Example decisions mula sa data:</strong></p>
+      <pre><code>// Kung ang signup-to-onboarding drop-off ay 70%:
+// -> I-simplify ang onboarding flow (remove unnecessary steps)
+// -> I-add ang progress indicator
+// -> I-send ang welcome email na may step-by-step guide
+
+// Kung ang mobile users ay 60% pero mobile conversion ay mababa:
+// -> I-optimize ang mobile UX
+// -> I-check ang mobile-specific bugs
+// -> I-simplify ang mobile forms
+
+// Kung ang DAU ay bumababa ng 10% per week:
+// -> I-improve ang email re-engagement campaign
+// -> I-add ang push notifications
+// -> I-check kung may UX issues na nag-cause ng churn</code></pre>
+      <p><strong>Analytics dashboard sa Next.js:</strong></p>
+      <pre><code>// app/dashboard/analytics/page.tsx
+'use client'
+
+import { useEffect, useState } from 'react'
+
+export default function AnalyticsDashboard() {
+  const [data, setData] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/analytics')
+      .then(res => res.json())
+      .then(setData)
+  }, [])
+
+  if (!data) return &lt;div&gt;Loading...&lt;/div&gt;
+
+  return (
+    &lt;div className="analytics-grid"&gt;
+      &lt;MetricCard title="Signups Today" value={data.signups_today} /&gt;
+      &lt;MetricCard title="Conversion Rate" value={`${data.conversion_rate.toFixed(1)}%`} /&gt;
+      &lt;FeatureUsageChart data={data.feature_usage} /&gt;
+      &lt;ConversionFunnel data={data.funnel} /&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+
+      <h2>Practical: Set Up Analytics</h2>
+      <p><strong>Step 1:</strong> Pumili ng analytics platform — Plausible para sa simple page views at goals, o PostHog para sa deep product analytics. Gumawa ng account at kunin ang API key.</p>
+      <p><strong>Step 2:</strong> I-integrate sa Next.js — i-install ang SDK, i-add ang provider sa root layout, at i-configure ang domain/API key sa environment variables.</p>
+      <p><strong>Step 3:</strong> I-track ang key events — signup, login, feature usage, payment. Gumamit ng descriptive event names at i-add ang relevant props (plan type, source, feature name).</p>
+      <p><strong>Step 4:</strong> Sa Laravel, gumawa ng AnalyticsService na naglo-log ng events sa database. I-use ito sa controllers para sa important business events (signup, purchase, feature access).</p>
+      <p><strong>Step 5:</strong> Gumawa ng simple analytics dashboard sa Next.js — metric cards para sa signups, conversion rate, at feature usage. I-fetch ang data mula sa Laravel API.</p>
+      <p><strong>Step 6:</strong> I-review ang analytics after 1-2 weeks. Hanapin ang patterns — saan nag-drop-off ang users? Anong features ang most used? Gumawa ng decisions base sa data.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang Plausible ay privacy-first, lightweight na analytics — simple at GDPR compliant</li>
+        <li>Ang PostHog ay may session recordings, feature flags, A/B testing — para sa deep product insights</li>
+        <li>I-track ang key metrics: signups, conversions, drop-off points, feature usage</li>
+        <li>Ang custom event tracking sa Laravel ay nagbibigay ng business-specific data para sa reporting</li>
+        <li>Hindi sapat ang data — kailangan mong basahin ito at gawing decisions para sa product improvement</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-measure ang success ng isang feature?" — I-explain ang analytics setup (Plausible/PostHog), ang key metrics na tinatrack (signups, conversions, retention), ang custom event tracking, at kung paano gumagamit ng data para gumawa ng product decisions.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Plausible Documentation</strong> — Official guide sa Plausible analytics setup. <a href="https://plausible.io/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>PostHog Documentation</strong> — Official PostHog docs sa product analytics. <a href="https://posthog.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>PostHog Next.js Integration</strong> — Step-by-step guide sa PostHog + Next.js setup. <a href="https://posthog.com/docs/libraries/js" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0029';
+  var questions = [
+    { question: 'Ano ang pinagkaiba ng Plausible at PostHog?', options: ['Ang Plausible ay para sa Laravel lang, ang PostHog ay para sa Next.js lang', 'Ang Plausible ay lightweight na page views at goals tracking, ang PostHog ay may session recordings, feature flags, at A/B testing', 'Ang Plausible ay mas mahal kaysa sa PostHog', 'Walang pagkakaiba — pareho silang Google Analytics alternatives'], correct: 'b', answer: 'Ang Plausible ay simple, privacy-first na analytics — page views, goals, at basic metrics. Ang PostHog ay mas powerful product analytics — may session recordings, feature flags, A/B testing, funnels, at cohorts. Pumili ng Plausible kapag simple lang ang kailangan, PostHog kapag deep product insights ang habol.' },
+    { question: 'Bakit importante ang custom event tracking sa Laravel backend?', options: ['Para i-cache ang analytics data', 'Para mag-log ng business-specific events (signup, purchase, feature usage) na hindi captured ng frontend analytics', 'Para mag-speed up ang analytics queries', 'Para i-replace ang Plausible/PostHog'], correct: 'b', answer: 'Ang frontend analytics (Plausible/PostHog) ay nagte-track ng page views at client-side events. Pero ang backend events (actual signup completion, payment processing, data mutations) ay kailangan ding i-track sa Laravel. Ang custom event logging sa database ay nagbibigay ng reliable, server-verified data para sa business reporting.' },
+    { question: 'Ano ang "conversion funnel" sa analytics context?', options: ['Ang process ng pag-install ng analytics SDK', 'Ang series ng steps na dadaanan ng user (visit -> signup -> onboarding -> payment) at ang drop-off rate sa bawat step', 'Ang method ng pag-export ng analytics data', 'Ang setup process ng Google Analytics'], correct: 'b', answer: 'Ang conversion funnel ay ang user journey — halimbawa: homepage visit (100) -> signup page (30) -> completed signup (15) -> first action (8) -> payment (3). Ang funnel ay nagpapakita kung saan nag-drop-off ang users para malaman mo kung saan kailangang mag-improve.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0004: Project Structure Setup</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 0: Project Planning & Setup</strong> — Lesson 4 of 4
+      </div>
+
+      <h1>Project Structure Setup</h1>
+      <p><em>Matutunan kung paano i-set up ang Laravel API-only backend at Next.js frontend — monorepo vs separate repos, at paano mag-test gamit ang health-check endpoint.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-set up ang buong project structure para sa Laravel API backend at Next.js frontend, at i-test ang setup gamit ang health-check endpoint.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Laravel API-Only Setup</h2>
+      <p>Para sa ating Roxy project, gagamitin natin ang Laravel bilang <strong>pure API backend</strong> — walang Blade templates, walang frontend views. Ang Laravel ang bahala sa data at business logic, ang Next.js naman ang bahala sa UI.</p>
+
+      <p>I-set up ang Laravel gamit ang <code>--api</code> flag:</p>
+
+      <pre><code># Create Laravel API project
+composer create-project laravel/laravel roxy-api --api
+
+# Navigate to project
+cd roxy-api
+
+# Check if it works
+php artisan serve
+# API runs at http://127.0.0.1:8000/api</code></pre>
+
+      <p>Ang difference ng <code>--api</code> vs normal Laravel:</p>
+      <ul>
+        <li><strong>No web.php routes</strong> — Only api.php routes file</li>
+        <li><strong>Stateless by default</strong> — No session middleware, no CSRF token</li>
+        <li><strong>JSON responses only</strong> — No Blade views, no redirects</li>
+        <li><strong>Throttle middleware</strong> — API rate limiting out of the box</li>
+      </ul>
+
+      <p>Ang project structure ng API-only Laravel:</p>
+
+      <pre><code>roxy-api/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   └── Api/
+│   │   │       ├── AuthController.php
+│   │   │       ├── ProductController.php
+│   │   │       └── OrderController.php
+│   │   ├── Requests/
+│   │   │   ├── StoreProductRequest.php
+│   │   │   └── RegisterRequest.php
+│   │   └── Resources/
+│   │       ├── ProductResource.php
+│   │       └── OrderResource.php
+│   ├── Models/
+│   │   ├── User.php
+│   │   ├── Product.php
+│   │   └── Order.php
+│   └── Services/
+│       ├── PaymentService.php
+│       └── OrderService.php
+├── database/
+│   └── migrations/
+├── routes/
+│   └── api.php          ← API routes dito
+└── .env</code></pre>
+
+      <h2>Next.js Setup</h2>
+      <p>Para sa frontend, gagamitin natin ang Next.js 14+ with App Router. Ang Next.js ang bahala sa UI, routing, at client-side state management.</p>
+
+      <pre><code># Create Next.js project
+npx create-next-app@latest roxy-web
+
+# Select these options:
+# ✔ TypeScript: Yes
+# ✔ ESLint: Yes
+# ✔ Tailwind CSS: Yes
+# ✔ src/ directory: Yes
+# ✔ App Router: Yes
+# ✔ Import alias: Yes (@/*)
+
+# Navigate to project
+cd roxy-web
+
+# Run dev server
+npm run dev
+# Frontend runs at http://localhost:3000</code></pre>
+
+      <p>Ang project structure ng Next.js:</p>
+
+      <pre><code>roxy-web/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── (auth)/
+│   │   │   ├── login/page.tsx
+│   │   │   └── register/page.tsx
+│   │   ├── (shop)/
+│   │   │   ├── products/page.tsx
+│   │   │   └── products/[id]/page.tsx
+│   │   └── dashboard/
+│   │       └── page.tsx
+│   ├── components/
+│   │   ├── ui/
+│   │   ├── ProductCard.tsx
+│   │   └── CartSidebar.tsx
+│   ├── lib/
+│   │   ├── api.ts           ← API client
+│   │   └── utils.ts
+│   └── types/
+│       └── index.ts         ← TypeScript types
+├── public/
+├── next.config.js
+└── .env.local</code></pre>
+
+      <h2>Monorepo vs Separate Repos</h2>
+      <p>Ito ang dalawang options para i-organize ang Laravel at Next.js projects:</p>
+
+      <p><strong>Option A: Separate Repos (Recommended for MVP)</strong></p>
+
+      <pre><code># Separate folders sa iyong machine
+projects/
+├── roxy-api/        ← Laravel API (separate git repo)
+└── roxy-web/        ← Next.js frontend (separate git repo)
+
+# Pros:
+✅ Simple — hindi magugulo ang git history
+✅ Independent deployment — pwede mag-deploy ng backend nang hindi naapektuhan ang frontend
+✅ Clear ownership — alam mo kung saan ang backend at frontend code
+
+# Cons:
+❌ Manual sync — kailangan mong i-update ang API URL sa .env kapag nagbago
+❌ No shared types — kailangan mong i-duplicate ang TypeScript types</code></pre>
+
+      <p><strong>Option B: Monorepo (Recommended for scale)</strong></p>
+
+      <pre><code># Single git repo
+roxy/
+├── apps/
+│   ├── api/         ← Laravel API
+│   └── web/         ← Next.js frontend
+├── packages/
+│   └── shared/      ← Shared types, utilities
+├── package.json     ← Root package.json
+└── README.md
+
+# Pros:
+✅ Single git repo — easy to manage
+✅ Shared types — pwede mag-share ng TypeScript interfaces
+✅ Atomic commits — isang commit para sa backend at frontend change
+✅ Better DX — pwede mong i-run ang dalawa sa iisang command
+
+# Cons:
+❌ Complex setup — kailangan ng workspace tool (turborepo, nx)
+❌ Harder to deploy — kailangan ng monorepo-aware CI/CD
+❌ Steeper learning curve</code></pre>
+
+      <p><strong>Para sa MVP, gamitin ang separate repos.</strong> Mas simple, mas mabilis i-set up, at hindi ka ma-overwhelm. Pwede kang mag-monorepo later kapag lumaki na ang project.</p>
+
+      <h2>Health-Check Endpoint</h2>
+      <p>Pagkatapos mong i-set up ang dalawang projects, i-test mo agad gamit ang health-check endpoint. Ito ang paraan para malaman kung tama ang setup.</p>
+
+      <p><strong>Laravel API health-check:</strong></p>
+
+      <pre><code>// routes/api.php
+use Illuminate\Support\Facades\Route;
+
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toISOString(),
+        'services' => [
+            'database' => DB::connection()->getPdo() ? 'connected' : 'disconnected',
+            'cache' => Cache::store('default')->getStore() ? 'connected' : 'disconnected',
+        ]
+    ]);
+});</code></pre>
+
+      <p><strong>Test the API:</strong></p>
+
+      <pre><code># Run Laravel
+php artisan serve
+
+# Test health check
+curl http://127.0.0.1:8000/api/health
+
+# Expected response:
+# {
+#   "status": "ok",
+#   "timestamp": "2025-01-15T10:30:00.000000Z",
+#   "services": {
+#     "database": "connected",
+#     "cache": "connected"
+#   }
+# }</code></pre>
+
+      <p><strong>Next.js API client:</strong></p>
+
+      <pre><code>// src/lib/api.ts
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+
+export async function healthCheck() {
+  const res = await fetch(`${API_BASE}/health`);
+  return res.json();
+}
+
+// src/app/page.tsx
+import { healthCheck } from '@/lib/api';
+
+export default async function Home() {
+  const health = await healthCheck();
+  
+  return (
+    &lt;main&gt;
+      &lt;h1&gt;Roxy Store&lt;/h1&gt;
+      &lt;p&gt;API Status: {health.status}&lt;/p&gt;
+      &lt;p&gt;Database: {health.services.database}&lt;/p&gt;
+    &lt;/main&gt;
+  );
+}</code></pre>
+
+      <h2>Environment Configuration</h2>
+      <p>I-set up ang environment variables para sa dalawang projects:</p>
+
+      <pre><code># Laravel .env
+APP_NAME=Roxy
+APP_ENV=local
+APP_KEY=base64:...
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=roxy_db
+DB_USERNAME=root
+DB_PASSWORD=
+
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+
+# Next.js .env.local
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
+NEXT_PUBLIC_APP_NAME=Roxy</code></pre>
+
+      <h2>Practical Exercise: Set Up Both Projects</h2>
+      <pre><code>## Exercise: Full Setup
+
+1. Set up Laravel API:
+   composer create-project laravel/laravel roxy-api --api
+   cd roxy-api && php artisan serve
+   
+2. Test health check:
+   curl http://127.0.0.1:8000/api/health
+   
+3. Set up Next.js:
+   npx create-next-app@latest roxy-web
+   cd roxy-web && npm run dev
+   
+4. Connect them:
+   - Add NEXT_PUBLIC_API_URL to .env.local
+   - Create api.ts client
+   - Fetch health check from Next.js
+   
+5. Verify:
+   - Laravel running at http://localhost:8000
+   - Next.js running at http://localhost:3000
+   - Health check response shows "ok"
+   - Database connected (if MySQL is running)</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <code>--api</code> flag sa Laravel ay nag-c-create ng API-only project — walang Blade views, stateless, JSON responses only.</li>
+        <li>Ang Next.js App Router ang gagamitin sa frontend — may src/ directory, TypeScript, at App Router structure.</li>
+        <li>Para sa MVP, <strong>separate repos</strong> ang mas simple at recommended — mag-monorepo ka na lang later kapag lumaki na ang project.</li>
+        <li>Ang <strong>health-check endpoint</strong> ang first test para malaman kung tama ang setup mo — dapat mag-return ng "ok" status at database connection.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you structure your full-stack projects?" — Nagse-separate ako ng Laravel API at Next.js frontend repos. Ang Laravel ay API-only (walang Blade), ang Next.js naman ay sa UI. Nagse-set ako ng health-check endpoint para i-verify agad na tama ang setup at connected ang database.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Deployment Documentation</strong> — Official docs para sa pag-deploy ng Laravel API sa production (Forge, Vapor, VPS). <a href="https://laravel.com/docs/11.x/deployment" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Next.js App Router Docs</strong> — Official documentation ng Next.js App Router, layouts, at data fetching. <a href="https://nextjs.org/docs/app" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0004';
+  var questions = [
+    {
+      question: 'Ano ang purpose ng --api flag sa composer create-project laravel command?',
+      options: ['Nag-a-add ng Blade templates', 'Nag-c-create ng API-only project na walang frontend views', 'Nag-a-add ng authentication', 'Nag-i-install ng MySQL driver'],
+      correct: 'b',
+      answer: 'Ang --api flag ay nag-c-create ng API-only Laravel project — walang Blade templates, walang web routes, stateless at JSON responses only. Perfect para sa backend API.'
+    },
+    {
+      question: 'Para sa MVP, anong project structure ang recommended?',
+      options: ['Monorepo gamit ang turborepo', 'Separate repos para sa Laravel at Next.js', 'Iisang repo para sa lahat', 'Walang structure, basta gumagana'],
+      correct: 'b',
+      answer: 'Ang separate repos ang mas simple at recommended para sa MVP. Mas madali i-manage ang git history at deployment. Mag-monorepo ka na lang later kapag lumaki na ang project.'
+    },
+    {
+      question: 'Ano ang una mong i-test pagkatapos i-set up ang Laravel at Next.js projects?',
+      options: ['Login functionality', 'Database migration', 'Health-check endpoint', 'Payment integration'],
+      correct: 'c',
+      answer: 'Ang health-check endpoint ang first test — dapat mag-return ng "ok" status at database connection status para malaman na tama ang setup at connected ang services.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

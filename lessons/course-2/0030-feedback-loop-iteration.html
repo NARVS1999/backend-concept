@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0030: Feedback Loop & Iteration</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 6: Business/Product Considerations</strong> — Lesson 3 of 3
+      </div>
+
+      <h1>Feedback Loop & Iteration</h1>
+      <p><em>Paano mo pagsasamahin ang feedback ng users at gagawing improvements sa app mo? Build a system for continuous iteration.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong mag-implement ng feedback collection system, mag-prioritize ng next features gamit ang data, mag-track ng feature requests, at mag-build ng iteration cycle para sa continuous improvement.
+      </div>
+
+      <h2>Bakit Kailangan ng Feedback Loop?</h2>
+      <p>Ang pinaka-common na mistake ng mga developers ay ang mag-build ng features na sa tingin nila ay kailangan ng users — pero hindi nila talaga tinanong ang users. Ang feedback loop ay ang systematic na paraan para malaman kung ano talaga ang kailangan at i-prioritize ang susunod na gagawin.</p>
+      <p><strong>Problems na nangyayari nang walang feedback loop:</strong></p>
+      <ul>
+        <li><strong>Building features nobody wants</strong> — Nag-spend ng weeks sa isang feature na hindi naman ginagamit ng users.</li>
+        <li><strong>Ignoring real pain points</strong> — Hindi mo alam ang actual problems dahil hindi ka nagtatanong.</li>
+        <li><strong>No prioritization framework</strong> — Lahat ng features ay "urgent" — walang basis para pumili kung alin ang uunahin.</li>
+        <li><strong>Low retention</strong> -Umaalis ang users dahil hindi mo ina-address ang needs nila.</li>
+      </ul>
+      <p><strong>Ang feedback loop ay 3 steps:</strong></p>
+      <ol>
+        <li><strong>Collect</strong> — Mag-gather ng feedback mula sa users (surveys, in-app forms, support tickets, social media).</li>
+        <li><strong>Prioritize</strong> — I-rank ang feedback base sa impact, effort, at frequency.</li>
+        <li><strong>Act</strong> — I-implement ang changes, i-measure ang results, at i-repeat ang cycle.</li>
+      </ol>
+
+      <h2>Feedback Collection Methods</h2>
+      <p>May iba't ibang paraan para mag-collect ng feedback — pumili ng method na tama sa stage ng app mo:</p>
+      <p><strong>1. In-app feedback widget</strong> — Ang pinaka-effective na method. Nasa loob ng app mismo, hindi kailangang mag-leave ng page.</p>
+      <pre><code>// app/components/FeedbackWidget.tsx
+'use client'
+
+import { useState } from 'react'
+
+export default function FeedbackWidget() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [feedback, setFeedback] = useState('')
+  const [category, setCategory] = useState('bug')
+  const [submitted, setSubmitted] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category,
+        message: feedback,
+        page: window.location.pathname,
+        user_agent: navigator.userAgent,
+      }),
+    })
+
+    setSubmitted(true)
+    setTimeout(() => {
+      setIsOpen(false)
+      setSubmitted(false)
+      setFeedback('')
+    }, 2000)
+  }
+
+  return (
+    &lt;div className="feedback-widget"&gt;
+      &lt;button
+        className="feedback-trigger"
+        onClick={() => setIsOpen(!isOpen)}
+      &gt;
+        {isOpen ? '✕' : '💬'}
+      &lt;/button&gt;
+
+      {isOpen && (
+        &lt;div className="feedback-form"&gt;
+          {submitted ? (
+            &lt;p className="feedback-thanks"&gt;Salamat sa feedback mo! 🙏&lt;/p&gt;
+          ) : (
+            &lt;form onSubmit={handleSubmit}&gt;
+              &lt;select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              &gt;
+                &lt;option value="bug"&gt;Bug Report&lt;/option&gt;
+                &lt;option value="feature"&gt;Feature Request&lt;/option&gt;
+                &lt;option value="improvement"&gt;Improvement&lt;/option&gt;
+                &lt;option value="other"&gt;Other&lt;/option&gt;
+              &lt;/select&gt;
+              &lt;textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="I-share ang iyong feedback..."
+                required
+              /&gt;
+              &lt;button type="submit"&gt;Send Feedback&lt;/button&gt;
+            &lt;/form&gt;
+          )}
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  )
+}</code></pre>
+      <p><strong>2. Email surveys</strong> — Simple na Google Form o Typeform na na-send sa users. Maganda para sa detailed feedback pero mababa ang response rate (5-15%).</p>
+      <p><strong>3. Support ticket analysis</strong> — I-analyze ang support tickets para hanapin ang patterns. Kung 30% ng tickets ay tungkol sa isang issue, iyon ang priority.</p>
+      <p><strong>4. Social media monitoring</strong> — I-monitor ang mentions ng app mo sa Twitter, Reddit, Facebook groups. Ang unsolicited feedback ay madalas ang pinaka-honest.</p>
+      <p><strong>5. User interviews</strong> — I-call or meet ang 5-10 users para sa deep conversation. Hindi scalable pero ang pinaka-insightful na method.</p>
+
+      <h2>Feature Request Tracking</h2>
+      <p>Kapag marami ng feedback, kailangan ng system para i-track at i-organize ang feature requests. Hindi mo pwedeng i依靠 sa memory lang — kailangan ng structured system.</p>
+      <p><strong>Feature requests table sa Laravel:</strong></p>
+      <pre><code>// migration: create_feature_requests_table
+Schema::create('feature_requests', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->nullable(); // kung sino nag-request
+    $table->string('title');
+    $table->text('description');
+    $table->enum('category', ['feature', 'improvement', 'bug', 'integration']);
+    $table->enum('status', ['new', 'reviewing', 'planned', 'in_progress', 'shipped', 'declined']);
+    $table->integer('votes')->default(0); // para sa popularity
+    $table->json('metadata')->nullable(); // additional context
+    $table->timestamps();
+
+    $table->index('status');
+    $table->index('votes');
+});</code></pre>
+      <p><strong>Controller para sa feature requests:</strong></p>
+      <pre><code>// app/Http/Controllers/FeatureRequestController.php
+class FeatureRequestController extends Controller
+{
+    public function index()
+    {
+        $requests = FeatureRequest::orderByDesc('votes')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return FeatureRequestResource::collection($requests);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'category' => 'required|in:feature,improvement,bug,integration',
+        ]);
+
+        $featureRequest = FeatureRequest::create([
+            'user_id' => auth()->id(),
+            ...$validated,
+            'status' => 'new',
+            'votes' => 1, // auto-vote ng creator
+        ]);
+
+        return new FeatureRequestResource($featureRequest);
+    }
+
+    public function vote(FeatureRequest $featureRequest)
+    {
+        // Check kung bumoto na ang user
+        $existingVote = Vote::where('user_id', auth()->id())
+            ->where('feature_request_id', $featureRequest->id)
+            ->first();
+
+        if ($existingVote) {
+            $existingVote->delete();
+            $featureRequest->decrement('votes');
+        } else {
+            Vote::create([
+                'user_id' => auth()->id(),
+                'feature_request_id' => $featureRequest->id,
+            ]);
+            $featureRequest->increment('votes');
+        }
+
+        return response()->json(['votes' => $featureRequest->votes]);
+    }
+
+    public function updateStatus(FeatureRequest $request, $id)
+    {
+        $featureRequest = FeatureRequest::findOrFail($id);
+
+        $validated = $request->validate([
+            'status' => 'required|in:new,reviewing,planned,in_progress,shipped,declined',
+        ]);
+
+        $featureRequest->update($validated);
+
+        // I-notify ang users na bumoto kapag nag-change ang status
+        if ($validated['status'] === 'planned' || $validated['status'] === 'shipped') {
+            $featureRequest->notifyVoters($validated['status']);
+        }
+
+        return new FeatureRequestResource($featureRequest);
+    }
+}</code></pre>
+      <p><strong>Feature board sa Next.js:</strong></p>
+      <pre><code>// app/feedback/page.tsx
+'use client'
+
+import { useEffect, useState } from 'react'
+
+export default function FeatureBoard() {
+  const [requests, setRequests] = useState([])
+  const [filter, setFilter] = useState('all')
+
+  useEffect(() => {
+    fetch('/api/feature-requests')
+      .then(res => res.json())
+      .then(data => setRequests(data.data))
+  }, [])
+
+  const handleVote = async (id) => {
+    const res = await fetch(`/api/feature-requests/${id}/vote`, {
+      method: 'POST',
+    })
+    const data = await res.json()
+
+    setRequests(prev =>
+      prev.map(req =>
+        req.id === id ? { ...req, attributes: { ...req.attributes, votes: data.votes } } : req
+      )
+    )
+  }
+
+  const filteredRequests = filter === 'all'
+    ? requests
+    : requests.filter(r => r.attributes.status === filter)
+
+  return (
+    &lt;div className="feature-board"&gt;
+      &lt;h1&gt;Feature Board&lt;/h1&gt;
+      &lt;p&gt;I-vote ang mga features na gusto mo!&lt;/p&gt;
+
+      &lt;div className="filter-tabs"&gt;
+        {['all', 'new', 'planned', 'in_progress', 'shipped'].map(status => (
+          &lt;button
+            key={status}
+            className={filter === status ? 'active' : ''}
+            onClick={() => setFilter(status)}
+          &gt;
+            {status.replace('_', ' ')}
+          &lt;/button&gt;
+        ))}
+      &lt;/div&gt;
+
+      &lt;div className="request-list"&gt;
+        {filteredRequests.map(req => (
+          &lt;div key={req.id} className="request-card"&gt;
+            &lt;div className="vote-section"&gt;
+              &lt;button onClick={() => handleVote(req.id)}&gt;▲&lt;/button&gt;
+              &lt;span&gt;{req.attributes.votes}&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div className="request-content"&gt;
+              &lt;h3&gt;{req.attributes.title}&lt;/h3&gt;
+              &lt;p&gt;{req.attributes.description}&lt;/p&gt;
+              &lt;span className={`status-badge ${req.attributes.status}`}&gt;
+                {req.attributes.status}
+              &lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+
+      <h2>Prioritization Framework</h2>
+      <p>Hindi lahat ng feedback ay equal — kailangan mong mag-prioritize. Gumamit ng simple framework para pumili kung alin ang uunahin:</p>
+      <p><strong>ICE Scoring (Impact, Confidence, Ease):</strong></p>
+      <pre><code>// app/Services/PrioritizationService.php
+class PrioritizationService
+{
+    /**
+     * ICE Score: Impact x Confidence x Ease
+     * Each factor: 1-10 scale
+     */
+    public function calculateICE(FeatureRequest $request): float
+    {
+        $impact = $request->impact_score; // gaano kalaki ang effect sa users
+        $confidence = $request->confidence_score; // gaano ka-kumpyansa sa estimate
+        $ease = $request->ease_score; // gaano kadali i-implement
+
+        return $impact * $confidence * $ease;
+    }
+
+    public function prioritize(array $requests): array
+    {
+        return collect($requests)
+            ->map(function ($request) {
+                $request->ice_score = $this->calculateICE($request);
+                return $request;
+            })
+            ->sortByDesc('ice_score')
+            ->values()
+            ->toArray();
+    }
+
+    // Alternative: RICE Score (Reach, Impact, Confidence, Effort)
+    public function calculateRICE(FeatureRequest $request): float
+    {
+        $reach = $request->estimated_reach; // ilan ang ma-apektuhan per quarter
+        $impact = $request->impact_score; // 0.25, 0.5, 1, 2, 3
+        $confidence = $request->confidence_score / 100; // percentage
+        $effort = $request->effort_weeks; // weeks to implement
+
+        return ($reach * $impact * $confidence) / $effort;
+    }
+}</code></pre>
+      <p><strong>Decision matrix para sa prioritization:</strong></p>
+      <pre><code>// Prioritization considerations:
+//
+// HIGH PRIORITY (gawin agad):
+// - Mataas ang votes (top 10% ng requests)
+// - Blocks user growth (signup/login issues)
+// - Revenue-related (payment bugs, upgrade flow)
+// - Security issues
+//
+// MEDIUM PRIORITY (next sprint):
+// - Moderate votes at clear na impact
+// - UX improvements na makakapag-bawas ng drop-off
+// - Performance issues na naaapektuhan ang users
+//
+// LOW PRIORITY (backlog):
+// - Mababa ang votes at hindi critical
+// - Nice-to-have features
+// - Edge case improvements
+//
+// DECLINE (i-decline ng maayos):
+// - Hindi aligned sa product vision
+// - Too complex para sa resources
+// - Duplicate ng existing feature</code></pre>
+
+      <h2>Iteration Cycles</h2>
+      <p>Ang iteration cycle ay ang repetitive na process ng: collect feedback -> prioritize -> build -> measure -> repeat. Hindi ito one-time — ito ang ongoing na workflow ng product development.</p>
+      <p><strong>Weekly iteration cycle:</strong></p>
+      <ul>
+        <li><strong>Monday:</strong> I-review ang feedback mula sa nakaraang linggo. I-update ang feature request board. I-prioritize ang top 3 features para sa linggo.</li>
+        <li><strong>Tuesday-Thursday:</strong> I-build ang prioritized features. I-test sa staging environment. I-deploy kapag ready.</li>
+        <li><strong>Friday:</strong> I-measure ang impact ng changes. I-check ang analytics (signups, conversion, retention). I-plan ang next week.</li>
+      </ul>
+      <p><strong>Iteration tracking table:</strong></p>
+      <pre><code>// migration: create_iterations_table
+Schema::create('iterations', function (Blueprint $table) {
+    $table->id();
+    $table->string('week'); // "2026-W03"
+    $table->json('planned_features'); // ano ang plan for the week
+    $table->json('completed_features'); // ano ang na-complete
+    $table->json('metrics'); // key metrics before/after
+    $table->text('notes'); // lessons learned
+    $table->timestamps();
+});</code></pre>
+      <p><strong>Measuring iteration impact:</strong></p>
+      <pre><code>// app/Http/Controllers/IterationController.php
+class IterationController extends Controller
+{
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'week' => 'required|string',
+            'planned_features' => 'required|array',
+            'completed_features' => 'required|array',
+            'metrics' => 'required|array',
+            'notes' => 'required|string',
+        ]);
+
+        $iteration = Iteration::create($validated);
+
+        // I-compare ang metrics before at after
+        $metricsBefore = $this->getMetricsBefore($iteration->week);
+        $metricsAfter = $this->getMetricsAfter($iteration->week);
+
+        return response()->json([
+            'iteration' => $iteration,
+            'impact' => [
+                'signups_change' => $metricsAfter['signups'] - $metricsBefore['signups'],
+                'conversion_change' => $metricsAfter['conversion_rate'] - $metricsBefore['conversion_rate'],
+                'retention_change' => $metricsAfter['retention'] - $metricsBefore['retention'],
+            ],
+        ]);
+    }
+}</code></pre>
+
+      <h2>Practical: Create Feedback Mechanism</h2>
+      <p><strong>Step 1:</strong> Sa Laravel, gumawa ng migration para sa feature_requests at feedback tables. I-create ang models, controllers, at API routes para sa CRUD operations.</p>
+      <p><strong>Step 2:</strong> Sa Next.js, gumawa ng FeedbackWidget component — isang floating button na nag-o-open ng feedback form. I-include ang category selector (bug, feature, improvement) at message textarea.</p>
+      <p><strong>Step 3:</strong> Gumawa ng Feature Board page sa Next.js — magpapakita ng lahat ng feature requests na naka-sort sa votes. Magkaroon ng voting system at status filter tabs.</p>
+      <p><strong>Step 4:</strong> I-implement ang ICE scoring sa Laravel — gumawa ng PrioritizationService na nag-calculate ng ICE score per feature request. I-integrate sa dashboard para makita ang prioritized list.</p>
+      <p><strong>Step 5:</strong> I-set ang weekly iteration cycle — tuwing Monday, i-review ang feedback at i-plan ang features para sa linggo. Tuwing Friday, i-measure ang impact ng changes.</p>
+      <p><strong>Step 6:</strong> I-communicate sa users — kapag na-implement na ang isang feature request, i-notify ang users na bumoto. Mag-post ng changelog or update sa feature board. Ito ay nagpapakita na pinapakinggan mo ang feedback nila.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang feedback loop ay 3 steps: collect -> prioritize -> act — hindi ito one-time kundi ongoing na process</li>
+        <li>Ang in-app feedback widget ang pinaka-effective na method — nasa loob ng app, hindi kailangang mag-leave ng page</li>
+        <li>Ang feature request board na may voting system ay nagbibigay ng data-driven na prioritization</li>
+        <li>Ang ICE scoring (Impact x Confidence x Ease) ay simpleng framework para sa pag-prioritize ng features</li>
+        <li>Ang weekly iteration cycle ay nagbibigay ng consistent na improvement — plan, build, measure, repeat</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-prioritize ang features na gagawin?" — I-explain ang feedback collection methods, ang feature request board na may voting, ang ICE/RICE scoring framework, at ang weekly iteration cycle. I-highlight na ang data-driven decisions ay mas reliable kaysa sa gut feeling.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>The Lean Startup — Eric Ries</strong> — Ang libro tungkol sa build-measure-learn cycle at continuous iteration. <a href="https://theleanstartup.com/" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Intercom on Product Management</strong> — Practical guide sa product feedback at prioritization. <a href="https://www.intercom.com/blog/product-management/" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>PostHog Feature Flags</strong> — Guide sa pag-use ng feature flags para sa gradual rollouts at A/B testing. <a href="https://posthog.com/docs/feature-flags" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0030';
+  var questions = [
+    { question: 'Ano ang 3 steps ng feedback loop?', options: ['Build, deploy, monitor', 'Collect feedback, prioritize based sa data, act on it — then repeat the cycle', 'Survey, analyze, ignore', 'Plan, code, test'], correct: 'b', answer: 'Ang feedback loop ay collect -> prioritize -> act. Una, mag-gather ng feedback mula sa users. Pagkatapos, i-rank based sa impact, effort, at frequency. Pagkatapos, i-implement ang changes at i-measure ang results. Pagkatapos, i-repeat ang cycle.' },
+    { question: 'Ano ang ICE scoring sa prioritization?', options: ['I-Compile, I-Execute, I-Cancel — tatlong steps ng feature development', 'Impact x Confidence x Ease — tatlong factors na nagde-determine ng feature priority score', 'Idea, Code, Evaluate — tatlong phases ng planning', 'Income, Cost, Expense — financial metrics para sa features'], correct: 'b', answer: 'Ang ICE scoring ay Impact (gaano kalaki ang effect sa users), Confidence (gaano ka-kumpyansa sa estimate), at Ease (gaano kadali i-implement). Ang bawat factor ay 1-10 scale. Ang higher ang ICE score, mas mataas ang priority ng feature.' },
+    { question: 'Bakit importante ang feature voting system sa feedback collection?', options: ['Para mag-add ng social feature sa app', 'Para bigyan ng data-driven basis ang prioritization — popular features (mataas ang votes) ay mas malamang na i-implement', 'Para i-track kung sino ang active na users', 'Para mag-automate ng feature development'], correct: 'b', answer: 'Ang voting system ay nagbibigay ng quantitative data sa popularity ng feature requests. Ang features na may mataas na votes ay nagpapakita na maraming users ang kailangan ito. Ito ay mas reliable kaysa sa gut feeling — data-driven na prioritization na may buy-in mula sa users.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

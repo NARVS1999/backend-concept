@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0003: Database Schema Planning</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 0: Project Planning & Setup</strong> — Lesson 3 of 4
+      </div>
+
+      <h1>Database Schema Planning</h1>
+      <p><em>Matutunan kung paano mag-design ng database schema gamit ang ERD, core tables, at relationships — lahat Laravel-specific para sa ating Roxy project.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong mag-design ng Entity Relationship Diagram (ERD) at database schema para sa iyong Laravel + MySQL project, gamit ang mermaid diagrams at proper table relationships.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Bakit Kailangan ng Schema Planning?</h2>
+      <p>Ang <strong>database schema</strong> ang blueprint ng iyong data — ano ang ini-store, paano nag-re-relate ang tables, at ano ang constraints. Kapag mali ang schema, mahirap na ito i-change later (migration nightmares!).</p>
+
+      <p>Ito ang mga common na problema kapag hindi nag-plano:</p>
+      <ul>
+        <li><strong>Duplicate data</strong> — Nag-store ng user info sa multiple tables, hindi normalized.</li>
+        <li><strong>Missing relationships</strong> — Hindi alam kung paano i-connect ang orders sa users.</li>
+        <li><strong>Performance issues</strong> — Walang indexes sa frequently queried columns.</li>
+        <li><strong>Data integrity problems</strong> — Pwede mag-exist ang orphan records na walang parent.</li>
+      </ul>
+
+      <p>Ang solusyon: <strong>mag-design muna bago mag-migrate.</strong></p>
+
+      <h2>Entity Relationship Diagrams (ERD)</h2>
+      <p>Ang <strong>ERD</strong> ay visual representation ng iyong database — ang tables (entities), ang columns, at ang relationships. Gamitin natin ang <strong>mermaid</strong> syntax para sa ating ERD.</p>
+
+      <p>Para sa ating Roxy project (e-commerce), heto ang ERD:</p>
+
+      <pre><code>```mermaid
+erDiagram
+    users ||--o{ orders : places
+    users ||--o{ reviews : writes
+    users ||--o{ addresses : has
+    products ||--o{ order_items : contains
+    products ||--o{ reviews : has
+    categories ||--o{ products : contains
+    orders ||--o{ order_items : contains
+    orders ||--o{ payments : has
+
+    users {
+        bigint id PK
+        varchar name
+        varchar email UK
+        varchar password
+        timestamp email_verified_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    products {
+        bigint id PK
+        bigint category_id FK
+        varchar name
+        text description
+        decimal price
+        int stock
+        varchar image_url
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    categories {
+        bigint id PK
+        varchar name
+        varchar slug UK
+        text description
+        timestamp created_at
+    }
+
+    orders {
+        bigint id PK
+        bigint user_id FK
+        varchar order_number UK
+        decimal total_amount
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    order_items {
+        bigint id PK
+        bigint order_id FK
+        bigint product_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+    }
+
+    payments {
+        bigint id PK
+        bigint order_id FK
+        varchar method
+        decimal amount
+        varchar status
+        varchar reference_number
+        timestamp paid_at
+        timestamp created_at
+    }
+
+    addresses {
+        bigint id PK
+        bigint user_id FK
+        varchar label
+        varchar street
+        varchar city
+        varchar province
+        varchar zip_code
+        boolean is_default
+        timestamp created_at
+    }
+
+    reviews {
+        bigint id PK
+        bigint user_id FK
+        bigint product_id FK
+        int rating
+        text comment
+        timestamp created_at
+    }
+```</code></pre>
+
+      <h2>Core Tables at Relationships</h2>
+      <p>Break down natin ang bawat table at ang relationships:</p>
+
+      <p><strong>Users Table</strong> — Ang central table. Lahat ng users dito.</p>
+
+      <pre><code>// Laravel Migration
+Schema::create('users', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->string('email')->unique();
+    $table->string('password');
+    $table->timestamp('email_verified_at')->nullable();
+    $table->timestamps();
+});</code></pre>
+
+      <p><strong>Products Table</strong> — May foreign key sa categories.</p>
+
+      <pre><code>Schema::create('products', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('category_id')->constrained()->cascadeOnDelete();
+    $table->string('name');
+    $table->text('description')->nullable();
+    $table->decimal('price', 10, 2);
+    $table->integer('stock')->default(0);
+    $table->string('image_url')->nullable();
+    $table->boolean('is_active')->default(true);
+    $table->timestamps();
+});</code></pre>
+
+      <p><strong>Orders + Order Items</strong> — Ang order ay parent, order_items ang children (one-to-many).</p>
+
+      <pre><code>Schema::create('orders', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->string('order_number')->unique();
+    $table->decimal('total_amount', 10, 2);
+    $table->string('status')->default('pending');
+    $table->timestamps();
+});
+
+Schema::create('order_items', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+    $table->integer('quantity');
+    $table->decimal('unit_price', 10, 2);
+    $table->decimal('subtotal', 10, 2);
+});</code></pre>
+
+      <p><strong>Relationship Types:</strong></p>
+      <ul>
+        <li><strong>One-to-Many</strong> — User has many Orders (user_id sa orders table)</li>
+        <li><strong>Many-to-One</strong> — Product belongs to Category (category_id sa products table)</li>
+        <li><strong>Many-to-Many</strong> — Products and Orders connected through Order Items (pivot table)</li>
+        <li><strong>One-to-One</strong> — Order has one Payment (order_id sa payments table)</li>
+      </ul>
+
+      <h2>Laravel Relationships sa Code</h2>
+      <p>Ito ang Eloquent relationships na gagamitin mo sa Laravel models:</p>
+
+      <pre><code>// User Model
+class User extends Authenticatable
+{
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+}
+
+// Product Model
+class Product extends Model
+{
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+}
+
+// Order Model
+class Order extends Model
+{
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
+}</code></pre>
+
+      <h2>Practical Exercise: Design Your ERD</h2>
+      <p>Subukan mo ito para sa iyong own project:</p>
+
+      <pre><code>## Exercise: ERD Design
+
+1. I-list ang lahat ng "entities" sa iyong project
+   (Users, Products, Orders, etc.)
+
+2. For each entity, list ang columns:
+   - ID (always bigint auto-increment)
+   - Foreign keys (always foreignId->constrained)
+   - Business data (strings, decimals, text)
+   - Timestamps (created_at, updated_at)
+
+3. I-define ang relationships:
+   - One-to-Many: User has many Orders
+   - Many-to-One: Product belongs to Category
+   - Many-to-Many: Users and Roles (pivot table)
+
+4. Gumawa ng ERD gamit ang mermaid syntax
+   - Pakita sa AI agent for review
+   - Ask: "Are there missing relationships?"
+   - Ask: "Am I missing any indexes?"
+
+5. I-generate ang migrations
+   - php artisan make:model Category -m
+   - php artisan make:model Product -m
+   - etc.</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>database schema</strong> ang blueprint ng data — dapat i-design bago mag-migrate para maiwasan ang problems later.</li>
+        <li>Ang <strong>ERD</strong> (Entity Relationship Diagram) ang visual representation ng tables at relationships — gamitin ang mermaid syntax.</li>
+        <li>Ang <strong>foreign key constraints</strong> (foreignId->constrained) ang nag-eensure ng data integrity sa pagitan ng tables.</li>
+        <li>Laravel Eloquent relationships (hasMany, belongsTo, hasOne) ang nag-co-connect ng models sa application layer.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you design your database schema?" — Sinisimulan ko sa ERD — inililista ang lahat ng entities, relationships, at constraints bago mag-code. Gumagamit ako ng mermaid diagrams para i-visualize at ni-verify sa AI agents kung may kulang na relationships o indexes.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Eloquent Relationships Docs</strong> — Official docs ng Laravel para sa relationships: hasMany, belongsTo, hasOne, belongsToMany. <a href="https://laravel.com/docs/11.x/eloquent-relationships" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Mermaid ER Diagram Syntax</strong> — Documentation kung paano gumawa ng ERD gamit ang mermaid. <a href="https://mermaid.js.org/syntax/entityRelationshipDiagram.html" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0003';
+  var questions = [
+    {
+      question: 'Ano ang tawag sa visual representation ng database schema na nagpapakita ng tables at relationships?',
+      options: ['Flowchart', 'Entity Relationship Diagram (ERD)', 'Use Case Diagram', 'Sequence Diagram'],
+      correct: 'b',
+      answer: 'Ang ERD (Entity Relationship Diagram) ang visual representation ng database — pinapakita ang tables, columns, at relationships sa pagitan ng entities.'
+    },
+    {
+      question: 'Sa Laravel migration, ano ang gamitin para mag-add ng foreign key na nag-refer sa ibang table?',
+      options: ['$table->integer("user_id")', '$table->foreignId("user_id")->constrained()', '$table->references("id")->on("users")', '$table->link("user_id")'],
+      correct: 'b',
+      answer: 'Ang foreignId("user_id")->constrained() ang Laravel shorthand para mag-add ng foreign key — automatic na nag-re-refer sa id column ng referenced table.'
+    },
+    {
+      question: 'Anong relationship type ang tama para sa "User has many Orders"?',
+      options: ['hasOne', 'hasMany', 'belongsTo', 'belongsToMany'],
+      correct: 'b',
+      answer: 'Ang hasMany ang tama — isang user ay maraming orders, kaya hasMany(Order::class) ang relationship sa User model.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

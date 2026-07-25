@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0016: Indexing sa Konteksto ng Laravel</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 3: MySQL Deep Dive</strong> — Lesson 1 of 4
+      </div>
+
+      <h1>Indexing sa Konteksto ng Laravel</h1>
+      <p><em>Matutunan kung paano mag-optimize ng database queries gamit ang tamang indexes at paano ito i-implement sa Laravel migrations.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong suriin ang mga queries ng iyong app, magdagdag ng appropriate indexes sa Laravel migrations, at maunawaan ang pagkakaiba ng B-tree at hash indexes.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Bakit Kailangan ng Indexes?</h2>
+      <p>Ang <strong>index</strong> ay parang table of contents ng database. Kapag walang index, ang database ay nag-sa-scan ng buong table (full table scan) para mahanap ang isang row — kung may 1 million rows, 1 million rows ang babasahin. Kapag may index, gagamitin ang index para pumunta direkta sa tamang row — parang gumamit ka ng index sa libro imbis na i-flip ang bawat page.</p>
+
+      <p><strong>Mga columns na kailangan ng index:</strong></p>
+      <ul>
+        <li><strong>Foreign keys</strong> — Ang <code>user_id</code>, <code>post_id</code>, <code>category_id</code> ay madalas gamitin sa JOINs at WHERE clauses.</li>
+        <li><strong>Search columns</strong> — Ang <code>email</code>, <code>username</code>, <code>slug</code> na ginagamit sa pag-hahanap.</li>
+        <li><strong>WHERE clause columns</strong> — Ang <code>status</code>, <code>type</code>, <code>created_at</code> na madalas naka-filter.</li>
+        <li><strong>ORDER BY columns</strong> — Ang columns na ginagamit sa pagination at sorting.</li>
+        <li><strong>Composite columns</strong> — Mga combinations na madalas ginagamit magkasama.</li>
+      </ul>
+
+      <pre><code>// Halimbawa: walang index — mabagal na query
+SELECT * FROM posts WHERE user_id = 5 AND status = 'published';
+// Full table scan: 1,000,000 rows examined
+
+// Gumamit ng index
+ALTER TABLE posts ADD INDEX idx_user_status (user_id, status);
+// Index scan: 5 rows examined</code></pre>
+
+      <!-- Section 2 -->
+      <h2>B-tree vs Hash Indexes</h2>
+      <p>Ang MySQL ay may dalawang pangunahing uri ng index na gamit sa InnoDB engine:</p>
+
+      <p><strong>B-tree Index (default):</strong></p>
+      <ul>
+        <li>Ang B-tree ay nagso-sort ng data sa alphabetical/numerical order.</li>
+        <li>Pwede kang mag-range queries: <code>WHERE created_at > '2024-01-01'</code>.</li>
+        <li>Pwede ring gamitin sa equality: <code>WHERE id = 5</code>.</li>
+        <li>Ito ang pinaka-common at versatile na index type.</li>
+        <li>Pwede kang mag-ORDER BY gamit ang indexed column — hindi na kailangan ng separate sort.</li>
+      </ul>
+
+      <p><strong>Hash Index:</strong></p>
+      <ul>
+        <li>Ang hash index ay ginagamit lang sa equality comparisons (<code>=</code> o <code>IN()</code>).</li>
+        <li>Hindi puwedeng gamitin sa range queries — hindi supported ang <code>&gt;</code>, <code>&lt;</code>, <code>BETWEEN</code>.</li>
+        <li>Mas mabilis kaysa B-tree sa exact lookups pero limited ang gamit.</li>
+        <li>Pwede lang i-define sa MEMORY storage engine o sa NDB Cluster.</li>
+        <li>Para sa InnoDB, ginagamit ang adaptive hash index — auto-managed ng MySQL.</li>
+      </ul>
+
+      <pre><code>// B-tree index (default) — pwede sa range at equality
+Schema::table('posts', function (Blueprint $table) {
+    $table->index('created_at'); // B-tree by default
+});
+
+// Hindi mo kailangan mag-specify ng type para sa B-tree
+// Pero kung gusto mong i-explicit:
+Schema::table('posts', function (Blueprint $table) {
+    $table->index('created_at', 'idx_posts_created', 'btree');
+});</code></pre>
+
+      <p><strong>Rule of thumb:</strong> Gamitin ang B-tree (default) sa 99% ng cases. Ang hash index ay rarely needed — pabayaan mo na lang ang MySQL para sa adaptive hash indexing.</p>
+
+      <!-- Section 3 -->
+      <h2>Paano Mag-Add ng Index sa Laravel Migrations</h2>
+      <p>Laravel ay nagpo-provide ng malinis na syntax para sa indexes sa migrations:</p>
+
+      <pre><code>// Simple index — isang column
+Schema::table('posts', function (Blueprint $table) {
+    $table->index('status');
+});
+
+// Composite index — dalawa o higit pang columns
+Schema::table('posts', function (Blueprint $table) {
+    $table->index(['user_id', 'status']);
+});
+
+// Unique index — bawal ang duplicates
+Schema::table('users', function (Blueprint $table) {
+    $table->unique('email');
+});
+
+// Index with custom name
+Schema::table('posts', function (Blueprint $table) {
+    $table->index('slug', 'idx_posts_slug');
+});
+
+// Full-text index — para sa search
+Schema::table('posts', function (Blueprint $table) {
+    $table->fullText(['title', 'body']);
+});
+
+// Prefix index — i-index lang ang unang N characters
+Schema::table('posts', function (Blueprint $table) {
+    $table->index('title', 'idx_posts_title_prefix', 'btree')->prefix(10);
+});</code></pre>
+
+      <p><strong>Composite index ordering:</strong></p>
+      <ul>
+        <li>I-order ang columns mula sa most selective (maraming unique values) hanggang least selective.</li>
+        <li>Ang <code>(user_id, status)</code> ay efficient para sa <code>WHERE user_id = 5 AND status = 'published'</code>.</li>
+        <li>Pero ang same index ay hindi efficient para sa <code>WHERE status = 'published'</code> lang — hindi masusunod ang order.</li>
+        <li>Gumawa ng separate index kung may queries na gumagamit lang ng <code>status</code>.</li>
+      </ul>
+
+      <pre><code>// Composite index example
+Schema::table('orders', function (Blueprint $table) {
+    // For queries like: WHERE user_id = ? AND status = ? ORDER BY created_at DESC
+    $table->index(['user_id', 'status', 'created_at'], 'idx_orders_user_status_date');
+});
+
+// Eloquent query that uses this index efficiently
+Order::where('user_id', $userId)
+    ->where('status', 'processing')
+    ->orderByDesc('created_at')
+    ->paginate(20);</code></pre>
+
+      <!-- Section 4 -->
+      <h2>Practical: Review & Optimize Tables</h2>
+      <p>Para malaman kung aling columns ang kailangan ng index, suriin mo ang mga queries na ginagamit mo:</p>
+
+      <pre><code>// Step 1: I-log ang queries para makita kung ano ang mabagal
+// Sa AppServiceProvider.php
+public function boot()
+{
+    DB::listen(function ($query) {
+        if ($query->time > 100) { // > 100ms
+            Log::warning("Slow query: {$query->sql}", [
+                'time' => $query->time . 'ms',
+                'bindings' => $query->bindings,
+            ]);
+        }
+    });
+}
+
+// Step 2: I-check ang existing indexes
+Schema::getColumnListing('posts'); // List lahat ng columns
+Schema::getColumns('posts'); // Detailed info
+Schema::getIndexes('posts'); // List lahat ng indexes
+
+// Step 3: Gumawa ng migration para mag-add ng indexes
+Schema::table('posts', function (Blueprint $table) {
+    $table->index('user_id');
+    $table->index('status');
+    $table->index(['status', 'created_at']);
+    $table->unique('slug');
+});
+
+// Step 4: I-check ang query performance gamit ang EXPLAIN
+DB::select('EXPLAIN SELECT * FROM posts WHERE user_id = ? AND status = ?', [1, 'published']);</code></pre>
+
+      <p><strong>Migration naming convention para sa indexes:</strong></p>
+
+      <pre><code>// Para sa mga bagong tables — idagdag sa create migration
+Schema::create('posts', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained();
+    $table->string('title');
+    $table->text('body')->nullable();
+    $table->enum('status', ['draft', 'published'])->default('draft');
+    $table->timestamps();
+
+    $table->index('user_id');
+    $table->index('status');
+    $table->index(['status', 'created_at']);
+});
+
+// Para sa existing tables — gumawa ng separate migration
+Schema::table('posts', function (Blueprint $table) {
+    $table->index('status');
+});
+
+// I-rollback: tanggalin ang index
+Schema::table('posts', function (Blueprint $table) {
+    $table->dropIndex('posts_status_index');
+});</code></pre>
+
+      <p><strong>Common mistakes:</strong></p>
+      <ul>
+        <li><strong>Over-indexing</strong> — Wag mong i-index ang lahat ng columns. Bawat index ay nagpapabagal sa INSERT/UPDATE/DELETE dahil kailangan i-update ang index.</li>
+        <li><strong>Redundant indexes</strong> — Ang index na <code>(user_id, status)</code> ay sapat na; huwag mo nang gumawa ng separate <code>(user_id)</code> index.</li>
+        <li><strong>Ignoring composite indexes</strong> — Ang composite index ay mas efficient kaysa sa maraming single-column indexes.</li>
+        <li><strong>Not checking existing indexes</strong> — Bago ka mag-add ng index, i-check mo muna kung meron na.</li>
+      </ul>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>indexes</strong> ay pino-point ang database sa tamang rows — hindi na kailangan ng full table scan.</li>
+        <li>Ang <strong>B-tree</strong> (default) ay versatile — pwede sa equality at range queries. Ang <strong>hash</strong> ay limited sa equality lang.</li>
+        <li>I-index ang mga <strong>foreign keys, search columns, WHERE clause columns, at ORDER BY columns</strong>.</li>
+        <li>Mag-composite index para sa queries na gumagamit ng maraming columns magkasama — i-order mula sa most selective.</li>
+        <li>Huwag mag-over-index — bawat index ay nagpapabagal sa writes.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How would you optimize a slow Laravel query?" — Una, i-check ang query gamit ang EXPLAIN. Kung walang index, mag-add gamit ang migration. Gamitin ang composite index para sa multi-column WHERE clauses. I-log ang slow queries gamit ang DB::listen para makita ang mga problema.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>MySQL Indexing Tutorial</strong> — Official MySQL docs tungkol sa indexing at query optimization. <a href="https://dev.mysql.com/doc/refman/8.0/en/mysql-indexes.html" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Schema Indexes</strong> — Official docs ng Laravel para sa index creation sa migrations. <a href="https://laravel.com/docs/11.x/migrations#indexes" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0016';
+  var questions = [
+    {
+      question: 'Ano ang gamit ng index sa database?',
+      options: ['Para i-validate ang data', 'Para pabilisin ang SELECT queries sa pamamagitan ng pag-highlight sa tamang rows', 'Para i-encrypt ang data', 'Para i-backup ang database'],
+      correct: 'b',
+      answer: 'Ang index ay pino-point ang database sa tamang rows para hindi na kailangan ng full table scan — pabilis ng SELECT queries.'
+    },
+    {
+      question: 'Ano ang pagkakaiba ng B-tree at Hash index?',
+      options: ['Pareho lang sila', 'B-tree ay para sa equality at range queries, Hash ay para sa equality lang', 'B-tree ay mas mabagal', 'Hash ay pwede sa lahat ng queries'],
+      correct: 'b',
+      answer: 'Ang B-tree (default) ay versatile — pwede sa equality (<code>=</code>) at range queries (<code>&gt;</code>, <code>&lt;</code>, <code>BETWEEN</code>). Ang Hash index ay limited sa equality comparisons lang.'
+    },
+    {
+      question: 'Sa composite index na (user_id, status, created_at), aling queries ang efficient?',
+      options: [
+        'WHERE status = ? lang',
+        'WHERE user_id = ? AND status = ? AND created_at > ?',
+        'WHERE created_at > ? lang',
+        'WHERE user_id = ? AND created_at > ?'
+      ],
+      correct: 'b',
+      answer: 'Ang composite index ay efficient kapag gumamit ka ng columns mula sa left to right. Ang (user_id, status, created_at) ay efficient para sa queries na gumagamit ng tatlong columns nang magkasama, o user_id + status lang.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

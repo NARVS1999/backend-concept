@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0027: Monitoring & Error Tracking</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 5: Deployment & Production Readiness</strong> — Lesson 4 of 4
+      </div>
+
+      <h1>Monitoring & Error Tracking</h1>
+      <p><em>Paano mo malalaman kapag may problema sa production app mo? Introduction sa logging, error tracking, at uptime monitoring.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-setup ang error tracking para sa Laravel at Next.js gamit ang Sentry, i-configure ang logging, i-setup ang uptime monitoring, at malaman kung paano mag-respond sa production issues.
+      </div>
+
+      <h2>Bakit Kailangan ng Monitoring?</h2>
+      <p>Kapag na-deploy na ang app mo sa production, hindi mo na makikita ang mga errors sa terminal — ang users lang ang makakaranas ng problema. Walang monitoring = walang visibility sa kung ano ang nangyayari sa production.</p>
+      <p><strong>Problems na nangyayari sa production:</strong></p>
+      <ul>
+        <li>Database connection timeout — bumagal ang server at nag-timeout ang mga requests</li>
+        <li>Memory exhaustion — na-oom ang server dahil sa maraming concurrent users</li>
+        <li>Third-party API failure — bumagsak ang Stripe/Payment API at hindi na-process ang orders</li>
+        <li>File upload errors — hindi ma-upload ang images dahil sa disk space issue</li>
+        <li>Authentication bugs — hindi makaka-login ang users dahil sa expired tokens</li>
+      </ul>
+      <p>Kung walang monitoring, malalaman mo lang ang problema kapag nag-complain na ang users — or worse, hindi mo malalaman at tuloy-tuloy ang damage. Ang monitoring ay nagbibigay ng early warning system para ma-address ang issues bago pa lumala.</p>
+
+      <h2>Laravel Logging Setup</h2>
+      <p>Ang Laravel ay may built-in na logging system gamit ang <code>Monolog</code>. I-configure ang logging sa <code>config/logging.php</code>:</p>
+      <pre><code>// config/logging.php
+return [
+    'default' => env('LOG_CHANNEL', 'stack'),
+
+    'channels' => [
+        'stack' => [
+            'driver' => 'stack',
+            'channels' => ['daily', 'errorlog'],
+            'ignore_exceptions' => false,
+        ],
+
+        'daily' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/laravel.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 14,  // auto-delete after 14 days
+        ],
+
+        'errorlog' => [
+            'driver' => 'errorlog',
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
+
+        'stderr' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => Monolog\Handler\StreamHandler::class,
+            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'with' => [
+                'stream' => 'php://stderr',
+            ],
+        ],
+    ],
+];</code></pre>
+      <p><strong>Basic logging sa Laravel code:</strong></p>
+      <pre><code>use Illuminate\Support\Facades\Log;
+
+// Info level - general information
+Log::info('User logged in', ['user_id' => $user->id]);
+
+// Warning level - potential issues
+Log::warning('Payment API response slow', [
+    'response_time' => $responseTime,
+    'user_id' => $user->id,
+]);
+
+// Error level - actual errors
+Log::error('Failed to process payment', [
+    'user_id' => $user->id,
+    'amount' => $order->total,
+    'error' => $e->getMessage(),
+]);
+
+// Critical level - system-level failures
+Log::critical('Database connection lost', [
+    'host' => config('database.connections.mysql.host'),
+]);</code></pre>
+      <p><strong>Contextual logging sa controllers:</strong></p>
+      <pre><code>class OrderController extends Controller
+{
+    public function store(Request $request)
+    {
+        try {
+            $order = Order::create($validated);
+
+            Log::info('Order created', [
+                'order_id' => $order->id,
+                'user_id' => auth()->id(),
+                'total' => $order->total,
+            ]);
+
+            return response()->json(['data' => $order], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Order creation failed', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to create order'
+            ], 500);
+        }
+    }
+}</code></pre>
+
+      <h2>Error Tracking gamit ang Sentry</h2>
+      <p>Ang <strong>Sentry</strong> ay isang error tracking platform na nagko-collect, nag-a-analyze, at nag-no-notify ng errors sa real-time. Ito ay mas powerful kaysa sa basic logging — may stack traces, breadcrumbs, user context, at performance monitoring.</p>
+      <p><strong>Setup para sa Laravel:</strong></p>
+      <pre><code># I-install ang Sentry Laravel SDK
+composer require sentry/sentry-laravel
+
+# I-setup ang Sentry
+php artisan sentry:install
+
+# Sa .env, i-add ang Sentry DSN
+SENTRY_LARAVEL_DSN=https://xxxxx@sentry.io/xxxxx
+SENTRY_TRACES_SAMPLE_RATE=1.0</code></pre>
+      <p>Sa <code>App/Exceptions/Handler.php</code>, i-configure ang Sentry:</p>
+      <pre><code>// app/Exceptions/Handler.php
+use Sentry\Laravel\SentryServiceProvider;
+
+class Handler extends ExceptionHandler
+{
+    public function register(): void
+    {
+        $this->reportable(function (Throwable $e) {
+            // Sentry ay awtomatik na nag-capture ng exceptions
+            // I-add ang user context para sa better debugging
+            if (auth()->check()) {
+                \Sentry\configureScope(function (\Sentry\State\HubInterface $scope) {
+                    $scope->setUser([
+                        'id' => auth()->id(),
+                        'email' => auth()->user()->email,
+                    ]);
+                });
+            }
+        });
+    }
+}</code></pre>
+      <p><strong>Setup para sa Next.js:</strong></p>
+      <pre><code># I-install ang Sentry SDK
+npm install @sentry/nextjs
+
+# I-setup ang Sentry (gamit ang wizard)
+npx @sentry/wizard@latest -i nextjs
+
+# Sa sentry.client.config.ts
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  environment: process.env.NODE_ENV,
+});</code></pre>
+      <p><strong>Manual error capture sa Next.js:</strong></p>
+      <pre><code>// app/api/checkout/route.ts
+import * as Sentry from "@sentry/nextjs";
+
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+    // process checkout...
+    return Response.json({ success: true });
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { module: 'checkout' },
+      extra: { requestBody: data },
+    });
+    return Response.json(
+      { error: 'Checkout failed' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+      <p>Ang Sentry ay nagbibigay ng detailed error information: stack trace, user info, breadcrumbs (kung ano ang nauna bago mag-error), at performance metrics. Ito ay essential para sa pag-diagnose ng production issues.</p>
+
+      <h2>Uptime Monitoring at Health Checks</h2>
+      <p>Ang uptime monitoring ay nagche-check kung accessible pa ang app mo. Kapag hindi na-reach ang server, mag-no-notify agad — bago pa makapag-complain ang users.</p>
+      <p><strong>Health check endpoint sa Laravel:</strong></p>
+      <pre><code>// routes/api.php
+Route::get('/health', function () {
+    $checks = [
+        'app' => 'ok',
+        'database' => 'unknown',
+        'cache' => 'unknown',
+        'disk' => 'unknown',
+    ];
+
+    // Check database connection
+    try {
+        DB::connection()->getPdo();
+        $checks['database'] = 'ok';
+    } catch (\Exception $e) {
+        $checks['database'] = 'error: ' . $e->getMessage();
+    }
+
+    // Check cache connection
+    try {
+        Cache::store('redis')->ping();
+        $checks['cache'] = 'ok';
+    } catch (\Exception $e) {
+        $checks['cache'] = 'error: ' . $e->getMessage();
+    }
+
+    // Check disk space
+    $freeSpace = disk_free_space('/');
+    $checks['disk'] = $freeSpace > 1073741824 ? 'ok' : 'low';
+
+    $allOk = !in_array('error', array_map(function($v) {
+        return explode(': ', $v)[0];
+    }, $checks));
+
+    return response()->json([
+        'status' => $allOk ? 'healthy' : 'degraded',
+        'checks' => $checks,
+    ], $allOk ? 200 : 503);
+});</code></pre>
+      <p><strong>Uptime monitoring services:</strong></p>
+      <ul>
+        <li><strong>UptimeRobot</strong> — Free tier na 50 monitors, 5-minute intervals. Simple at reliable.</li>
+        <li><strong>Better Stack</strong> — Modern uptime monitoring na may status pages at incident management.</li>
+        <li><strong>Checkly</strong> — API at browser monitoring na may playwright integration.</li>
+      </ul>
+      <p>I-configure ang health check URL sa monitoring service: <code>https://api.roxy.com/api/health</code>. I-set ang 5-minute interval at i-configure ang notifications (email, Slack, SMS) kapag bumagsak ang health check.</p>
+
+      <h2>Practical: Set Up Full Monitoring Stack</h2>
+      <p><strong>Step 1:</strong> Gumawa ng Sentry account (free tier: 5000 errors/month). I-setup ang Laravel at Next.js SDKs — i-install, i-configure ang DSN, at i-test ang error reporting.</p>
+      <p><strong>Step 2:</strong> I-configure ang Laravel logging: i-set ang daily log rotation (14 days), i-add ang context sa important operations (login, orders, payments), at i-setup ang log shipping sa external service (optional).</p>
+      <p><strong>Step 3:</strong> Gumawa ng <code>/api/health</code> endpoint sa Laravel na nagche-check ng database, cache, at disk space. I-test na nagre-return ng 200 OK kapag healthy at 503 kapag may issue.</p>
+      <p><strong>Step 4:</strong> I-setup ang UptimeRobot: i-create ang account, i-add ang health check URL (5-minute interval), at i-configure ang notification preferences (email at Slack).</p>
+      <p><strong>Step 5:</strong> I-test ang buong monitoring: mag-cause ng intentional error sa Laravel (hal. divide by zero), i-check ang Sentry dashboard para makita ang error details at stack trace.</p>
+      <p><strong>Step 6:</strong> I-document ang monitoring setup: alin ang gamit para sa errors (Sentry), alin para sa uptime (UptimeRobot), at paano mag-respond sa alerts. I-share sa team para alam nila ang response process.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang monitoring ay nagbibigay ng visibility sa production — alam mo agad kapag may problema</li>
+        <li>Ang Laravel logging ay may built-in na support sa Monolog — i-configure ang daily rotation at context</li>
+        <li>Ang Sentry ay powerful error tracking na may stack traces, user context, at real-time notifications</li>
+        <li>Ang health check endpoint ay nagche-check ng database, cache, at disk space — essential para sa uptime monitoring</li>
+        <li>Ang uptime monitoring (UptimeRobot, Better Stack) ay nagche-check kung accessible pa ang app mo</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-monitor at i-handle ang errors sa production Laravel at Next.js app?" — I-explain ang logging strategy, Sentry integration, health check endpoints, at uptime monitoring. I-discuss ang response process kapag may na-detect na issue.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Sentry Laravel Documentation</strong> — Official guide sa pag-setup ng Sentry sa Laravel. <a href="https://docs.sentry.io/platforms/php/guides/laravel/" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Sentry Next.js Documentation</strong> — Official guide sa pag-setup ng Sentry sa Next.js. <a href="https://docs.sentry.io/platforms/javascript/guides/nextjs/" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Logging Documentation</strong> — Official docs sa logging configuration. <a href="https://laravel.com/docs/11.x/logging" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0027';
+  var questions = [
+    { question: 'Bakit importante ang logging sa production Laravel app?', options: ['Para i-save ang lahat ng user actions sa database', 'Para mag-provide ng visibility sa kung ano ang nangyayari — errors, warnings, at info messages', 'Para mag-speed up ng application performance', 'Para i-cache ang mga database queries'], correct: 'b', answer: 'Ang logging ay nagbibigay ng visibility sa production — hindi mo na makikita ang errors sa terminal kapag na-deploy na. Ang logs ay nagre-record ng errors, warnings, at info messages na makakatulong sa pag-diagnose ng issues.' },
+    { question: 'Ano ang advantage ng Sentry kaysa sa basic Laravel logging?', options: ['Mas mura ang Sentry kaysa sa free logging', 'Ang Sentry ay may stack traces, user context, breadcrumbs, at real-time notifications — hindi lang basta text logs', 'Ang Sentry ay awtomatik na nag-a-fix ng errors', 'Ang Sentry ay para sa Next.js lang, hindi para sa Laravel'], correct: 'b', answer: 'Ang Sentry ay mas powerful kaysa basic logging — nagpo-provide ng detailed stack traces, user context (sino ang na-apektuhan), breadcrumbs (ano ang nauna bago mag-error), at real-time notifications. Hindi lang basta text logs kundi structured error data.' },
+    { question: 'Ano ang purpose ng /health endpoint sa Laravel?', options: ['Para mag-login ang users', 'Para mag-check ng database, cache, at disk space — nagre-return ng status kung healthy ba ang app', 'Para mag-store ng health data ng users', 'Para mag-cache ng frequently accessed data'], correct: 'b', answer: 'Ang /health endpoint ay nagche-check ng critical components — database connection, cache, disk space. Nagre-return ng 200 OK kapag healthy at 503 kapag may issue. Ang uptime monitoring services (UptimeRobot) ay nagche-check ng endpoint na ito regularly.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

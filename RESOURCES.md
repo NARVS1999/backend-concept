@@ -50,3 +50,75 @@
 |---|---|
 | STAR Method | [STAR Interview Method (The Balance)](https://www.thebalancemoney.com/what-is-the-star-interview-response-technique-2061029) |
 | Mock Interviews | [Pramp](https://www.pramp.com/) — Free mock interviews with peers |
+
+---
+
+# Course 2: Laravel + Next.js + MySQL
+
+## Phase 0: Project Planning & Setup
+
+| Lesson | Resource |
+|---|---|
+| BMAD → GSD Workflow | [BMAD Method (GitHub)](https://github.com/anthropics/courses) — Spec-driven agentic development |
+| MVP Scope | [MVP Guide (ProductPlan)](https://www.productplan.com/glossary/minimum-viable-product/) |
+| Database Schema Planning | [DrawDB](https://drawdb.vercel.app/) — Visual ERD tool |
+| Project Structure Setup | [Laravel Docs](https://laravel.com/docs/11.x/installation) — Official installation guide |
+
+## Phase 1: Laravel Backend Foundations
+
+| Lesson | Resource |
+|---|---|
+| Migrations & Eloquent | [Laravel Migrations](https://laravel.com/docs/11.x/migrations) — Official docs |
+| API Resources & Controllers | [Laravel API Resources](https://laravel.com/docs/11.x/api-resources) — Response shaping |
+| Authentication with Sanctum | [Laravel Sanctum](https://laravel.com/docs/11.x/sanctum) — Token/SPA auth |
+| Authorization | [Laravel Policies](https://laravel.com/docs/11.x/authorization) — Gates & policies |
+| File Uploads | [Laravel File Storage](https://laravel.com/docs/11.x/filesystem) — Disk & cloud |
+| Queues & Background Jobs | [Laravel Queues](https://laravel.com/docs/11.x/queues) — Job processing |
+
+## Phase 2: Next.js Frontend Foundations
+
+| Lesson | Resource |
+|---|---|
+| App Router | [Next.js Docs](https://nextjs.org/docs) — Official App Router guide |
+| Data Fetching | [Next.js Data Fetching](https://nextjs.org/docs/app/building-your-application/data-fetching) |
+| Forms & Mutations | [Next.js Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) |
+| Authentication Flow | [NextAuth.js](https://next-auth.js.org/) — Auth library for Next.js |
+| State Management | [Zustand](https://zustand-demo.pmnd.rs/) — Lightweight state management |
+
+## Phase 3: MySQL Deep Dive
+
+| Lesson | Resource |
+|---|---|
+| Indexing with Laravel | [MySQL Indexing](https://dev.mysql.com/doc/refman/8.0/en/optimization-indexes.html) — Official MySQL docs |
+| Query Optimization | [Laravel Debugbar](https://github.com/barryvdh/laravel-debugbar) — Query analysis |
+| Migrations & Seeders | [Laravel Factories](https://laravel.com/docs/11.x/testing#defining-model-factories) — Test data |
+| Data Integrity | [Laravel Foreign Keys](https://laravel.com/docs/11.x/migrations#foreign-key-constraints) |
+
+## Phase 4: Connecting the Full Stack
+
+| Lesson | Resource |
+|---|---|
+| CORS Configuration | [Laravel CORS](https://laravel.com/docs/11.x/routing#cors-cross-origin-resource-sharing) |
+| Environment Configuration | [Laravel .env](https://laravel.com/docs/11.x/configuration) — Environment setup |
+| Error Handling | [Laravel Exceptions](https://laravel.com/docs/11.x/errors) — Error handling |
+| API Contract Docs | [OpenAPI/Swagger](https://swagger.io/specification/) — API documentation standard |
+
+## Phase 5: Deployment & Production
+
+| Lesson | Resource |
+|---|---|
+| Hosting Options | [Laravel Forge](https://forge.laravel.com/) — Server management |
+| | [Vercel](https://vercel.com/) — Next.js hosting |
+| Secrets Management | [Laravel Vault](https://laravel.com/docs/11.x/vault) — Encrypted secrets |
+| Basic CI/CD | [GitHub Actions](https://docs.github.com/en/actions) — CI/CD pipelines |
+| Monitoring | [Sentry](https://sentry.io/) — Error tracking for Laravel & Next.js |
+
+## Phase 6: Business/Product Considerations
+
+| Lesson | Resource |
+|---|---|
+| Payment Integration | [Stripe Philippines](https://stripe.com/ph) — Payment processing |
+| | [PayMongo](https://www.paymongo.com/) — PH payment gateway |
+| Analytics | [Plausible](https://plausible.io/) — Privacy-friendly analytics |
+| | [PostHog](https://posthog.com/) — Product analytics |
+| Feedback Loop | [Canny](https://canny.io/) — User feedback widget |

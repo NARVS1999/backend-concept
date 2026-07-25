@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0022: Error Handling End-to-End</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 4: Connecting the Full Stack</strong> — Lesson 3 of 4
+      </div>
+
+      <h1>Error Handling End-to-End</h1>
+      <p><em>Paano ba mag-handle ng errors nang maayos mula sa Laravel API hanggang sa Next.js frontend?</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-standardize ang error responses sa Laravel API, i-consume at i-display ang mga errors sa Next.js gamit ang toast notifications at inline errors, at ma-implement ang proper exception handling.
+      </div>
+
+      <h2>Standardizing Error Responses sa Laravel</h2>
+      <p>Ang pinaka-importanteng bagay sa error handling ay consistency. Ang lahat ng error responses mula sa API ay dapat sumusunod sa iisang JSON structure. Ito ay nagbibigay ng predictable format para sa frontend developers.</p>
+      <p>Gumawa ng base exception handler na nagfo-format ng errors nang consistent:</p>
+      <pre><code>// app/Exceptions/Handler.php
+public function register(): void
+{
+    $this->renderable(function (HttpException $e, $request) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $this->formatErrors($e),
+            ], $e->getStatusCode());
+        }
+    });
+}
+
+private function formatErrors(HttpException $e): array
+{
+    $errors = [];
+    if ($e instanceof ValidationException) {
+        $errors = $e->errors();
+    }
+    return $errors;
+}</code></pre>
+      <p>Para sa validation errors, ang Laravel ay may built-in na pag-format, pero pwede mo ring i-customize:</p>
+      <pre><code>// app/Exceptions/Handler.php
+public function register(): void
+{
+    $this->renderable(function (ValidationException $e, $request) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    });
+
+    $this->renderable(function (ModelNotFoundException $e, $request) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Resource not found',
+                'errors' => [],
+            ], 404);
+        }
+    });
+
+    $this->renderable(function (AuthenticationException $e, $request) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated',
+                'errors' => [],
+            ], 401);
+        }
+    });
+}</code></pre>
+      <p>Ang standard JSON response format ay dapat ganito:</p>
+      <pre><code>// Success response
+{
+    "success": true,
+    "message": "User created successfully",
+    "data": { "id": 1, "name": "Juan" }
+}
+
+// Error response
+{
+    "success": false,
+    "message": "Validation failed",
+    "errors": {
+        "email": ["The email field is required."],
+        "password": ["The password must be at least 8 characters."]
+    }
+}</code></pre>
+
+      <h2>Handling API Errors sa Next.js</h2>
+      <p>Sa Next.js, gumawa ng centralized error handling function para sa API calls. Ito ay nagbibigay ng consistent na paraan para i-handle ang lahat ng errors:</p>
+      <pre><code>// lib/api.js
+export async function apiCall(endpoint, options = {}) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const url = `${baseUrl}${endpoint}`;
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        message: data.message || 'Something went wrong',
+        errors: data.errors || {},
+      };
+    }
+
+    return data;
+  } catch (error) {
+    if (error.status) {
+      throw error;
+    }
+    throw {
+      status: 500,
+      message: 'Network error. Please try again.',
+      errors: {},
+    };
+  }
+}</code></pre>
+      <p>Pagkatapos, gamitin ang function na ito sa components:</p>
+      <pre><code>// pages/login.js
+import { useState } from 'react';
+import { apiCall } from '../lib/api';
+import toast from 'react-hot-toast';
+
+export default function Login() {
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    setLoading(true);
+
+    try {
+      const data = await apiCall('/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      toast.success('Login successful!');
+      router.push('/dashboard');
+    } catch (error) {
+      if (error.status === 422) {
+        setErrors(error.errors);
+      } else {
+        toast.error(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+}</code></pre>
+
+      <h2>Displaying Errors sa Frontend</h2>
+      <p>May dalawang pangunahing paraan para i-display ang errors sa frontend: toast notifications at inline errors.</p>
+      <p><strong>Toast Notifications:</strong> Para sa general errors (network errors, server errors). Gamit ang <code>react-hot-toast</code> o <code>sonner</code>:</p>
+      <pre><code>import toast from 'react-hot-toast';
+
+// Success
+toast.success('Item saved!');
+
+// Error
+toast.error('Failed to save item');
+
+// Warning
+toast.error('Session expired. Please login again.');</code></pre>
+      <p><strong>Inline Errors:</strong> Para sa validation errors. I-display ang error message sa tabi ng form field:</p>
+      <pre><code>// components/FormField.js
+export function FormField({ label, name, errors }) {
+  return (
+    &lt;div className="form-field"&gt;
+      &lt;label htmlFor={name}&gt;{label}&lt;/label&gt;
+      &lt;input id={name} name={name} /&gt;
+      {errors[name] && (
+        &lt;span className="error-message"&gt;
+          {errors[name][0]}
+        &lt;/span&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+
+// Usage
+&lt;FormField
+  label="Email"
+  name="email"
+  errors={errors}
+/&gt;</code></pre>
+      <p>Ang pattern na ito ay nagbibigay ng malinaw na feedback sa user. Ang toast ay para sa transient messages (lalabas at mawawala), habang ang inline errors ay para sa persistent validation feedback.</p>
+
+      <h2>Practical: Implement End-to-End Error Handling</h2>
+      <p><strong>Step 1:</strong> Sa Laravel, i-modify ang <code>app/Exceptions/Handler.php</code> para i-format ang errors sa JSON format. I-handle ang ValidationException, ModelNotFoundException, at AuthenticationException.</p>
+      <p><strong>Step 2:</strong> Gumawa ng <code>lib/api.js</code> sa Next.js na may centralized <code>apiCall</code> function. Siguraduhin na ang function ay nagpa-parse ng JSON at nag-thrown ng structured errors.</p>
+      <p><strong>Step 3:</strong> I-install ang <code>react-hot-toast</code> sa Next.js: <code>npm install react-hot-toast</code>. I-add ang <code>&lt;Toaster /&gt;</code> component sa root layout.</p>
+      <p><strong>Step 4:</strong> Gumawa ng form (halimbawa: login o registration form) na gumagamit ng <code>apiCall</code> function. I-handle ang 422 errors para sa validation at other errors para sa toast.</p>
+      <p><strong>Step 5:</strong> I-display ang validation errors inline sa form fields. Gumawa ng reusable <code>FormField</code> component na tumatanggap ng errors prop.</p>
+      <p><strong>Step 6:</strong> I-test ang error handling. Mag-send ng invalid data sa API at tingnan kung tama ang pag-display ng errors sa frontend.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Standardize ang API error responses gamit ang consistent JSON structure: <code>{ success, message, errors }</code></li>
+        <li>Gumawa ng centralized <code>apiCall</code> function sa Next.js para sa consistent error handling</li>
+        <li>Toast notifications para sa general errors; inline errors para sa validation feedback</li>
+        <li>I-handle ang lahat ng exception types sa Laravel: ValidationException, ModelNotFoundException, AuthenticationException</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-handle ang errors sa isang full-stack Laravel + Next.js application?" — I-explain ang standardized error format, centralized API call function, at kung paano mag-display ng errors sa frontend.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Error Handling</strong> — Official docs sa exception handling. <a href="https://laravel.com/docs/errors" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>React Hot Toast</strong> — Lightweight toast notifications para sa React. <a href="https://react-hot-toast.com/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0022';
+  var questions = [
+    { question: 'Ano ang dapat nasa JSON error response mula sa Laravel API?', options: ['success field lang', 'message lang', 'success, message, at errors fields', 'error code lang'], correct: 'c', answer: 'Ang standardized error response ay dapat may success (boolean), message (string), at errors (object/array). Ito ay nagbibigay ng consistent na format para sa frontend developers at nagpapadali ng error handling.' },
+    { question: 'Aling Next.js error display ang ginagamit para sa validation errors?', options: ['Toast notification', 'Inline errors sa form fields', 'Alert dialog', 'Console log lang'], correct: 'b', answer: 'Ang inline errors ay mas appropriate para sa validation errors dahil naka-link sila sa specific na form field. Ang toast notifications ay para sa general errors (network, server) na transient lang.' },
+    { question: 'Ano ang HTTP status code para sa validation errors sa Laravel?', options: ['200', '404', '422', '500'], correct: 'c', answer: 'Ang 422 (Unprocessable Entity) ang standard status code para sa validation errors. Ito ay sinasabi sa client na ang request ay valid syntax-wise pero may validation issues sa data.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0015: State Management</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 2: Next.js Frontend Foundations</strong> — Lesson 5 of 5
+      </div>
+
+      <h1>State Management</h1>
+      <p><em>Matutunan kung kailan gagamitin ang external state library (Zustand, Context API) vs local state vs server components para sa state management.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-identify kung aling shared state (cart, session) ang kailangan ng external state management at i-implement ito gamit ang appropriate solution.
+      </div>
+
+      <h2>State Management Decision Framework</h2>
+      <p>Ang tanong lagi ay: <strong>kailangan ba talaga ng state management library?</strong> Ang sagot ay madalas hindi. Narito ang simpleng framework:</p>
+
+      <ul>
+        <li><strong>Server Components</strong> — Kung ang data ay galing sa Laravel API at hindi nagche-change sa client, i-fetch lang sa server component. Walang state management na kailangan.</li>
+        <li><strong>Local State (useState)</strong> — Kung ang state ay nasa loob lang ng isang component (form inputs, toggle states, UI states), gamitin ang <code>useState</code>. Hindi mo kailangan ng library.</li>
+        <li><strong>Props Drilling</strong> — Kung ang state ay kailangan sa 2-3 components lang at hindi malalim ang hierarchy, i-pass lang via props. Simple pa rin.</li>
+        <li><strong>Context API</strong> — Kung ang state ay kailangan sa maraming components na hindi magkaka-related (theme, auth, locale), gamitin ang React Context. Built-in na sa React.</li>
+        <li><strong>External Library (Zustand)</strong> — Kung ang state ay complex (cart with operations, real-time data, optimistic updates), gamitin ang Zustand. Mas lightweight kaysa Redux.</li>
+      </ul>
+
+      <p><strong>Rule of thumb:</strong> Magsimula sa pinaka-simple na solution. I-upgrade lang kapag naramdaman mo na ang complexity.</p>
+
+      <h2>Local State: Ang Unang Choice</h2>
+      <p>Ang <code>useState</code> ang pinaka-polygon na tool. Gamitin ito kapag ang state ay nasa loob lang ng isang component:</p>
+
+      <pre><code>'use client';
+
+import { useState } from 'react';
+
+export default function SearchFilter() {
+  const [filters, setFilters] = useState({
+    query: '',
+    category: '',
+    minPrice: '',
+    maxPrice: '',
+  });
+
+  function handleChange(key, value) {
+    setFilters(prev =&gt; ({ ...prev, [key]: value }));
+  }
+
+  return (
+    &lt;div className="filters"&gt;
+      &lt;input
+        placeholder="Search..."
+        value={filters.query}
+        onChange={(e) =&gt; handleChange('query', e.target.value)}
+      /&gt;
+      &lt;select
+        value={filters.category}
+        onChange={(e) =&gt; handleChange('category', e.target.value)}
+      &gt;
+        &lt;option value=""&gt;All Categories&lt;/option&gt;
+        &lt;option value="electronics"&gt;Electronics&lt;/option&gt;
+        &lt;option value="clothing"&gt;Clothing&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p>Walang external library na kailangan. Ang <code>useState</code> ay sapat na para sa UI state na hindi kailangan sa ibang components.</p>
+
+      <h2>Context API: Para sa Shared App State</h2>
+      <p>Ang React Context ay perpekto para sa state na kailangan sa buong app pero hindi naman complex. Ang pinaka-common na use case ay authentication state.</p>
+
+      <p>Nakita na natin ang AuthContext sa previous lesson. Narito naman ang theme context:</p>
+
+      <pre><code>'use client';
+
+import { createContext, useContext, useState, useEffect } from 'react';
+
+const ThemeContext = createContext(null);
+
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() =&gt; {
+    const saved = localStorage.getItem('theme');
+    if (saved) {
+      setTheme(saved);
+      document.documentElement.setAttribute('data-theme', saved);
+    }
+  }, []);
+
+  function toggleTheme() {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  }
+
+  return (
+    &lt;ThemeContext.Provider value={{ theme, toggleTheme }}&gt;
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+
+// Usage sa component:
+// const { theme, toggleTheme } = useTheme();</code></pre>
+
+      <p><strong>Pag gamitin ang Context:</strong> Auth state, theme, locale, user preferences — mga bagay na kailangan sa maraming components at nagche-change occasionally.</p>
+
+      <p><strong>Hindi gamitin ang Context:</strong> Cart data, real-time notifications, frequently updating data. Ang Context ay nagre-re-render ang lahat ng consumers kapag nagbago ang value — hindi ito efficient para sa high-frequency updates.</p>
+
+      <h2>Zustand: Para sa Complex Shared State</h2>
+      <p>Ang Zustand ay isang lightweight state management library na mas simple kaysa Redux pero mas powerful kaysa Context para sa complex state. Ang bentahe nito ay hindi nagre-re-render ang lahat ng components — nagre-re-render lang ang mga components na gumagamit ng specific na state na nagbago.</p>
+
+      <p>I-install ang Zustand:</p>
+      <pre><code>npm install zustand</code></pre>
+
+      <p>Gumawa ng store para sa cart:</p>
+
+      <pre><code>// stores/cart-store.js
+import { create } from 'zustand';
+
+const useCartStore = create((set, get) =&gt; ({
+  items: [],
+
+  addItem: (item) =&gt; set((state) =&gt; {
+    const existing = state.items.find(i =&gt; i.id === item.id);
+    if (existing) {
+      return {
+        items: state.items.map(i =&gt;
+          i.id === item.id
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
+        ),
+      };
+    }
+    return { items: [...state.items, { ...item, quantity: 1 }] };
+  }),
+
+  removeItem: (itemId) =&gt; set((state) =&gt; ({
+    items: state.items.filter(i =&gt; i.id !== itemId),
+  })),
+
+  updateQuantity: (itemId, quantity) =&gt; set((state) =&gt; ({
+    items: state.items.map(i =&gt;
+      i.id === itemId ? { ...i, quantity } : i
+    ),
+  })),
+
+  clearCart: () =&gt; set({ items: [] }),
+
+  get totalItems() {
+    return get().items.reduce((sum, item) =&gt; sum + item.quantity, 0);
+  },
+
+  get totalPrice() {
+    return get().items.reduce(
+      (sum, item) =&gt; sum + item.price * item.quantity, 0
+    );
+  },
+}));
+
+export default useCartStore;</code></pre>
+
+      <p>Gamitin ang store sa components:</p>
+
+      <pre><code>// components/listings/AddToCartButton.js
+'use client';
+
+import useCartStore from '@/stores/cart-store';
+
+export default function AddToCartButton({ listing }) {
+  const addItem = useCartStore((state) =&gt; state.addItem);
+
+  return (
+    &lt;button onClick={() =&gt; addItem(listing)}&gt;
+      Add to Cart
+    &lt;/button&gt;
+  );
+}
+
+// components/layout/CartBadge.js
+'use client';
+
+import useCartStore from '@/stores/cart-store';
+
+export default function CartBadge() {
+  const totalItems = useCartStore((state) =&gt;
+    state.items.reduce((sum, item) =&gt; sum + item.quantity, 0)
+  );
+
+  return (
+    &lt;span className="cart-badge"&gt;{totalItems}&lt;/span&gt;
+  );
+}</code></pre>
+
+      <p>Pansinin na ang <code>AddToCartButton</code> ay hindi nagre-re-render kapag nagbago ang cart count — nagre-re-render lang ang <code>CartBadge</code>. Ito ang efficiency ng Zustand.</p>
+
+      <h2>Practical: Identifying What State Goes Where</h2>
+      <p>Narito ang practical guide para sa ating Laravel + Next.js project:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>State Type</th>
+            <th>Solution</th>
+            <th>Rason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Listing data (from API)</td>
+            <td>Server Component</td>
+            <td>Hindi nagche-change sa client, i-fetch lang sa server</td>
+          </tr>
+          <tr>
+            <td>Form inputs</td>
+            <td>useState</td>
+            <td>Local lang sa form component</td>
+          </tr>
+          <tr>
+            <td>Modal open/close</td>
+            <td>useState</td>
+            <td>UI state na local lang</td>
+          </tr>
+          <tr>
+            <td>Auth user/session</td>
+            <td>Context API</td>
+            <td>Kailangan sa buong app, nagche-change on login/logout</td>
+          </tr>
+          <tr>
+            <td>Theme preferences</td>
+            <td>Context API</td>
+            <td>Kailangan sa buong app, rarely nagche-change</td>
+          </tr>
+          <tr>
+            <td>Shopping cart</td>
+            <td>Zustand</td>
+            <td>Complex operations, frequently updating, cross-component</td>
+          </tr>
+          <tr>
+            <td>Real-time notifications</td>
+            <td>Zustand</td>
+            <td>High-frequency updates, multiple consumers</td>
+          </tr>
+          <tr>
+            <td>Search filters</td>
+            <td>URL search params</td>
+            <td>Pwedeng i-share via URL, bookmarkable</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Ang URL search params ay isang underutilized na state management technique sa Next.js. Kapag ang state ay kailangan i-share via URL (search, filters, pagination), gumamit ng <code>useSearchParams()</code> instead ng React state.</p>
+
+      <pre><code>'use client';
+
+import { useSearchParams, useRouter } from 'next/navigation';
+
+export default function SearchBar() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  function handleSearch(term) {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set('q', term);
+    } else {
+      params.delete('q');
+    }
+    router.replace(`/listings?${params.toString()}`);
+  }
+
+  return (
+    &lt;input
+      placeholder="Search listings..."
+      defaultValue={searchParams.get('q') || ''}
+      onChange={(e) =&gt; handleSearch(e.target.value)}
+    /&gt;
+  );
+}</code></pre>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Magsimula sa pinaka-simple na state solution — <code>useState</code> muna, i-upgrade lang kapag kailangan.</li>
+        <li>Ang Context API ay perpekto para sa auth, theme, at locale — mga bagay na kailangan sa buong app pero hindi frequently nagche-change.</li>
+        <li>Ang Zustand ay mas efficient kaysa Context para sa complex state — hindi nagre-re-render ang lahat ng consumers.</li>
+        <li>Gamitin ang URL search params para sa state na kailangan i-share via URL (search, filters, pagination).</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Kailan mo gagamitin ang Context API vs Zustand vs Redux? Ano ang criteria mo sa pagpili ng state management solution?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Zustand Docs</strong> — Official documentation ng Zustand state management. <a href="https://zustand-demo.pmnd.rs/" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>React Docs — Managing State</strong> — Official guide sa state management patterns. <a href="https://react.dev/learn/managing-state" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0015';
+  var questions = [
+    { question: 'Kailan mo gagamitin ang useState kaysa external state management library?', options: ['Kapag may complex state na kailangan sa maraming components', 'Kapag ang state ay nasa loob lang ng isang component at hindi nagche-change frequently', 'Kapag may real-time data na kailangan i-share sa lahat ng components'], correct: 'b', answer: 'Ang useState ay perpekto para sa local state — form inputs, UI states, toggle states — mga bagay na hindi kailangan sa ibang components. I-upgrade lang sa library kapag lumaki na ang complexity.' },
+    { question: 'Anong state management approach ang pinaka-efficient para sa frequently updating data na kailangan sa maraming components?', options: ['React Context API', 'Zustand', 'URL search params'], correct: 'b', answer: 'Ang Zustand ay hindi nagre-re-render ang lahat ng consumers — nagre-re-render lang ang mga components na gumagamit ng specific na state na nagbago. Mas efficient ito kaysa Context para sa high-frequency updates.' },
+    { question: 'Ano ang benepisyo ng paggamit ng URL search params para sa state?', options: ['Mas mabilis kaysa React state', 'Pwedeng i-share via URL at bookmarkable', 'Hindi nagre-re-render ang components'], correct: 'b', answer: 'Ang URL search params ay pwedeng i-copy-paste, i-share via link, at i-bookmark. Ito ay perpekto para sa search, filters, at pagination na kailangan ng users na i-share.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

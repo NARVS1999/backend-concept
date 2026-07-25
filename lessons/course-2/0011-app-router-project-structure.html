@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0011: App Router Basics & Project Structure</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 2: Next.js Frontend Foundations</strong> — Lesson 1 of 5
+      </div>
+
+      <h1>App Router Basics & Project Structure</h1>
+      <p><em>Alamin kung paano gamitin ang Next.js App Router at i-set up ang tamang project structure para sa Laravel + Next.js project.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-set up ang Next.js project gamit ang App Router at maunawaan kung kailan gagamitin ang server components vs client components.
+      </div>
+
+      <h2>Ano ang App Router?</h2>
+      <p>Ang App Router ay ang bagong routing system ng Next.js 13+ na nasa <code>app/</code> folder. Ito ang default na gamit ngayon at mas flexible kaysa sa lumang Pages Router. Sa App Router, ang bawat folder sa <code>app/</code> ay isang route — at ang <code>page.js</code> file sa loob ang nagde-determine kung ano ang render sa route na yun.</p>
+
+      <p>Halimbawa ng folder structure:</p>
+      <pre><code>app/
+├── layout.js          ← Root layout (naka-wrap sa lahat ng pages)
+├── page.js            ← Home page (/)
+├── listings/
+│   ├── page.js        ← /listings
+│   └── [id]/
+│       └── page.js    ← /listings/123
+├── dashboard/
+│   ├── layout.js      ← Dashboard-specific layout
+│   └── page.js        ← /dashboard
+└── login/
+    └── page.js        ← /login</code></pre>
+
+      <p>Ang bentahe ng App Router ay built-in na ang server rendering, loading states, at error handling per route segment. Hindi mo na kailangan ng separate na setup para dito.</p>
+
+      <h2>Server Components vs Client Components</h2>
+      <p>Isa sa pinakamahalagang konsepto sa Next.js App Router ay ang pagkakaiba ng server at client components. Sa App Router, <strong>lahat ng components ay server components by default</strong> — ibig sabihin, nagre-render sila sa server at hindi nagse-send ng JavaScript sa client.</p>
+
+      <p><strong>Server Components</strong> ang gamitin mo kapag:</p>
+      <ul>
+        <li>Nagfe-fetch ka ng data mula sa Laravel API</li>
+        <li>Access ka sa database directly (though hindi to ang case sa ating Laravel setup)</li>
+        <li>Hindi mo kailangan ng user interaction (clicks, forms, state)</li>
+        <li>Gusto mo ng mas mabilis na initial page load</li>
+      </ul>
+
+      <pre><code>// app/listings/page.js — Server Component (default)
+async function ListingsPage() {
+  const res = await fetch('http://localhost:8000/api/listings');
+  const listings = await res.json();
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;All Listings&lt;/h1&gt;
+      {listings.map(listing =&gt; (
+        &lt;ListingCard key={listing.id} listing={listing} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+
+export default ListingsPage;</code></pre>
+
+      <p><strong>Client Components</strong> naman ang kailangan mo kapag:</p>
+      <ul>
+        <li>May user interaction — clicks, forms, inputs</li>
+        <li>Gumagamit ng <code>useState</code>, <code>useEffect</code>, o ibang React hooks</li>
+        <li>Gumagamit ng browser APIs (localStorage, window, etc.)</li>
+        <li>Gumagamit ng event handlers (<code>onClick</code>, <code>onChange</code>)</li>
+      </ul>
+
+      <p>I-mark mo lang ang component bilang client sa pamamagitan ng <code>'use client'</code> directive sa itaas ng file:</p>
+
+      <pre><code>'use client';
+
+import { useState } from 'react';
+
+export default function SearchBar() {
+  const [query, setQuery] = useState('');
+
+  return (
+    &lt;input
+      type="text"
+      value={query}
+      onChange={(e) =&gt; setQuery(e.target.value)}
+      placeholder="Search listings..."
+    /&gt;
+  );
+}</code></pre>
+
+      <p><strong>Rule of thumb:</strong> I-push ang <code>'use client'</code> hanggang sa pinaka-kailangan lang. Hindi mo kailangan gawin ang entire page bilang client — pwede mong gawin client lang ang isang interactive na component at i-keep ang parent server component.</p>
+
+      <h2>Project Structure para sa Laravel + Next.js</h2>
+      <p>Para sa ating Roxy project, ganito ang recommended na structure sa loob ng Next.js app:</p>
+
+      <pre><code>app/
+├── (auth)/
+│   ├── login/page.js
+│   └── register/page.js
+├── (dashboard)/
+│   ├── layout.js         ← Dashboard layout with sidebar
+│   ├── page.js           ← Dashboard home
+│   ├── listings/
+│   │   ├── page.js       ← Listing index
+│   │   ├── new/page.js   ← Create listing
+│   │   └── [id]/
+│   │       ├── page.js   ← View listing
+│   │       └── edit/page.js ← Edit listing
+│   └── profile/
+│       └── page.js
+├── layout.js             ← Root layout
+├── page.js               ← Public landing page
+└── globals.css
+
+lib/
+├── api.js                ← Laravel API helper functions
+├── auth.js               ← Auth utilities
+└── utils.js              ← Shared utilities
+
+components/
+├── ui/                   ← Reusable UI components
+│   ├── Button.js
+│   ├── Input.js
+│   └── Modal.js
+├── listings/
+│   ├── ListingCard.js
+│   └── ListingForm.js
+└── layout/
+    ├── Sidebar.js
+    └── Header.js</code></pre>
+
+      <p>Ang <code>(auth)</code> at <code>(dashboard)</code> ay route groups — hindi sila nagdadagdag sa URL path. Ibig sabihin, ang <code>(auth)/login/page.js</code> ay nasa <code>/login</code> lang, hindi <code>/auth/login</code>. Ang gamit nila ay para mag-organize ng shared layouts.</p>
+
+      <h2>Setting Up ang Laravel API Helper</h2>
+      <p>Lumikha ng <code>lib/api.js</code> para i-centralize ang lahat ng API calls sa Laravel:</p>
+
+      <pre><code>// lib/api.js
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+async function fetchAPI(endpoint, options = {}) {
+  const url = `${API_BASE}${endpoint}`;
+
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Request failed' }));
+    throw new Error(error.message || `API error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+export const api = {
+  get: (endpoint) => fetchAPI(endpoint),
+  post: (endpoint, data) => fetchAPI(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  put: (endpoint, data) => fetchAPI(endpoint, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (endpoint) => fetchAPI(endpoint, {
+    method: 'DELETE',
+  }),
+};
+
+export default api;</code></pre>
+
+      <p>Ito ang magiging foundation ng lahat mong API interactions. Sa next lessons, gagamitin natin ang <code>api.get()</code>, <code>api.post()</code>, etc. para makipag-communicate sa Laravel backend.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang App Router ay nasa <code>app/</code> folder — bawat folder ay route, at <code>page.js</code> ang nagre-render sa route na yun.</li>
+        <li>Server components ang default — gamitin ang <code>'use client'</code> lang kapag kailangan ng interaction, hooks, o browser APIs.</li>
+        <li>I-structure ang project gamit ang route groups <code>(auth)</code>, <code>(dashboard)</code> para malinis ang organization.</li>
+        <li>Lumikha ng centralized API helper sa <code>lib/api.js</code> para lahat ng Laravel API calls ay dadaan sa iisang place.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Ano ang pagkakaiba ng server components at client components sa Next.js? Kailan mo gagamitin ang bawat isa?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Next.js Docs — App Router</strong> — Official documentation ng App Router concepts. <a href="https://nextjs.org/docs/app" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Next.js Docs — Rendering</strong> — Deep dive sa server vs client components. <a href="https://nextjs.org/docs/app/building-your-application/rendering" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0011';
+  var questions = [
+    { question: 'Sa Next.js App Router, ano ang default na component type?', options: ['Client Component', 'Server Component', 'Hybrid Component'], correct: 'b', answer: 'Server Component ang default sa App Router. Lahat ng components ay nagre-render sa server unless naglagay ka ng "use client" directive.' },
+    { question: 'Kailan mo kailangan gamitin ang "use client" directive?', options: ['Kapag nagfe-fetch ng data', 'Kapag gumagamit ng useState o onClick handlers', 'Kapag nag-a-access sa database'], correct: 'b', answer: 'Ang "use client" ay kailangan kapag gumagamit ng React hooks (useState, useEffect) o event handlers (onClick, onChange) — mga bagay na nangyayari sa browser.' },
+    { question: 'Ano ang tawag sa folder na hindi nagdadagdag sa URL path sa App Router?', options: ['Dynamic Route', 'Route Group', 'Layout Folder'], correct: 'b', answer: 'Ang Route Groups ay mga folder na naka-enclose sa parentheses — halimbawa, (auth). Hindi sila nagdadagdag sa URL path pero nagbibigay ng shared layout.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

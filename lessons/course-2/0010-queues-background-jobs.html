@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0010: Queues & Background Jobs</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Laravel Backend Foundations</strong> — Lesson 6 of 6
+      </div>
+
+      <h1>Queues & Background Jobs</h1>
+      <p><em>Matutunan kung kailan gamitin ang Laravel queues para sa background processing, paano mag-setup ng queue worker, at paano mag-implement ng job chaining.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-move ang isang synchronous operation sa isang queued job para mas mabilis ang response time ng API.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Kailan Gamitin ang Queues?</h2>
+      <p>Ang <strong>queues</strong> ay ginagamit para i-move ang heavy o time-consuming na operations sa background. Ito ay nagpo-improve ng user experience dahil hindi na naghihintay ang user sa matagal na operations.</p>
+
+      <p><strong>Mga Situations na Kailangan ng Queues:</strong></p>
+      <ul>
+        <li><strong>Email sending</strong> — Ang pagpadala ng email ay maaaring mag-take ng ilang segundo. I-queue ito para hindi mag-wait ang user.</li>
+        <li><strong>Notifications</strong> — Push notifications, SMS, at iba pang notifications.</li>
+        <li><strong>Image processing</strong> — Resize, crop, o watermark ng images.</li>
+        <li><strong>Report generation</strong> — Pag-gawa ng PDF reports o CSV exports.</li>
+        <li><strong>Heavy computations</strong> — Data analysis, machine learning predictions.</li>
+        <li><strong>Third-party API calls</strong> — Pag-call sa external APIs na maaaring mag-fail o mag-timeout.</li>
+      </ul>
+
+      <pre><code>// Synchronous (bad - user waits)
+public function store(PostRequest $request)
+{
+    $post = Post::create($request->validated());
+    
+    // This takes 2-3 seconds!
+    Mail::to($request->user())->send(new PostPublished($post));
+    
+    return new PostResource($post);
+}
+
+// Queued (good - user doesn't wait)
+public function store(PostRequest $request)
+{
+    $post = Post::create($request->validated());
+    
+    // This is instant - sent to queue
+    Mail::to($request->user())->queue(new PostPublished($post));
+    
+    return new PostResource($post);
+}</code></pre>
+
+      <!-- Section 2 -->
+      <h2>Queue Configuration</h2>
+      <p>I-configure ang queues sa <code>config/queue.php</code>:</p>
+
+      <pre><code>// config/queue.php
+'connections' => [
+    'sync' => [
+        'driver' => 'sync',
+    ],
+
+    'database' => [
+        'driver' => 'database',
+        'table' => 'jobs',
+        'queue' => 'default',
+        'retry_after' => 90,
+    ],
+
+    'redis' => [
+        'driver' => 'redis',
+        'connection' => 'default',
+        'queue' => 'default',
+        'retry_after' => 90,
+        'block_for' => null,
+    ],
+
+    'sqs' => [
+        'driver' => 'sqs',
+        'key' => env('AWS_ACCESS_KEY_ID'),
+        'secret' => env('AWS_SECRET_ACCESS_KEY'),
+        'prefix' => env('SQS_PREFIX'),
+        'queue' => env('SQS_QUEUE'),
+        'region' => env('AWS_DEFAULT_REGION'),
+    ],
+],
+
+'default' => env('QUEUE_CONNECTION', 'sync'),</code></pre>
+
+      <p><strong>Queue Drivers:</strong></p>
+      <ul>
+        <li><strong>sync</strong> — Synchronous execution (no queue). Default para sa development.</li>
+        <li><strong>database</strong> — Database table as queue. Simple pero hindi scalable.</li>
+        <li><strong>redis</strong> — Redis as queue. Fast at scalable. Recommended para sa production.</li>
+        <li><strong>sqs</strong> — Amazon SQS. Managed service ng AWS.</li>
+      </ul>
+
+      <!-- Section 3 -->
+      <h2>Creating Jobs</h2>
+      <p>Gumawa ng jobs para sa background processing:</p>
+
+      <pre><code>// Step 1: Create job class
+php artisan make:job SendPostPublishedEmail
+
+// Step 2: Implement the job
+class SendPostPublishedEmail implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public function __construct(
+        public Post $post,
+        public User $user
+    ) {}
+
+    public function handle(Mailer $mailer): void
+    {
+        // This is executed in the background
+        $mailer->to($this->user->email)
+            ->send(new PostPublished($this->post));
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        // Handle failed job
+        Log::error('Failed to send email: ' . $exception->getMessage());
+    }
+}
+
+// Step 3: Dispatch the job
+class PostController extends Controller
+{
+    public function store(PostRequest $request)
+    {
+        $post = auth()->user()->posts()->create($request->validated());
+        
+        // Dispatch job to queue
+        SendPostPublishedEmail::dispatch($post, auth()->user());
+        
+        return new PostResource($post);
+    }
+}</code></pre>
+
+      <p><strong>Job Methods:</strong></p>
+      <ul>
+        <li><code>__construct()</code> — I-setup ang job data. Ang data dito ay i-serialize sa database.</li>
+        <li><code>handle()</code> — I-execute ang job logic. Ito ang "work" ng job.</li>
+        <li><code>failed()</code> — I-handle ang failed job. Pwede mong i-log o i-notify.</li>
+        <li><code>middleware()</code> — I-define ang job middleware (e.g., withoutOverlapping, onConnection).</li>
+      </ul>
+
+      <!-- Section 4 -->
+      <h2>Job Chaining & Advanced Features</h2>
+      <p>Pwede mong i-chain ang jobs para sa sequential processing:</p>
+
+      <pre><code>// Job chaining
+use Illuminate\Support\Facades\Bus;
+
+Bus::chain([
+    new ProcessImage($image),
+    new ResizeImage($image, 800, 600),
+    new UploadToS3($image),
+    new NotifyUser($user, 'Image processed successfully'),
+])->onConnection('redis')->onQueue('high')->dispatch();
+
+// Job chaining with callbacks
+Bus::chain([
+    new ProcessPayment($order),
+    new SendReceipt($order),
+    new UpdateInventory($order),
+])->then(function () {
+    // All jobs completed successfully
+    Log::info('Order processed successfully');
+})->catch(function (Throwable $e) {
+    // Something failed
+    Log::error('Order processing failed: ' . $e->getMessage());
+})->finally(function () {
+    // Always runs
+    Log::info('Order processing chain completed');
+})->dispatch();</code></pre>
+
+      <p><strong>Job Middleware:</strong></p>
+      <pre><code>class ProcessImage implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public function __construct(public Image $image) {}
+
+    public function middleware(): array
+    {
+        return [
+            new WithoutOverlapping('process-image'),
+            new ThrottlesExceptions(10, 60), // 10 exceptions per minute
+        ];
+    }
+
+    public function handle(): void
+    {
+        // Process image...
+    }
+}</code></pre>
+
+      <p><strong>Queue Worker Setup:</strong></p>
+      <pre><code>// Start queue worker
+php artisan queue:work
+
+// Start with specific connection and queue
+php artisan queue:work redis --queue=high,default,low
+
+// Start with memory limit
+php artisan queue:work --memory=512
+
+// Start with timeout
+php artisan queue:work --timeout=60
+
+// Supervisor configuration (production)
+// /etc/supervisor/conf.d/laravel-worker.conf
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=8
+redirect_stderr=true
+stdout_logfile=/path/to/storage/logs/worker.log
+stopwaitsecs=3600</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>queues</strong> ay ginagamit para i-move ang heavy operations sa background — nagpo-improve ng user experience.</li>
+        <li>Ang <strong>sync driver</strong> ay synchronous (no queue), habang ang <strong>database</strong> at <strong>redis</strong> ay actual queues.</li>
+        <li>Ang <strong>jobs</strong> ay classes na nag-implement ng <code>ShouldQueue</code> interface — nagpo-provide ng <code>handle()</code> method para sa work.</li>
+        <li>Ang <strong>job chaining</strong> ay nagpo-possibility ng sequential processing — halimbawa: process → resize → upload → notify.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "When would you use queues in Laravel?" — Gumagamit ako ng queues para sa email sending, notifications, image processing, report generation, at heavy computations. I-move ko ito sa background para hindi mag-wait ang user at mas mabilis ang API response time.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Queues</strong> — Official docs ng Laravel para sa queues at background jobs. <a href="https://laravel.com/docs/11.x/queues" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Job Chaining</strong> — Official docs ng Laravel para sa job chaining at advanced features. <a href="https://laravel.com/docs/11.x/queues#job-chaining" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0010';
+  var questions = [
+    {
+      question: 'Kailan mo dapat gamitin ang Laravel queues?',
+      options: ['Para sa lahat ng operations', 'Para sa heavy o time-consuming na operations na pwedeng i-move sa background', 'Para sa validation logic', 'Para sa database queries'],
+      correct: 'b',
+      answer: 'Ang queues ay ginagamit para sa heavy o time-consuming na operations (email, notifications, image processing) — i-move sa background para hindi mag-wait ang user.'
+    },
+    {
+      question: 'Ano ang recommended queue driver para sa production?',
+      options: ['sync', 'database', 'redis', 'sqs'],
+      correct: 'c',
+      answer: 'Ang Redis ay recommended para sa production — fast, scalable, at may support para sa job chaining at advanced features.'
+    },
+    {
+      question: 'Paano mo i-move ang isang synchronous operation sa queue?',
+      options: ['I-change ang driver sa sync', 'I-dispatch ang job gamit ang Job::dispatch() o Job::queue()', 'I-add ang ShouldQueue interface sa model', 'I-configure sa config/queue.php'],
+      correct: 'b',
+      answer: 'Gamitin ang Job::dispatch() o Mail::queue() para i-move ang operation sa queue. Ang job class ay dapat mag-implement ng ShouldQueue interface.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

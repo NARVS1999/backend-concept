@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0026: Basic CI/CD</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 5: Deployment & Production Readiness</strong> — Lesson 3 of 4
+      </div>
+
+      <h1>Basic CI/CD</h1>
+      <p><em>Paano i-automate ang testing at deployment para hindi ka na mag-manually mag-deploy? Introduction sa GitHub Actions para sa Laravel at Next.js.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong gumawa ng GitHub Actions workflow na nag-automate ng tests at deployment para sa Laravel at Next.js, maintindihan ang CI/CD pipeline, at malaman ang mga deployment strategies na pwedeng gamitin.
+      </div>
+
+      <h2>Ano ang CI/CD?</h2>
+      <p><strong>CI (Continuous Integration)</strong> ay ang practice ng pag-push ng code changes sa shared repository nang frequently. Bawat push ay naka-automate na nagru-run ng tests para ma-verify na hindi na-break ang existing functionality.</p>
+      <p><strong>CD (Continuous Deployment/Delivery)</strong> ay ang practice ng pag-deploy ng verified code changes sa production environment nang automated. Kapag pasado ang tests, i-deploy agad — walang manual intervention.</p>
+      <p><strong>CI/CD Pipeline flow:</strong></p>
+      <pre><code>Developer pushes code
+        ↓
+GitHub Actions detects push
+        ↓
+┌─────────────────────────┐
+│  Step 1: Install deps   │
+│  (composer/npm install) │
+├─────────────────────────┤
+│  Step 2: Run linter     │
+│  (phpcs / eslint)       │
+├─────────────────────────┤
+│  Step 3: Run tests      │
+│  (phpunit / jest)       │
+├─────────────────────────┤
+│  Step 4: Build          │
+│  (npm run build)        │
+└─────────────────────────┘
+        ↓
+  All passed? → Deploy
+  Failed? → Notify, block merge</code></pre>
+      <p>Ang CI/CD ay nagbibigay ng confidence — alam mong hindi ka magbe-break ng production kapag may bumagsak na test. Ito rin ay nagpapabilis ng development cycle dahil hindi ka na nag-wa-wait ng manual testing bago mag-deploy.</p>
+
+      <h2>GitHub Actions Setup para sa Laravel</h2>
+      <p>Ang GitHub Actions ay ang CI/CD platform ng GitHub — naka-integrate na at may free tier para sa public repositories (unlimited) at private repositories (2000 minutes/month).</p>
+      <p>Gumawa ng <code>.github/workflows/laravel.yml</code> file sa root ng Laravel project:</p>
+      <pre><code># .github/workflows/laravel.yml
+name: Laravel CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: roxy_test
+          MYSQL_USER: testing
+          MYSQL_PASSWORD: password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, json, bcmath, gd, mysql
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+
+      - name: Install Dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Prepare Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run Migrations
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: roxy_test
+          DB_USERNAME: testing
+          DB_PASSWORD: password
+        run: php artisan migrate --force
+
+      - name: Run Tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: roxy_test
+          DB_USERNAME: testing
+          DB_PASSWORD: password
+        run: php artisan test
+
+      - name: Run Linter
+        run: vendor/bin/phpcs --standard=PSR12 app/</code></pre>
+      <p>Ang workflow na ito ay nag-automate ng: install dependencies, setup MySQL service, run migrations, run tests, at i-check ang code style. Kapag may failed test o linter error, hindi ma-merge ang pull request.</p>
+
+      <h2>GitHub Actions Setup para sa Next.js</h2>
+      <p>Gumawa ng <code>.github/workflows/nextjs.yml</code> file:</p>
+      <pre><code># .github/workflows/nextjs.yml
+name: Next.js CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000/api</code></pre>
+      <p>Ang Next.js workflow ay mas simple — install, lint, test, build. Ang build step ay importante dahil dito nito nadi-detect ang compilation errors at missing environment variables.</p>
+
+      <h2>Deployment Strategies</h2>
+      <p>Pagkatapos ng CI (tests passed), pwede mong i-deploy ang code. Narito ang mga common na deployment strategies:</p>
+      <p><strong>1. Git-based deployment (simplest):</strong></p>
+      <pre><code># Sa VPS server - deploy script
+#!/bin/bash
+cd /var/www/roxy
+git pull origin main
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+sudo systemctl restart php8.2-fpm
+sudo systemctl restart nginx</code></pre>
+      <p>Ito ay ang pinakamadaling approach — i-pull lang ang latest code, i-install ang dependencies, i-run ang migrations, at i-restart ang services. Pwede mong i-automate ang deploy script gamit ang GitHub Actions.</p>
+      <p><strong>2. Zero-downtime deployment:</strong></p>
+      <pre><code># Sa VPS - zero-downtime deployment
+# I-setup ang bagong release directory
+RELEASE_DIR="/var/www/roxy/releases/$(date +%Y%m%d%H%M%S)"
+SHARED_DIR="/var/www/roxy/shared"
+CURRENT_DIR="/var/www/roxy/current"
+
+# I-clone ang bagong release
+git clone -b main https://github.com/you/roxy.git $RELEASE_DIR
+
+# I-symlink ang shared resources (storage, .env)
+ln -s $SHARED_DIR/storage $RELEASE_DIR/storage
+ln -s $SHARED_DIR/.env $RELEASE_DIR/.env
+
+# I-install at i-build
+cd $RELEASE_DIR
+composer install --no-dev
+npm ci && npm run build
+php artisan migrate --force
+
+# I-update ang symlink (atomic switch)
+ln -sfn $RELEASE_DIR $CURRENT_DIR
+
+# I-reload ang services
+sudo systemctl reload php8.2-fpm</code></pre>
+      <p>Ang zero-downtime deployment ay gumagamit ng symlink switching — ang bagong release ay naka-setup na bago i-switch ang live traffic. Walang downtime sa pagitan ng old at new version.</p>
+      <p><strong>3. Container-based deployment (Docker):</strong></p>
+      <pre><code># Dockerfile para sa Laravel
+FROM php:8.2-fpm
+
+RUN apt-get update && apt-get install -y \
+    git curl zip unzip libpng-dev libonig-dev \
+    libxml2-dev libzip-dev
+
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+COPY . .
+RUN composer install --no-dev --optimize-autoloader
+RUN php artisan config:cache && php artisan route:cache
+
+EXPOSE 9000
+CMD ["php-fpm"]</code></pre>
+      <p>Ang Docker deployment ay nagbibigay ng consistency — ang app ay gumagana ng pareho sa development at production. Ito ay mas complex setup pero mas reliable para sa team environments.</p>
+
+      <h2>Practical: Create Your CI/CD Pipeline</h2>
+      <p><strong>Step 1:</strong> Gumawa ng <code>.github/workflows/</code> directory sa root ng Laravel project. I-create ang <code>laravel.yml</code> workflow file gamit ang template sa itaas.</p>
+      <p><strong>Step 2:</strong> I-commit at i-push ang workflow file sa GitHub. I-check ang "Actions" tab para makita ang workflow run — dapat mag-pass ang tests.</p>
+      <p><strong>Step 3:</strong> Gumawa ng <code>.github/workflows/nextjs.yml</code> para sa Next.js project. I-setup ang Node.js, install, lint, test, at build steps.</p>
+      <p><strong>Step 4:</strong> I-test ang pipeline: gumawa ng bagong branch, mag-add ng test na intentionally mag-fail, gumawa ng pull request. Dapat mag-fail ang CI at hindi ma-merge.</p>
+      <p><strong>Step 5:</strong> I-fix ang failing test, i-push ang fix. Dapat mag-pass na ang CI at pwede nang i-merge ang pull request.</p>
+      <p><strong>Step 6:</strong> I-setup ang auto-deployment: kapag na-merge sa <code>main</code> branch, i-deploy agad sa production server gamit ang deploy script. I-test ang buong flow — push to deploy.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang CI (Continuous Integration) ay nag-automate ng tests sa bawat code push — nagpapahintulot ng safe na collaboration</li>
+        <li>Ang CD (Continuous Deployment) ay nag-a-auto-deploy ng verified code sa production — walang manual intervention</li>
+        <li>Ang GitHub Actions ay free at easy to set up para sa Laravel at Next.js projects</li>
+        <li>Ang git-based deployment ay ang simplest approach — pull, install, migrate, restart</li>
+        <li>Ang zero-downtime deployment ay gumagamit ng symlink switching para walang interruption sa production</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-automate ang testing at deployment sa isang Laravel at Next.js project?" — I-explain ang CI/CD pipeline gamit ang GitHub Actions, ang deployment strategies (git-based, zero-downtime, Docker), at kung paano mag-set up ng auto-deployment sa production.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>GitHub Actions Documentation</strong> — Official guide sa paggawa ng workflows. <a href="https://docs.github.com/en/actions" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Deployment Documentation</strong> — Official guide sa deployment strategies para sa Laravel. <a href="https://laravel.com/docs/11.x/deployment" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>GitHub Actions for Laravel</strong> — Community-maintained actions para sa Laravel CI/CD. <a href="https://github.com/shivammathur/setup-php" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0026';
+  var questions = [
+    { question: 'Ano ang pagkakaiba ng CI at CD sa CI/CD pipeline?', options: ['CI ay para sa testing, CD ay para sa deployment', 'CI ay para sa deployment, CD ay para sa testing', 'CI at CD ay parehong para sa deployment lang', 'CI at CD ay parehong para sa testing lang'], correct: 'a', answer: 'Ang CI (Continuous Integration) ay nag-automate ng tests at code checks sa bawat code push. Ang CD (Continuous Deployment/Delivery) ay nag-a-auto-deploy ng verified code sa production. Sa pipeline, CI muna (tests) bago CD (deploy).' },
+    { question: 'Alin ang pinaka-simple na deployment strategy para sa Laravel sa VPS?', options: ['Docker container deployment', 'Zero-downtime deployment gamit ang symlink switching', 'Git-based deployment: pull, install, migrate, restart', 'Serverless deployment gamit ang AWS Lambda'], correct: 'c', answer: 'Ang git-based deployment ay ang pinakamadaling approach — i-pull ang latest code, i-install ang dependencies, i-run ang migrations, at i-restart ang services. Hindi mo kailangan ng Docker o complex setup — isang bash script lang.' },
+    { question: 'Bakit importante ang build step sa Next.js CI workflow?', options: ['Para i-cache ang npm dependencies', 'Para i-detect ang compilation errors at missing environment variables bago i-deploy', 'Para mag-install ng bagong dependencies', 'Para i-backup ang source code'], correct: 'b', answer: 'Ang build step ay importante dahil dito nito nadi-detect ang compilation errors, type errors, at missing environment variables. Kapag nag-fail ang build, hindi dapat i-deploy ang code dahil may issue pa.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

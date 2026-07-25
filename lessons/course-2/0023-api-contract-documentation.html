@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0023: API Contract Documentation</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 4: Connecting the Full Stack</strong> — Lesson 4 of 4
+      </div>
+
+      <h1>API Contract Documentation</h1>
+      <p><em>Bakit ba kailangang i-document ang API endpoints at paano gawin ito nang simple pero effective?</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-document ang lahat ng API endpoints gamit ang mga simple na approaches (markdown docs, Postman collection), i-standardize ang API response format, at malaman kung bakit mahalaga ang API contracts sa team collaboration.
+      </div>
+
+      <h2>Bakit Kailangan ng API Contract Documentation?</h2>
+      <p>Ang API contract ay ang "agreement" sa pagitan ng backend at frontend — kung ano ang mga available endpoints, paano sila tatawagin, at ano ang responses na aasahan. Kapag walang documentation, nagkakaroon ng mga problema:</p>
+      <p><strong>Miscommunication:</strong> Ang frontend developer ay nag-a-assume ng ibang response format kaysa sa actual na sinasend ng backend. Nagre-result ito ng bugs at wasted time.</p>
+      <p><strong>Onboarding:</strong> Ang bagong team member ay mahihirapan intindihin ang API nang walang documentation. Kailangan nilang basahin ang buong codebase para lang malaman kung paano gumagawa ng isang API call.</p>
+      <p><strong>Maintenance:</strong> Kapag may changes sa API, mahirap malaman kung aling parts ang naapektuhan kung walang documented contract.</p>
+      <p><strong>Testing:</strong> Ang QA team ay hindi makakapag-gawa ng test cases nang tama kung hindi nila alam ang expected inputs at outputs ng bawat endpoint.</p>
+
+      <h2>Simple API Documentation Approach</h2>
+      <p>Hindi mo kailangan ng complex tools para mag-document. Ang isang markdown file ay sapat na para sa karamihan ng projects. Narito ang format na pwede mong gamitin:</p>
+      <pre><code># API Documentation
+
+## Base URL
+- Development: http://localhost:8000/api
+- Production: https://api.roxy.com/api
+
+## Authentication
+Lahat ng authenticated endpoints ay nangangailangan ng
+Bearer token sa Authorization header:
+```
+Authorization: Bearer {token}
+```
+
+---
+
+## Products
+
+### GET /products
+Get all products.
+
+**Query Parameters:**
+- `page` (optional) - Page number, default: 1
+- `per_page` (optional) - Items per page, default: 15
+- `category` (optional) - Filter by category slug
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "data": [...],
+    "current_page": 1,
+    "last_page": 5,
+    "per_page": 15,
+    "total": 75
+  }
+}
+```
+
+### GET /products/{id}
+Get single product.
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Roxy Dress",
+    "price": 1299.00,
+    "description": "...",
+    "category": { "id": 1, "name": "Dresses" },
+    "images": [...]
+  }
+}
+```
+
+**Response (404):**
+```json
+{
+  "success": false,
+  "message": "Product not found",
+  "errors": {}
+}
+```
+
+### POST /products
+Create new product. (Admin only)
+
+**Request Body:**
+```json
+{
+  "name": "New Product",
+  "price": 999.00,
+  "description": "Product description",
+  "category_id": 1
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "message": "Product created",
+  "data": { "id": 2, "name": "New Product", ... }
+}
+```
+
+**Validation Errors (422):**
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": {
+    "name": ["The name field is required."],
+    "price": ["The price must be a number."]
+  }
+}
+```</code></pre>
+      <p>Ang format na ito ay madaling basahin at i-update. I-commit ito sa Git repository kasama ng codebase para laging up-to-date.</p>
+
+      <h2>API Response Format Standards</h2>
+      <p>Bago mag-document, pumili ng standard na response format para sa buong API. Narito ang recommended format:</p>
+      <p><strong>Success Response:</strong></p>
+      <pre><code>{
+  "success": true,
+  "message": "Operation successful",
+  "data": { ... }
+}</code></pre>
+      <p><strong>Paginated Response:</strong></p>
+      <pre><code>{
+  "success": true,
+  "data": {
+    "data": [...],
+    "current_page": 1,
+    "last_page": 5,
+    "per_page": 15,
+    "total": 75
+  }
+}</code></pre>
+      <p><strong>Error Response:</strong></p>
+      <pre><code>{
+  "success": false,
+  "message": "Error description",
+  "errors": {
+    "field_name": ["Error message 1", "Error message 2"]
+  }
+}</code></pre>
+      <p>Ang consistency na ito ay nagpapadali ng frontend development. Ang frontend developer ay alam na kung ang <code>success</code> ay <code>true</code>, nasa <code>data</code> field ang results. Kapag <code>false</code>, nasa <code>message</code> at <code>errors</code> ang details.</p>
+      <p>Para sa Laravel, i-standardize ito sa isang base controller o response helper:</p>
+      <pre><code>// app/Http/Controllers/ApiController.php
+abstract class ApiController extends Controller
+{
+    protected function success($data, $message = 'Success', $statusCode = 200)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+        ], $statusCode);
+    }
+
+    protected function error($message, $errors = [], $statusCode = 400)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'errors' => $errors,
+        ], $statusCode);
+    }
+
+    protected function paginated($paginator, $message = 'Success')
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $paginator,
+        ]);
+    }
+}</code></pre>
+
+      <h2>Postman Collection Approach</h2>
+      <p>Ang Postman ay isa ring magandang paraan para i-document ang API. Gumawa ng Postman collection at i-export ito bilang JSON file na pwede i-commit sa Git:</p>
+      <p><strong>Step 1:</strong> Buksan ang Postman at gumawa ng bagong collection (halimbawa: "Roxy Store API").</p>
+      <p><strong>Step 2:</strong> I-add ang bawat endpoint bilang request sa collection. Isama ang URL, method, headers, at sample request body.</p>
+      <p><strong>Step 3:</strong> Para sa bawat request, magdagdag ng "Example" responses — isa para sa success, isa para sa error cases.</p>
+      <p><strong>Step 4:</strong> I-export ang collection:点击右键 sa collection → Export → Collection v2.1 → Save as <code>postman-collection.json</code>.</p>
+      <p><strong>Step 5:</strong> I-commit ang <code>postman-collection.json</code> sa Git repository. Ang ibang team members ay pwedeng i-import ito sa kanilang Postman.</p>
+      <p>Ang Postman collection ay interactive — pwede mong i-run ang mga requests nang hindi nag-le-leave sa Postman. Ito ay mas practical kaysa markdown docs para sa testing.</p>
+
+      <h2>Practical: Document Your API</h2>
+      <p><strong>Step 1:</strong> Gumawa ng <code>API.md</code> file sa root ng Laravel project. I-document ang base URL, authentication method, at ang standard response format.</p>
+      <p><strong>Step 2:</strong> I-list down ang lahat ng existing API endpoints. Para sa bawat endpoint, isama: HTTP method, path, request body/parameters, at response format.</p>
+      <p><strong>Step 3:</strong> Gumawa ngApiController base class na may <code>success()</code> at <code>error()</code> helper methods. I-extend ito ng lahat ng API controllers para sa consistent responses.</p>
+      <p><strong>Step 4:</strong> I-update ang lahat ng existing controllers para gumamit ng bagong response helpers. Palitan ang mga raw <code>response()->json()</code> calls.</p>
+      <p><strong>Step 5:</strong> Gumawa ng Postman collection para sa lahat ng endpoints. I-export at i-commit sa Git.</p>
+      <p><strong>Step 6:</strong> I-share ang documentation sa team. I-explain ang response format at ang mga available endpoints. I-update ang docs kapag may bagong endpoints or changes.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang API contract ay ang "agreement" sa pagitan ng backend at frontend — dapat itong i-document</li>
+        <li>Ang isang markdown file (<code>API.md</code>) ay sapat na para sa karamihan ng projects</li>
+        <li>I-standardize ang response format: <code>{ success, message, data }</code> para sa consistency</li>
+        <li>Ang Postman collection ay interactive na documentation na pwede ring i-commit sa Git</li>
+        <li>Gumawa ng base ApiController para sa consistent na success/error responses</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-document at i-maintain ang API contracts sa isang team project?" — I-explain ang importance ng API documentation, ang mga approaches (markdown, Postman), at kung paano gamitin ang base controllers para sa consistent responses.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>OpenAPI Specification</strong> — Industry standard para sa API documentation (mas advanced). <a href="https://swagger.io/docs/specification/about/" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Postman Learning Center</strong> — Guide sa paggawa ng Postman collections. <a href="https://learning.postman.com/docs/getting-started/creating-collection/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0023';
+  var questions = [
+    { question: 'Bakit mahalaga ang API contract documentation?', options: ['Para mas mukhang professional ang project', 'Para maiwasan ang miscommunication sa pagitan ng backend at frontend', 'Para mag-add ng bagong features', 'Para mag-speed up ng database queries'], correct: 'b', answer: 'Ang API contract documentation ay mahalaga para maiwasan ang miscommunication. Ito ay nagbibigay ng malinaw na "agreement" kung ano ang mga available endpoints, paano sila tatawagin, at ano ang expected responses.' },
+    { question: 'Ano ang recommended na base response format para sa Laravel API?', options: ['{ result: "ok", payload: {...} }', '{ success: true, message: "...", data: {...} }', '{ status: 200, body: {...} }', '{ response: {...} }'], correct: 'b', answer: 'Ang standardized format ay { success, message, data } para sa success at { success, message, errors } para sa errors. Ito ay nagbibigay ng consistent na structure na madaling i-consume ng frontend.' },
+    { question: 'Alin ang mas interactive na approach para sa API documentation?', options: ['Markdown file', 'Postman collection', 'Code comments', 'README file'], correct: 'b', answer: 'Ang Postman collection ay interactive — pwede mong i-run ang mga requests nang hindi nag-le-leave sa Postman. May built-in na support para sa environments, variables, at automated testing. Mas practical ito kaysa markdown docs.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

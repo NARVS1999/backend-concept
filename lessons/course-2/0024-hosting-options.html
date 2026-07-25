@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0024: Hosting Options</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 5: Deployment & Production Readiness</strong> — Lesson 1 of 4
+      </div>
+
+      <h1>Hosting Options</h1>
+      <p><em>Saan ba ilalagay ang Laravel at Next.js app mo sa production? Paghahambing ng managed hosting vs VPS at alin ang tamang piliin para sa side project.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, malalaman mo ang pagkakaiba ng managed hosting (Forge, Vapor, Vercel) vs self-hosted VPS (DigitalOcean, Hetzner), ang pros at cons ng bawat isa, at makakagawa ng informed decision kung saan ide-deploy ang Roxy project mo.
+      </div>
+
+      <h2>Managed Hosting: Laravel Forge at Vapor</h2>
+      <p>Kapag ayaw mong mag-manage ng server configuration, ang managed hosting ang pinakamadaling option. Ang <strong>Laravel Forge</strong> ay isang service na nag-a-automate ng server setup — provisioning ng VPS, installing PHP/Nginx/MySQL, at deploying code gamit ang git push.</p>
+      <p><strong>Pros ng Forge:</strong></p>
+      <ul>
+        <li>Automated server provisioning — hindi mo na kailangan mag-manual na server setup</li>
+        <li>Built-in SSL certificates (Let's Encrypt integration)</li>
+        <li>Queue workers at scheduled tasks na madaling i-configure</li>
+        <li>Database backups at monitoring dashboard</li>
+        <li>Deployments via git — push to deploy workflow</li>
+      </ul>
+      <p><strong>Cons ng Forge:</strong></p>
+      <ul>
+        <li>Bayad — starts at $12/month bukod pa ang VPS cost (minimum $5-10/month sa DigitalOcean)</li>
+        <li>Kailangan mo pa ring mag-manage ng VPS server itself — disk space, memory, at security patches</li>
+        <li>Hindi managed ang actual server — Forge ay tool lang para sa automation</li>
+      </ul>
+      <p>Ang <strong>Laravel Vapor</strong> naman ay serverless deployment sa AWS Lambda. Walang server na binabayaran — bayad lang sa actual na usage (requests, compute time).</p>
+      <p><strong>Pros ng Vapor:</strong></p>
+      <ul>
+        <li>True serverless — auto-scaling, walang server na imamanage</li>
+        <li>Bayad lang sa actual usage — kapag walang traffic, halos walang gastos</li>
+        <li>Built-in queuing gamit SQS, cache gamit ElastiCache</li>
+        <li>Database sa AWS RDS — managed at reliable</li>
+      </ul>
+      <p><strong>Cons ng Vapor:</strong></p>
+      <ul>
+        <li>Mahal kapag lumaki ang traffic — AWS Lambda pricing ay complex at mabilis mag-add up</li>
+        <li>Cold start latency — ang first request pagkatapos ng idle time ay medyo mabagal</li>
+        <li>Hindi lahat ng Laravel features ay compatible sa serverless (file storage, queues)</li>
+        <li>Vendor lock-in sa AWS ecosystem</li>
+      </ul>
+      <p>Para sa side project, ang Forge + $5/month DigitalOcean droplet ay sapat na. Ang Vapor ay mas appropriate para sa production apps na may significant traffic.</p>
+
+      <h2>VPS: DigitalOcean at Hetzner</h2>
+      <p>Ang <strong>VPS (Virtual Private Server)</strong> ay pinaka-flexible at cost-effective na option. Ikaw ang nag-a-manage ng lahat — OS, web server, database, SSL, backups. Dalawang popular na provider:</p>
+      <p><strong>DigitalOcean:</strong></p>
+      <ul>
+        <li>$5-6/month para sa 1GB RAM, 25GB SSD droplet</li>
+        <li>Madaling i-set up gamit ang tutorials at documentation</li>
+        <li>Managed databases available ($15/month+) — hindi mo na kailangan i-manage ang MySQL</li>
+        <li>App Platform para sa containerized deployment ($12/month+)</li>
+        <li>Good ecosystem: spaces (S3-compatible), load balancers, at monitoring</li>
+      </ul>
+      <p><strong>Hetzner:</strong></p>
+      <ul>
+        <li>€4.50/month (~$5) para sa similar specs — mas mura kaysa DigitalOcean</li>
+        <li>European provider — mas mababa ang latency kung ang users ay sa Europe/Asia</li>
+        <li>Cloud API at CLI available pero mas basic ang documentation</li>
+        <li>Hindi ganun ka-mature ang ecosystem kumpara sa DigitalOcean</li>
+      </ul>
+      <pre><code># DigitalOcean droplet provisioning
+# Minimum specs para sa Laravel + MySQL:
+- 1 vCPU, 1GB RAM
+- 25GB SSD disk
+- Ubuntu 22.04 LTS
+- Estimated: $6/month
+
+# Optional: Managed Database (mas secure at reliable)
+- MySQL 8.0, 1GB RAM
+- Automatic backups at point-in-time recovery
+- Estimated: $15/month</code></pre>
+      <p>Para sa side project, ang $6/month droplet ay sapat na. Ang managed database ay optional pero highly recommended para sa production apps — may automatic backups at hindi mo na kailangan i-manage ang MySQL configuration.</p>
+
+      <h2>Next.js: Vercel vs Self-Hosted</h2>
+      <p>Ang <strong>Vercel</strong> ay ang default hosting para sa Next.js — sila ang creators ng framework. Ang deployment ay git-based: i-push mo ang code, i-deploy automatically.</p>
+      <p><strong>Pros ng Vercel:</strong></p>
+      <ul>
+        <li>Free tier para sa personal projects — 100GB bandwidth, 1000 build minutes/month</li>
+        <li>Edge functions, ISR (Incremental Static Regeneration), image optimization — built-in</li>
+        <li>Preview deployments sa bawat PR — maganda para sa team review</li>
+        <li>Custom domains, SSL, at analytics — lahat integrated</li>
+        <li>Zero configuration — gumagana agad sa Next.js</li>
+      </ul>
+      <p><strong>Cons ng Vercel:</strong></p>
+      <ul>
+        <li>Vendor lock-in — ang deployment config ay Vercel-specific (<code>vercel.json</code>)</li>
+        <li>Bandwidth limits sa paid tiers — $20/month para sa 1TB bandwidth</li>
+        <li>Hindi mo control ang server configuration — limited ang customization</li>
+      </ul>
+      <p><strong>Self-hosted options:</strong></p>
+      <ul>
+        <li><code>next build && next start</code> sa VPS — gumagana pero walang edge optimization</li>
+        <li>Docker container na i-deploy sa kahit anong cloud provider</li>
+        <li>Dokploy (open-source alternative sa Vercel) — self-hosted deployment platform</li>
+      </ul>
+      <pre><code># Vercel deployment (simplest)
+# Step 1: Connect GitHub repo sa Vercel dashboard
+# Step 2: Auto-detect Next.js framework
+# Step 3: Set environment variables:
+DATABASE_URL=postgresql://...
+NEXT_PUBLIC_API_URL=https://api.roxy.com
+
+# Step 4: Deploy — automatic ang build at deployment
+# Ang output ay isang URL na: roxy.vercel.app
+
+# Self-hosted alternative (sa VPS):
+npm run build
+npm run start  # runs on port 3000
+
+# Nginx reverse proxy configuration:
+server {
+    listen 80;
+    server_name roxy.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}</code></pre>
+      <p>Para sa side project, ang <strong>Vercel free tier</strong> ay perfect — walang gastos at may built-in optimization. Ang self-hosted option ay mas appropriate kapag may specific requirements ka na hindi supported ng Vercel.</p>
+
+      <h2>Cost Comparison at Decision Framework</h2>
+      <p>Narito ang practical comparison para sa typical na side project:</p>
+      <pre><code># OPTION A: Budget-Friendly (Recommended for side projects)
+# Laravel backend + Next.js frontend
+- Laravel: DigitalOcean VPS $6/month
+  - 1 vCPU, 1GB RAM, 25GB SSD
+  - Nginx + PHP-FPM + MySQL (all in one)
+- Next.js: Vercel Free Tier
+  - 100GB bandwidth, unlimited deploys
+TOTAL: ~$6/month
+
+# OPTION B: More Production-Ready
+- Laravel: DigitalOcean Managed Database $15/month
+  - Automatic backups, point-in-time recovery
+- Laravel app: DigitalOcean Droplet $6/month
+- Next.js: Vercel Free Tier
+TOTAL: ~$21/month
+
+# OPTION C: Enterprise / High Traffic
+- Laravel: AWS EC2 + RDS (via Forge or manual)
+  - EC2 t3.small: ~$15/month
+  - RDS db.t3.micro: ~$12/month
+- Next.js: Vercel Pro $20/month
+  - 1TB bandwidth, team collaboration
+TOTAL: ~$47/month</code></pre>
+      <p><strong>Decision factors:</strong></p>
+      <ul>
+        <li><strong>Traffic:</strong> Side project na &lt;1000 users/day — VPS + Vercel free tier sapat na</li>
+        <li><strong>Budget:</strong> $0 budget — Vercel free tier + Railway/Render free tiers</li>
+        <li><strong>Scalability:</strong> Expected na lalaki ang traffic — VPS + managed database, ready mag-scale</li>
+        <li><strong>Learning:</strong> Gusto mong matuto ng server management — self-hosted VPS</li>
+        <li><strong>Speed of deployment:</strong> Gusto mong mag-launch agad — Vercel + Forge</li>
+      </ul>
+      <p>Para sa Roxy project, ang <strong>Option A</strong> ang recommended: DigitalOcean VPS para sa Laravel backend ($6/month) at Vercel free tier para sa Next.js frontend. Total na $6/month lang at fully functional na ang production setup.</p>
+
+      <h2>Practical: Deploy Your First Stack</h2>
+      <p><strong>Step 1:</strong> Gumawa ng DigitalOcean account at mag-create ng droplet (Ubuntu 22.04, $6/month). I-save ang SSH key para sa secure access.</p>
+      <p><strong>Step 2:</strong> I-connect sa droplet via SSH at i-setup ang server: install Nginx, PHP 8.2, MySQL, at Composer. Gamitin ang official Laravel deployment documentation.</p>
+      <p><strong>Step 3:</strong> I-deploy ang Laravel app: i-clone ang repo, run <code>composer install</code>, setup <code>.env</code>, run migrations, at i-configure ang Nginx server block.</p>
+      <p><strong>Step 4:</strong> I-connect ang Next.js repo sa Vercel: i-connect ang GitHub repository, i-set ang environment variables (<code>NEXT_PUBLIC_API_URL</code>), at i-deploy.</p>
+      <p><strong>Step 5:</strong> I-test ang buong stack: i-access ang Laravel API endpoint at Next.js frontend. Siguraduhing nagko-connect ang frontend sa backend API.</p>
+      <p><strong>Step 6:</strong> I-setup ang SSL certificates: Let's Encrypt sa Laravel Vercel automatic ang SSL. I-configure ang CORS sa Laravel para sa production domain.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang managed hosting (Forge, Vapor) ay mas convenient pero mas mahal kaysa self-hosted VPS</li>
+        <li>Para sa side projects, ang DigitalOcean VPS ($6/month) + Vercel free tier ay cost-effective at functional</li>
+        <li>Ang Vercel ay perfect para sa Next.js dahil sa free tier, edge functions, at zero configuration</li>
+        <li>Ang self-hosted VPS ay mas flexible pero nangangailangan ng server management knowledge</li>
+        <li>Consider mo ang traffic, budget, at learning goals mo sa pagpili ng hosting option</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Saang platform mo i-de-deploy ang isang Laravel + Next.js app at bakit?" — I-explain ang trade-offs sa pagitan ng managed vs self-hosted, ang cost considerations, at kung paano mo pinili ang tamang platform base sa project requirements.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Deployment Documentation</strong> — Official guide sa pag-deploy ng Laravel sa iba't ibang platforms. <a href="https://laravel.com/docs/11.x/deployment" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Vercel Next.js Deployment</strong> — Guide sa pag-deploy ng Next.js sa Vercel. <a href="https://vercel.com/docs/next.js/deploying-nextjs" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>DigitalOcean Laravel Tutorial</strong> — Step-by-step guide sa pag-setup ng Laravel sa DigitalOcean droplet. <a href="https://www.digitalocean.com/community/tutorials/how-to-deploy-a-laravel-app-with-nginx-on-ubuntu-22-04" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0024';
+  var questions = [
+    { question: 'Alin ang pinaka-cost-effective na hosting setup para sa Laravel + Next.js side project?', options: ['AWS EC2 + Vercel Pro ($35/month)', 'Laravel Forge + DigitalOcean VPS + Vercel Free Tier (~$18/month)', 'DigitalOcean VPS ($6/month) + Vercel Free Tier (~$6/month total)', 'Hetzner VPS ($5/month) + Self-hosted Next.js (~$5/month total)'], correct: 'c', answer: 'Ang DigitalOcean VPS ($6/month) para sa Laravel at Vercel free tier para sa Next.js ay ang pinaka-cost-effective — $6/month total at fully functional na ang production setup. Hindi mo kailangan ng Forge para sa side project kung handa kang mag-manual ng server.' },
+    { question: 'Bakit recommended ang Vercel para sa Next.js deployment?', options: ['Mas mura ang Vercel kaysa sa lahat ng iba pang options', 'Vercel ay may free tier, built-in edge functions, at zero configuration para sa Next.js', 'Vercel ang may pinakamataas na bandwidth allowance', 'Vercel lang ang nag-a-support ng Next.js'], correct: 'b', answer: 'Ang Vercel ay recommended dahil sa free tier (100GB bandwidth), built-in na edge functions, ISR, image optimization, at zero configuration — gumagana agad sa Next.js. Ang Vercel ang creators ng Next.js kaya optimized ang integration.' },
+    { question: 'Alin ang DESHTINATION ng managed database (DigitalOcean Managed MySQL) kaysa self-managed MySQL sa VPS?', options: ['Mas mura ang managed database', 'Ang managed database ay may automatic backups, point-in-time recovery, at hindi mo na kailangan i-manage ang MySQL configuration', 'Mas mabilis ang managed database', 'Mas madali ang managed database para sa developers'], correct: 'b', answer: 'Ang managed database ay may automatic backups, point-in-time recovery, at automated maintenance — hindi mo na kailangan i-manage ang MySQL configuration, patches, at backups. Ang trade-off ay mas mahal ($15/month+) pero ang reliability at peace of mind ay worth it para sa production apps.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

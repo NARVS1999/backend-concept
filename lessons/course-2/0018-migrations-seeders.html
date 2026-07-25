@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0018: Migrations & Seeders</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 3: MySQL Deep Dive</strong> — Lesson 3 of 4
+      </div>
+
+      <h1>Migrations & Seeders</h1>
+      <p><em>Matutunan kung paano gumawa ng model factories at database seeders para sa test data, at paano i-manage ang rollback/refresh strategies.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong gumawa ng model factories para sa automatic test data generation, mag-setup ng database seeders para sa realistic na data, at ma-rollback ang migrations nang maayos.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Model Factories</h2>
+      <p>Ang <strong>model factories</strong> ay paraan ng Laravel para mag-generate ng fake data na naka-structure. Sa halip na manually mag-create ng users o posts, gagamitin mo ang factory para auto-generate ang data gamit ang Faker library.</p>
+
+      <pre><code>// Gumawa ng factory gamit ang artisan
+php artisan make:factory PostFactory --model=Post
+
+// Ang factory file ay nasa database/factories/PostFactory.php
+// I-edit ito para i-define ang data structure
+
+// PostFactory.php
+class PostFactory extends Factory
+{
+    protected $model = Post::class;
+
+    public function definition(): array
+    {
+        return [
+            'title' => $this->faker->sentence(6),
+            'slug' => $this->faker->unique()->slug(),
+            'body' => $this->faker->paragraphs(3, true),
+            'status' => $this->faker->randomElement(['draft', 'published', 'archived']),
+            'user_id' => User::factory(), // Auto-create user
+            'category_id' => Category::factory(),
+            'published_at' => $this->faker->optional(0.8)->dateTimeThisYear(),
+        ];
+    }
+
+    // State: para sa specific scenarios
+    public function published(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+    }
+
+    public function draft(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'draft',
+            'published_at' => null,
+        ]);
+    }
+}
+
+// Gumamit ng factory
+$post = Post::factory()->create(); // 1 post
+$posts = Post::factory()->count(10)->create(); // 10 posts
+$published = Post::factory()->published()->create(); // 1 published post
+$drafts = Post::factory()->draft()->count(5)->create(); // 5 draft posts</code></pre>
+
+      <p><strong>Factory relationships:</strong></p>
+
+      <pre><code>// I-define ang relationships sa factory
+class PostFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'title' => $this->faker->sentence(),
+            'body' => $this->faker->paragraph(),
+            'user_id' => User::factory(),
+            'category_id' => Category::factory(),
+        ];
+    }
+
+    // Para sa hasMany relationships
+    public function withComments(int $count = 3): static
+    {
+        return $this->afterCreating(function (Post $post) use ($count) {
+            Comment::factory()
+                ->count($count)
+                ->for($post)
+                ->create();
+        });
+    }
+}
+
+// Gumamit
+$post = Post::factory()->withComments(5)->create();
+// Auto-creates 5 comments for the post</code></pre>
+
+      <!-- Section 2 -->
+      <h2>Database Seeders</h2>
+      <p>Ang <strong>seeders</strong> ay classes na nag-populate ng database ng initial data. Ginagamit ito para mag-setup ng test data, default roles, o demo data.</p>
+
+      <pre><code>// Gumawa ng seeder gamit ang artisan
+php artisan make:seeder PostsTableSeeder
+
+// PostsTableSeeder.php
+class PostsTableSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Gumawa ng 50 posts gamit ang factory
+        Post::factory()
+            ->count(50)
+            ->published()
+            ->create();
+    }
+}
+
+// DatabaseSeeder.php — i-collate ang lahat ng seeders
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // I-seed ang users muna
+        $this->call([
+            UsersTableSeeder::class,
+            RolesTableSeeder::class,
+            CategoriesTableSeeder::class,
+        ]);
+
+        // Saka ang posts
+        $this->call([
+            PostsTableSeeder::class,
+        ]);
+    }
+}
+
+// Run ang seeders
+php artisan db:seed
+php artisan db:seed --class=PostsTableSeeder
+php artisan migrate:fresh --seed // Reset + seed</code></pre>
+
+      <p><strong>Realistic data patterns:</strong></p>
+
+      <pre><code>// Gumawa ng realistic na data gamit ang Faker + factory
+class UserFactory extends Factory
+{
+    protected $model = User::class;
+
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'password' => Hash::make('password'), // Default password
+            'email_verified_at' => now(),
+            'avatar' => $this->faker->imageUrl(200, 200, 'people'),
+            'bio' => $this->faker->paragraph(),
+        ];
+    }
+
+    public function unverified(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified_at' => null,
+        ]);
+    }
+}
+
+// Para sa may existing data
+class UsersTableSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Gumawa ng admin user
+        User::create([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+        ]);
+
+        // Gumawa ng 10 regular users
+        User::factory()
+            ->count(10)
+            ->create()
+            ->each(function ($user) {
+                // Auto-create 3 posts sa bawat user
+                Post::factory()
+                    ->count(3)
+                    ->for($user)
+                    ->published()
+                    ->create();
+            });
+    }
+}</code></pre>
+
+      <!-- Section 3 -->
+      <h2>Refresh & Rollback Strategies</h2>
+      <p>Ang <code>migrate:fresh</code> ay nag-d-drop ng buong database at nag-re-run ng lahat ng migrations — ang pinaka-common na ginagamit during development.</p>
+
+      <pre><code>// Fresh start — drop lahat, i-run ulit, i-seed
+php artisan migrate:fresh --seed
+
+// Rollback ang last migration batch
+php artisan migrate:rollback
+
+// Rollback ang last 5 batches
+php artisan migrate:rollback --step=5
+
+// Rollback lahat
+php artisan migrate:reset
+
+// Status check — ano ang status ng lahat ng migrations
+php artisan migrate:status</code></pre>
+
+      <p><strong>Rollback strategy para sa production:</strong></p>
+
+      <pre><code>// Para sa production, gamitin ang step-by-step approach:
+
+// 1. I-backup ang database muna!
+mysqldump -u root -p my_database > backup_$(date +%Y%m%d).sql
+
+// 2. I-run ang migration (hindi fresh!)
+php artisan migrate
+
+// 3. I-check kung tama ang result
+php artisan migrate:status
+
+// 4. Kung may problema, i-rollback
+php artisan migrate:rollback
+
+// 5. Kung okay, i-commit ang code
+
+// SAFETY RULES:
+// - HINDI gumamit ng migrate:fresh sa production!
+// - LAGING mag-backup bago mag-migrate
+// - I-test muna sa staging environment
+// - Gumawa ng reversible migrations (may down() method)</code></pre>
+
+      <pre><code>// Ang down() method ay para sa rollback
+Schema::create('posts', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained();
+    $table->string('title');
+    $table->text('body')->nullable();
+    $table->timestamps();
+});
+
+// Ito ay auto-generated ng artisan — i-check ang down() method
+public function down(): void
+{
+    Schema::dropIfExists('posts');
+}
+
+// Para sa columns, gumawa ng separate migration
+Schema::table('posts', function (Blueprint $table) {
+    $table->string('slug')->after('title');
+});
+
+// Down method:
+public function down(): void
+{
+    Schema::table('posts', function (Blueprint $table) {
+        $table->dropColumn('slug');
+    });
+}</code></pre>
+
+      <!-- Section 4 -->
+      <h2>Practical: Core Models Factories & Seeders</h2>
+      <p>Gamitin natin ang mga natutunan para gumawa ng factories at seeders para sa isang typical blog app:</p>
+
+      <pre><code>// Step 1: Gumawa ng factories
+php artisan make:factory UserFactory
+php artisan make:factory PostFactory --model=Post
+php artisan make:factory CommentFactory --model=Comment
+php artisan make:factory CategoryFactory --model=Category
+
+// Step 2: I-define ang factories (tignan sa itaas ang examples)
+
+// Step 3: Gumawa ng seeder
+php artisan make:seeder DatabaseSeeder
+
+// Step 4: I-configure ang DatabaseSeeder
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Create admin
+        User::create([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        // Create categories
+        $categories = Category::factory()->count(5)->create();
+
+        // Create users with posts and comments
+        User::factory()
+            ->count(10)
+            ->create()
+            ->each(function ($user) use ($categories) {
+                Post::factory()
+                    ->count(rand(2, 5))
+                    ->for($user)
+                    ->for($categories->random())
+                    ->published()
+                    ->create()
+                    ->each(function ($post) {
+                        Comment::factory()
+                            ->count(rand(0, 10))
+                            ->for($post)
+                            ->for(User::factory()->create())
+                            ->create();
+                    });
+            });
+    }
+}
+
+// Step 5: Run
+php artisan migrate:fresh --seed</code></pre>
+
+      <p><strong>Faker methods na madalas ginagamit:</strong></p>
+      <ul>
+        <li><code>$faker->name()</code> — Random name.</li>
+        <li><code>$faker->safeEmail()</code> — Unique email.</li>
+        <li><code>$faker->sentence()</code> — Random sentence.</li>
+        <li><code>$faker->paragraph()</code> — Random paragraph.</li>
+        <li><code>$faker->imageUrl()</code> — Random image URL.</li>
+        <li><code>$faker->dateTimeThisYear()</code> — Random date this year.</li>
+        <li><code>$faker->randomElement(['a','b','c'])</code> — Random from array.</li>
+        <li><code>$faker->numberBetween(1, 100)</code> — Random number.</li>
+        <li><code>$faker->optional(0.8)->sentence()</code> — 80% chance na may value, 20% null.</li>
+      </ul>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>model factories</strong> ay paraan ng Laravel para mag-generate ng fake data gamit ang Faker — i-define ang data structure at gamitin sa tests at seeders.</li>
+        <li>Ang <strong>database seeders</strong> ay classes na nag-populate ng database ng initial data — gamitin para sa test data, default records, at demo data.</li>
+        <li>Ang <code>migrate:fresh</code> ay para sa development lang — nag-d-drop at nag-re-run ng lahat. Sa production, gumamit ng <code>migrate</code> at <code>migrate:rollback</code>.</li>
+        <li>Laging mag-backup bago mag-migrate sa production at i-test muna sa staging.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you create test data for a Laravel application?" — Gumagamit ako ng model factories at database seeders. Ang factories ay naka-define sa database/factories/ at nag-generate ng fake data gamit ang Faker. Ang seeders ay nag-populate ng database gamit ang factories. I-run gamit ang <code>migrate:fresh --seed</code>.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Testing Docs</strong> — Official docs ng Laravel para sa factories at seeders. <a href="https://laravel.com/docs/11.x/testing#writing-factories" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Faker PHP</strong> — Documentation ng Faker library na ginagamit sa factories. <a href="https://fakerphp.github.io/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0018';
+  var questions = [
+    {
+      question: 'Ano ang gamit ng model factories sa Laravel?',
+      options: [
+        'Para mag-create ng migrations',
+        'Para mag-generate ng fake data gamit ang Faker library',
+        'Para mag-backup ng database',
+        'Para mag-encrypt ng data'
+      ],
+      correct: 'b',
+      answer: 'Ang model factories ay paraan ng Laravel para mag-generate ng realistic na fake data gamit ang Faker library — ginagamit sa tests, seeders, at development.'
+    },
+    {
+      question: 'Ano ang pagkakaiba ng migrate:fresh at migrate?',
+      options: [
+        'Pareho lang sila',
+        'migrate:fresh ay nag-d-drop at nag-re-run lahat, migrate ay nag-a-add lang ng bagong migrations',
+        'migrate:fresh ay para sa production, migrate ay para sa dev',
+        'migrate ay nag-d-drop, migrate:fresh ay hindi'
+      ],
+      correct: 'b',
+      answer: 'Ang migrate:fresh ay nag-d-drop ng buong database at nag-re-run ng lahat ng migrations — para sa development lang. Ang migrate ay nag-a-add lang ng bagong migrations — para sa production.'
+    },
+    {
+      question: 'Alin ang HINDI dapat gawin sa production database?',
+      options: [
+        'php artisan migrate',
+        'php artisan migrate:fresh --seed',
+        'php artisan migrate:rollback',
+        'php artisan migrate:status'
+      ],
+      correct: 'b',
+      answer: 'Ang migrate:fresh ay nag-d-drop ng buong database — HINDI ito dapat gamitin sa production dahil mawawala ang lahat ng data. Gamitin lang ang migrate, rollback, at status sa production.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

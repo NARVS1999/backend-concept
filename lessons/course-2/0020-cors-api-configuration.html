@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0020: CORS & API Configuration</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 4: Connecting the Full Stack</strong> — Lesson 1 of 4
+      </div>
+
+      <h1>CORS & API Configuration</h1>
+      <p><em>Paano ba nagko-connect ang Laravel API at Next.js frontend nang hindi nagkakaroon ng CORS errors?</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-configure nang tama ang CORS settings sa Laravel para tumanggap ng requests mula sa Next.js frontend, at malalaman mo kung bakit nagkakaroon ng CORS errors.
+      </div>
+
+      <h2>Ano ang CORS?</h2>
+      <p>Cross-Origin Resource Sharing (CORS) ay isang security mechanism ng browsers. Kapag ang isang web page sa <code>http://localhost:3000</code> (Next.js) ay nag-request sa API sa <code>http://localhost:8000</code> (Laravel), ibang "origin" yan. Ang browser, by default, nagbabawal sa cross-origin requests para maiwasan ang security attacks tulad ng CSRF.</p>
+      <p>Ang CORS ay nagbibigay ng paraan para sabihin ng server kung aling origins ang allowed na mag-request. Kapag hindi configured ang CORS, makakakuha ka ng error sa browser console na parang:</p>
+      <pre><code>Access to XMLHttpRequest at 'http://localhost:8000/api/users' from origin 'http://localhost:3000' has been blocked by CORS policy.</code></pre>
+
+      <h2>CORS Configuration sa Laravel</h2>
+      <p>Ang CORS settings sa Laravel ay nasa <code>config/cors.php</code>. Narito ang mga importanteng settings:</p>
+      <pre><code>// config/cors.php
+return [
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+
+    'allowed_methods' => ['*'],
+
+    'allowed_origins' => ['http://localhost:3000'],
+
+    'allowed_origins_patterns' => [],
+
+    'allowed_headers' => ['*'],
+
+    'exposed_headers' => [],
+
+    'max_age' => 0,
+
+    'supports_credentials' => false,
+];</code></pre>
+      <p>Ang <code>allowed_origins</code> ay ang pinaka-importanteng setting. Dito mo ilalagay ang URL ng iyong Next.js frontend. Kapag nasa development ka, ilagay mo ang <code>http://localhost:3000</code>. Kapag naman production na, palitan mo ng production domain.</p>
+      <p>Ang <code>paths</code> naman ay ang mga API routes na a-apply-an ng CORS policy. Ang <code>api/*</code> ay lahat ng routes na nasa <code>/api/</code> prefix.</p>
+      <p>Kung gumagamit ka ng Sanctum for authentication, kailangan mo ring isama ang <code>sanctum/csrf-cookie</code> path para sa CSRF token fetching.</p>
+
+      <h2>Debugging Common CORS Errors</h2>
+      <p>Ang CORS errors ay madalas mangyari kapag may mali sa configuration. Narito ang mga common na issues:</p>
+      <p><strong>1. Origin not allowed:</strong> I-check ang <code>allowed_origins</code> sa <code>config/cors.php</code>. Siguraduhin na tama ang URL — kasama ang protocol (<code>http://</code> o <code>https://</code>) at port number.</p>
+      <p><strong>2. Method not allowed:</strong> Kung nagse-send ka ng POST request pero ang <code>allowed_methods</code> ay GET lang, mag-eerror. Sa development, pwedeng gamitin ang <code>['*']</code> para i-allow lahat.</p>
+      <p><strong>3. Headers not allowed:</strong> Kapag nagse-send ka ng custom headers (halimbawa: <code>Authorization: Bearer token</code>), kailangan mo ring i-allow ang headers sa CORS config.</p>
+      <p><strong>4. Sanctum + SPA mode:</strong> Kung gumagamit ka ng Sanctum SPA authentication, kailangan mong i-enable ang <code>supports_credentials</code> at ilagay ang domain sa <code>stateful</code> domains sa <code>config/sanctum.php</code>:</p>
+      <pre><code>// config/sanctum.php
+'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
+    '%s%s',
+    'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
+    env('APP_URL') ? ','.parse_url(env('APP_URL'), PHP_URL_HOST) : ''
+))),</code></pre>
+
+      <h2>Practical: Configure CORS for Laravel + Next.js</h2>
+      <p>Sundin ang mga ito para ma-configure ang CORS ng iyong project:</p>
+      <p><strong>Step 1:</strong> Buksan ang <code>config/cors.php</code> sa Laravel project.</p>
+      <p><strong>Step 2:</strong> I-set ang <code>allowed_origins</code> sa <code>['http://localhost:3000']</code> para sa development.</p>
+      <p><strong>Step 3:</strong> I-set ang <code>allowed_methods</code> sa <code>['*']</code> o partikular na methods: <code>['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']</code>.</p>
+      <p><strong>Step 4:</strong> I-set ang <code>allowed_headers</code> sa <code>['*']</code> para i-allow lahat ng headers.</p>
+      <p><strong>Step 5:</strong> Clear ang config cache: <code>php artisan config:clear</code>.</p>
+      <p><strong>Step 6:</strong> Test gamit ang Next.js frontend. Gumawa ng fetch request mula sa <code>localhost:3000</code> papunta sa <code>localhost:8000/api/test</code>. Dapat walang CORS error sa browser console.</p>
+      <p>Para sa production, palitan ang <code>allowed_origins</code> ng production domain ng frontend, halimbawa: <code>['https://yourdomain.com']</code>. Huwag gamitin ang <code>['*']</code> sa production dahil security risk yan.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>CORS ay security mechanism ng browsers para i-control ang cross-origin requests</li>
+        <li>Ang CORS config sa Laravel ay nasa <code>config/cors.php</code> — ang pinaka-importanteng field ay <code>allowed_origins</code></li>
+        <li>Laging i-clear ang config cache (<code>php artisan config:clear</code>) pagkatapos mag-change ng CORS settings</li>
+        <li>Sa production, huwag gumamit ng <code>*</code> sa allowed_origins — gumamit ng specific domain lang</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo i-handle ang CORS sa isang Laravel + Next.js project?" — I-explain ang CORS concept, ang <code>config/cors.php</code>, at kung paano mag-set ng allowed origins para sa different environments.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel CORS Documentation</strong> — Official guide sa CORS configuration. <a href="https://laravel.com/docs/routing#cors" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>MDN CORS Guide</strong> — Deep dive sa CORS protocol from Mozilla. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0020';
+  var questions = [
+    { question: 'Ano ang ginagawa ng CORS sa browser?', options: ['Pinapabilis ang API requests', 'Nagba-block ng cross-origin requests by default', 'Nag-encrypt ng API responses', 'Nag-cache ng HTTP requests'], correct: 'b', answer: 'Ang CORS ay security mechanism na nagba-block ng cross-origin requests by default para maiwasan ang security attacks tulad ng CSRF. Kailangan mong i-configure ang server para i-allow ang specific origins.' },
+    { question: 'Saan mo i-configure ang allowed origins sa Laravel?', options: ['config/cors.php', 'routes/api.php', '.env file', 'app/Http/Kernel.php'], correct: 'a', answer: 'Ang CORS configuration ay nasa config/cors.php. Ang allowed_origins field ang magdidetermine kung aling domains ang pwedeng mag-request sa iyong API.' },
+    { question: 'Ano ang dapat gawin pagkatapos mag-change ng CORS settings sa Laravel?', options: ['i-restart ang server', 'php artisan config:clear', 'i-delete ang vendor folder', 'mag-install ng bagong package'], correct: 'b', answer: 'Kailangan mong i-clear ang config cache gamit ang php artisan config:clear para ma-reflect ang mga bago mong CORS settings. Kapag hindi cleared ang cache, gagamitin pa rin ang lumang configuration.' }
+  ];
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

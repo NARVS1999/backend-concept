@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0017: Query Optimization</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 3: MySQL Deep Dive</strong> — Lesson 2 of 4
+      </div>
+
+      <h1>Query Optimization</h1>
+      <p><em>Matutunan kung paano i-detect at i-fix ang N+1 problem, gumamit ng EXPLAIN para i-analyze ang queries, at i-optimize ang database performance gamit ang Laravel tools.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-detect ang N+1 queries sa iyong app, i-optimize gamit ang eager loading, at i-analyze ang query performance gamit ang EXPLAIN at DB::listen.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>N+1 Problem & Eager Loading</h2>
+      <p>Ang <strong>N+1 problem</strong> ay isa sa pinaka-common na performance issue sa Laravel apps na gumagamit ng Eloquent. Nangyayari ito kapag nag-fetch ka ng maraming records at saka nag-access ng related data — nag-ko-construct ito ng 1 query para sa parent at N queries pa para sa bawat related record.</p>
+
+      <pre><code>// BAD: N+1 problem
+$posts = Post::all(); // 1 query
+
+foreach ($posts as $post) {
+    echo $post->user->name; // N queries (isa sa bawat post)!
+    echo $post->category->name; // Another N queries!
+}
+
+// Kung may 100 posts, 1 + 100 + 100 = 201 queries!
+// Ang tawag dito ay "N+1 problem"</code></pre>
+
+      <p><strong>Eager Loading (with())</strong> ay ang solution — naglo-load ang related data sa iisang query lamang gamit ang JOIN:</p>
+
+      <pre><code>// GOOD: Eager loading
+$posts = Post::with(['user', 'category'])->get(); // 1 query lang!
+
+foreach ($posts as $post) {
+    echo $post->user->name; // Hindi na nag-que-query
+    echo $post->category->name; // Hindi na nag-que-query
+}
+
+// 2 queries lang total, kahit 100 posts pa</code></pre>
+
+      <p><strong>Mga uri ng eager loading:</strong></p>
+
+      <pre><code>// Basic eager loading
+$posts = Post::with('user')->get();
+
+// Multiple relationships
+$posts = Post::with(['user', 'category', 'tags'])->get();
+
+// Nested relationships (user's profile)
+$posts = Post::with('user.profile')->get();
+
+// Deep nesting (user's profile's address)
+$posts = Post::with('user.profile.address')->get();
+
+// Conditional eager loading
+$posts = Post::with(['comments' => function ($query) {
+    $query->where('is_approved', true)
+          ->orderByDesc('created_at')
+          ->limit(5);
+}])->get();
+
+// Count relationships (post->comments_count)
+$posts = Post::withCount('comments')->get();
+
+// Select specific columns (optimization)
+$posts = Post::with('user:id,name,email')->get();</code></pre>
+
+      <!-- Section 2 -->
+      <h2>DB::listen para sa Query Logging</h2>
+      <p>Ang <code>DB::listen()</code> ay naglo-log ng lahat ng database queries — makikita mo kung gaano karami at kung gaano kabilis ang bawat query.</p>
+
+      <pre><code>// Sa AppServiceProvider.php boot() method
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+public function boot()
+{
+    DB::listen(function ($query) {
+        // I-log ang queries na mas mabagal sa 100ms
+        if ($query->time > 100) {
+            Log::warning('Slow query detected', [
+                'sql' => $query->sql,
+                'time' => $query->time . 'ms',
+                'bindings' => $query->bindings,
+            ]);
+        }
+
+        // Debug mode: i-log ang lahat ng queries
+        if (app()->environment('local')) {
+            logger()->debug('DB Query', [
+                'sql' => $query->sql,
+                'time' => $query->time . 'ms',
+            ]);
+        }
+    });
+}
+
+// Para sa quick debugging
+DB::listen(function ($query) {
+    echo "SQL: {$query->sql}\n";
+    echo "Time: {$query->time}ms\n";
+    echo "Bindings: " . json_encode($query->bindings) . "\n";
+});</code></pre>
+
+      <p><strong>Pag-count ng queries sa isang request:</strong></p>
+
+      <pre><code>// Gumamit ng counter para makita kung gaano karami ang queries
+$queries = [];
+DB::listen(function ($query) use (&$queries) {
+    $queries[] = [
+        'sql' => $query->sql,
+        'time' => $query->time,
+    ];
+});
+
+// ... run your code here ...
+
+echo count($queries) . " queries executed\n";
+$totalTime = array_sum(array_column($queries, 'time'));
+echo "Total time: {$totalTime}ms\n";</code></pre>
+
+      <!-- Section 3 -->
+      <h2>EXPLAIN para sa Query Analysis</h2>
+      <p>Ang <strong>EXPLAIN</strong> ay MySQL command na nagpapakita kung paano nirun ng database ang isang query. Makikita mo kung gumamit ba ng index o full table scan.</p>
+
+      <pre><code>// Gamitin ang EXPLAIN sa raw query
+$results = DB::select('EXPLAIN SELECT * FROM posts WHERE user_id = ?', [1]);
+dd($results);
+
+// Output na tignan:
+// type: ALL = full table scan (BAD)
+// type: ref = index reference (GOOD)
+// type: range = index range scan (OK)
+// key: idx_posts_user_id = gamit ang index (GOOD)
+// key: NULL = walang index (BAD)
+// rows: 1000000 = maraming rows na scan (BAD kung malaki)</code></pre>
+
+      <p><strong>Mga EXPLAIN types (from best to worst):</strong></p>
+      <ul>
+        <li><strong>system/const</strong> — Iisang row lang, pinaka-mabilis.</li>
+        <li><strong>eq_ref</strong> — JOIN na nag-gamit ng primary key o unique index.</li>
+        <li><strong>ref</strong> — Nag-gamit ng index pero hindi unique.</li>
+        <li><strong>range</strong> — Range scan gamit ang index.</li>
+        <li><strong>index</strong> — Index full scan (scan ang buong index, hindi table).</li>
+        <li><strong>ALL</strong> — Full table scan (pinaka-mabagal — kailangan ng index!).</li>
+      </ul>
+
+      <pre><code>// Practical: gamitin ang EXPLAIN sa Eloquent
+// Una, i-convert ang Eloquent query sa raw SQL
+$query = Post::where('user_id', 1)->where('status', 'published');
+echo $query->toRawSql(); // Makikita mo ang SQL
+
+// Saka i-run ang EXPLAIN
+$results = DB::select(
+    'EXPLAIN ' . $query->toRawSql(),
+    $query->getBindings()
+);
+dd($results);</code></pre>
+
+      <!-- Section 4 -->
+      <h2>Chunking para sa Large Datasets</h2>
+      <p>Kapag nag-pro-process ka ng malaking halaga ng data (halimbawa: 100,000 rows), wag mong kunin lahat sa iisang query — gumamit ng <code>chunk()</code> para i-break sa mas maliliit na batches.</p>
+
+      <pre><code>// BAD: Kunin ang lahat — maaring mag OOM (Out of Memory)
+$users = User::all(); // 100,000 rows sa memory!
+foreach ($users as $user) {
+    // process...
+}
+
+// GOOD: Gumamit ng chunk — 1,000 rows per batch lang sa memory
+User::chunk(1000, function ($users) {
+    foreach ($users as $user) {
+        // process...
+    }
+});
+
+// Alternative: cursor() — lazy loading, hindi naglo-load ng lahat
+$users = User::cursor();
+foreach ($users as $user) {
+    // process one at a time
+}
+
+// Gumamit ng cursor kapag nag-iterate lang at hindi nag-queue
+// Gumamit ng chunk kapag kailangan mong i-batch ang operations</code></pre>
+
+      <p><strong>Practical scenario: listing page optimization</strong></p>
+
+      <pre><code>// BEFORE: N+1 problem sa listing page
+class PostController extends Controller
+{
+    public function index()
+    {
+        $posts = Post::orderByDesc('created_at')->paginate(20);
+        // Each page = 1 (posts) + 20 (users) + 20 (categories) = 41 queries!
+        return view('posts.index', compact('posts'));
+    }
+}
+
+// AFTER: Eager loading + selective columns
+class PostController extends Controller
+{
+    public function index()
+    {
+        $posts = Post::with(['user:id,name,avatar', 'category:id,name'])
+            ->select('id', 'title', 'slug', 'user_id', 'category_id', 'created_at')
+            ->orderByDesc('created_at')
+            ->paginate(20);
+        // Total: 3 queries (posts, users, categories) kahit gaano pa karami ang data!
+        return view('posts.index', compact('posts'));
+    }
+}
+
+// BONUS: I-log ang queries para ma-verify ang improvement
+class PostController extends Controller
+{
+    public function index()
+    {
+        $queryCount = 0;
+        DB::listen(function () use (&$queryCount) {
+            $queryCount++;
+        });
+
+        $posts = Post::with(['user', 'category'])
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        info("Post index: {$queryCount} queries");
+        return view('posts.index', compact('posts'));
+    }
+}</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>N+1 problem</strong> ay nag-ko-cause ng maraming queries — isang query para sa parent at N queries para sa related data. I-solve gamit ang <code>with()</code> eager loading.</li>
+        <li>Ang <code>DB::listen()</code> ay naglo-log ng lahat ng queries — gamitin para makita ang slow queries at ang total na bilang ng queries per request.</li>
+        <li>Ang <code>EXPLAIN</code> ay nagpapakita kung paano nirun ng MySQL ang query — tignan ang <code>type</code> at <code>key</code> columns para malaman kung gumamit ng index.</li>
+        <li>Ang <code>chunk()</code> at <code>cursor()</code> ay para sa large datasets — i-break ang processing sa mas maliliit na batches para hindi mag-oom.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you detect and fix the N+1 query problem?" — Gamitin ang <code>DB::listen()</code> para i-log ang queries. Kapag nakita na maraming queries, i-check kung may eager loading. Gamitin ang <code>with()</code> para i-preload ang related data. Gamitin ang EXPLAIN para i-verify na gumagamit ng index.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Eloquent Eager Loading</strong> — Official docs ng Laravel para sa eager loading at N+1 problem. <a href="https://laravel.com/docs/11.x/eloquent-relationships#eager-loading" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>MySQL EXPLAIN Output</strong> — Official MySQL docs para sa pag-intindi ng EXPLAIN results. <a href="https://dev.mysql.com/doc/refman/8.0/en/explain-output.html" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0017';
+  var questions = [
+    {
+      question: 'Ano ang N+1 problem sa Laravel?',
+      options: [
+        'Kapag may 1 query lang sa database',
+        'Kapag nag-fetch ng maraming records at saka nag-access ng related data na nag-ko-cause ng maraming queries',
+        'Kapag may 1 migration lang',
+        'Kapag nag-use ng DB::listen'
+      ],
+      correct: 'b',
+      answer: 'Ang N+1 problem ay nangyayari kapag nag-fetch ng maraming records at saka nag-access ng related data — nag-ko-cause ng 1 query para sa parent at N queries pa para sa bawat related record.'
+    },
+    {
+      question: 'Paano mo i-solve ang N+1 problem gamit ang Eloquent?',
+      options: [
+        'Gamitin ang DB::select()',
+        'Gamitin ang with() para i-preload ang related data sa iisang query',
+        'Gamitin ang chunk() para i-break ang queries',
+        'Gamitin ang cursor() para i-lazy load'
+      ],
+      correct: 'b',
+      answer: 'Ang with() method ay eager loads ang related data — isang query lang para sa lahat ng related records imbis na N queries.'
+    },
+    {
+      question: 'Kapag ang EXPLAIN result ay may type: ALL, ano ang ibig sabihin?',
+      options: [
+        'Efficient na query gamit ang index',
+        'Full table scan — walang index na ginagamit, kailangan mag-add ng index',
+        'Ang query ay gumagamit ng primary key',
+        'Ang query ay gumagamit ng range scan'
+      ],
+      correct: 'b',
+      answer: 'Ang type: ALL ay nangangahulugang full table scan — binabasa ang buong table. Ito ay pinaka-mabagal at nagpapahiwatig na kailangan ng index sa columns na ginagamit sa WHERE clause.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

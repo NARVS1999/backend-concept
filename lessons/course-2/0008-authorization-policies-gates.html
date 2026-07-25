@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0008: Authorization (Policies & Gates)</title>
+  <meta name="course-home" content="../../landing-page/roxy.html">
+    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="../../assets/course-2.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Laravel Backend Foundations</strong> — Lesson 4 of 6
+      </div>
+
+      <h1>Authorization (Policies & Gates)</h1>
+      <p><em>Matutunan kung paano i-protect ang iyong endpoints gamit ang Laravel Policies at Gates para sa role-based at ownership-based authorization.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong i-implement ang isang Policy para sa resource — halimbawa, ang user ay pwedeng mag-edit o mag-delete lamang ng sarili niyang posts.
+      </div>
+
+      <!-- Section 1 -->
+      <h2>Policies vs Gates</h2>
+      <p>Ang <strong>authorization</strong> ay ang proseso ng pag-determine kung ang authenticated user ay may permission na gawin ang isang action. Sa Laravel, dalawang approach ang ginagamit:</p>
+
+      <ul>
+        <li><strong>Policies</strong> — Dedicated classes na nag-handle ng authorization logic para sa isang specific model. Ito ay organized at testable.</li>
+        <li><strong>Gates</strong> — Simple closures na nag-de-determine ng authorization. Ito ay mas flexible pero hindi organized.</li>
+      </ul>
+
+      <pre><code>// Policy - organized, testable
+// app/Policies/PostPolicy.php
+class PostPolicy
+{
+    public function viewAny(User $user)
+    {
+        return true; // Lahat makakakita ng posts
+    }
+
+    public function view(User $user, Post $post)
+    {
+        return true; // Lahat makakakita ng individual post
+    }
+
+    public function create(User $user)
+    {
+        return true; // Lahat pwedeng gumawa ng post
+    }
+
+    public function update(User $user, Post $post)
+    {
+        return $user->id === $post->user_id; // Only owner can update
+    }
+
+    public function delete(User $user, Post $post)
+    {
+        return $user->id === $post->user_id; // Only owner can delete
+    }
+
+    public function forceDelete(User $user, Post $post)
+    {
+        return $user->isAdmin(); // Only admin can force delete
+    }
+}</code></pre>
+
+      <pre><code>// Gate - flexible, inline
+use Illuminate\Support\Facades\Gate;
+
+Gate::define('update-post', function (User $user, Post $post) {
+    return $user->id === $post->user_id;
+});
+
+Gate::define('delete-post', function (User $user, Post $post) {
+    return $user->id === $post->user_id;
+});
+
+Gate::define('admin-only', function (User $user) {
+    return $user->isAdmin();
+});</code></pre>
+
+      <!-- Section 2 -->
+      <h2>Registering Policies</h2>
+      <p>Ang policies ay kailangan i-register para ma-detect ng Laravel. Ito ay auto-registered kapag gumamit ka ng naming convention:</p>
+
+      <pre><code>// Manual registration (optional)
+// app/Providers/AuthServiceProvider.php
+class AuthServiceProvider extends ServiceProvider
+{
+    protected $policies = [
+        Post::class => PostPolicy::class,
+        Comment::class => CommentPolicy::class,
+    ];
+
+    public function boot()
+    {
+        $this->registerPolicies();
+    }
+}
+
+// Auto-registration (Laravel 8+)
+// Kapag ang policy ay nasa app/Policies/PostPolicy.php
+// at ang model ay nasa app/Models/Post.php
+// auto-detect na ito ng Laravel.</code></pre>
+
+      <!-- Section 3 -->
+      <h2>Using Policies in Controllers</h2>
+      <p>Gamitin ang policies sa controllers para i-protect ang endpoints:</p>
+
+      <pre><code>class PostController extends Controller
+{
+    public function update(UpdatePostRequest $request, Post $post)
+    {
+        // I-check kung authorized ang user
+        $this->authorize('update', $post);
+
+        // OR gamit ang Policy method name
+        $this->authorize('update', [$post]);
+
+        // Continue with update...
+        $post->update($request->validated());
+        return new PostResource($post);
+    }
+
+    public function destroy(Post $post)
+    {
+        $this->authorize('delete', $post);
+
+        $post->delete();
+        return response()->noContent();
+    }
+
+    // Alternative: Use middleware
+    public function __construct()
+    {
+        $this->middleware('can:update,post')->only('update');
+        $this->middleware('can:delete,post')->only('destroy');
+    }
+}</code></pre>
+
+      <p><strong>Checking Authorization:</strong></p>
+      <ul>
+        <li><code>$this->authorize('ability', $model)</code> — I-check ang authorization sa controller. I-throw ng 403 exception kapag unauthorized.</li>
+        <li><code>auth()->user()->can('ability', $model)</code> — I-check ang authorization sa kahit anong lugar. I-return ng boolean.</li>
+        <li><code>auth()->user()->cannot('ability', $model)</code> — Reverse ng <code>can()</code>.</li>
+      </ul>
+
+      <!-- Section 4 -->
+      <h2>Practical: User Can Only Edit Own Posts</h2>
+      <p>Gamitin natin ang lahat ng natutunan para i-implement ang ownership-based authorization:</p>
+
+      <pre><code>// Step 1: Create Policy
+php artisan make:policy PostPolicy --model=Post
+
+// Step 2: Define methods
+class PostPolicy
+{
+    public function update(User $user, Post $post)
+    {
+        return $user->id === $post->user_id;
+    }
+
+    public function delete(User $user, Post $post)
+    {
+        return $user->id === $post->user_id;
+    }
+}
+
+// Step 3: Use in Controller
+class PostController extends Controller
+{
+    public function update(UpdatePostRequest $request, Post $post)
+    {
+        $this->authorize('update', $post);
+
+        $post->update($request->validated());
+        return new PostResource($post);
+    }
+
+    public function destroy(Post $post)
+    {
+        $this->authorize('delete', $post);
+
+        $post->delete();
+        return response()->noContent();
+    }
+}
+
+// Step 4: Test
+// User A creates a post
+// User A can update/delete their own post
+// User B CANNOT update/delete User A's post
+// Admin can update/delete any post</code></pre>
+
+      <p><strong>Role-Based Authorization:</strong></p>
+      <pre><code>// Adding roles to User model
+class User extends Authenticatable
+{
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isModerator()
+    {
+        return $this->role === 'moderator';
+    }
+}
+
+// In Policy
+public function delete(User $user, Post $post)
+{
+    // Owner OR admin can delete
+    return $user->id === $post->user_id || $user->isAdmin();
+}
+
+// Using in Blade templates
+@can('update', $post)
+    <button>Edit Post</button>
+@endcan
+
+@can('delete', $post)
+    <button>Delete Post</button>
+@endcan</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>Policies</strong> ay dedicated classes para sa authorization logic — organized at testable.</li>
+        <li>Ang <strong>Gates</strong> ay simple closures para sa authorization — flexible pero hindi organized.</li>
+        <li>Ang <strong>$this->authorize()</strong> sa controller ay nag-throw ng 403 exception kapag unauthorized.</li>
+        <li>Ang <strong>auth()->user()->can()</strong> ay nag-return ng boolean — pwedeng gamitin sa kahit anong lugar.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "How do you handle authorization in Laravel?" — Gumagamit ako ng Policies para sa model-specific authorization logic (ownership, roles). I-register ang policies at i-use sa controllers gamit ang $this->authorize() o middleware. Ito ay mas organized at testable kaysa mag-check ng permissions sa bawat controller method.
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Laravel Authorization</strong> — Official docs ng Laravel para sa Policies at Gates. <a href="https://laravel.com/docs/11.x/authorization" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Policies</strong> — Official docs ng Laravel para sa pag-gawa ng Policies. <a href="https://laravel.com/docs/11.x/authorization#writing-policies" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course2.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0008';
+  var questions = [
+    {
+      question: 'Ano ang pagkakaiba ng Policies at Gates sa Laravel?',
+      options: ['Pareho silang para sa validation', 'Policies = dedicated classes para sa model-specific logic, Gates = inline closures', 'Policies = para sa forms, Gates = para sa API', 'Walang pagkakaiba'],
+      correct: 'b',
+      answer: 'Ang Policies ay dedicated classes para sa authorization logic ng isang model (organized, testable), habang ang Gates ay inline closures (flexible pero hindi organized).'
+    },
+    {
+      question: 'Paano mo i-check ang authorization sa controller?',
+      options: ['auth()->user()->can()', '$this->authorize()', 'Gate::allows()', 'Lahat ng ito'],
+      correct: 'd',
+      answer: 'Pwedeng gamitin ang $this->authorize() sa controller, auth()->user()->can() sa kahit anong lugar, o Gate::allows(). Lahat ay valid na approach.'
+    },
+    {
+      question: 'Ano ang mangyayari kapag nag-call ka ng $this->authorize() at hindi authorized ang user?',
+      options: ['I-return ng false', 'I-throw ng 403 Forbidden exception', 'I-redirect sa login page', 'I-log ang unauthorized attempt'],
+      correct: 'b',
+      answer: 'Ang $this->authorize() ay mag-a-throw ng 403 Forbidden exception kapag hindi authorized ang user. Ito ay auto-handled ng Laravel exception handler.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>
