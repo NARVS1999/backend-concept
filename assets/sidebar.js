@@ -17,11 +17,14 @@
   // Derive the base directory so links work from any page depth
   var baseDir = pathname.substring(0, pathname.lastIndexOf('/') + 1);
 
+  var homeMeta = document.querySelector('meta[name="course-home"]');
+  var homePath = homeMeta ? baseDir + homeMeta.getAttribute('content') : baseDir + '../../index.html';
+
   var html =
     '<div class="sidebar-section">' +
       '<div class="sidebar-header">' +
         '<span>Course</span>' +
-        '<a href="' + baseDir + '../landing-page/sylphiette.html" class="sidebar-home" title="Back to Course">' +
+        '<a href="' + homePath + '" class="sidebar-home" title="Back to Course">' +
           '<button class="sidebar-home-btn">\u2302</button>' +
         '</a>' +
       '</div>' +

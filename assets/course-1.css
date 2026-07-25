@@ -1,0 +1,13 @@
+:root {
+  --accent: #4a7c59;
+  --accent-light: rgba(74,124,89,0.12);
+  --accent-dark: #2d4a38;
+  --border: #c4b89a;
+}
+
+[data-theme="dark"] {
+  --accent: #5cb87a;
+  --accent-light: rgba(92,184,122,0.15);
+  --accent-dark: #3a8a5a;
+  --border: #3a4050;
+}
