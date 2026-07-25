@@ -21,7 +21,7 @@
     '<div class="sidebar-section">' +
       '<div class="sidebar-header">' +
         '<span>Course</span>' +
-        '<a href="' + baseDir + '../index.html" class="sidebar-home" title="Back to Home">' +
+        '<a href="' + baseDir + '../landing-page/sylphiette.html" class="sidebar-home" title="Back to Course">' +
           '<button class="sidebar-home-btn">\u2302</button>' +
         '</a>' +
       '</div>' +

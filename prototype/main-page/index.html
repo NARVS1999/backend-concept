@@ -3,69 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Courses Portal — Mushoku Tensei Edition</title>
+  <title>Courses Platform</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Yusei+Magic&family=Zen+Antique&display=swap" rel="stylesheet">
-  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
   <style>
-    :root {
-      --landing-bg: #1a2a1a;
-      --landing-bg-mid: #2d4a2d;
-      --landing-bg-end: #4a3a2a;
-      --paper: #f5f0e1;
-      --paper-border: #c4b89a;
-      --paper-texture: rgba(180,150,100,0.03);
-      --accent: #6b8a3a;
-      --accent-dark: #4a6a2a;
-      --accent-glow: rgba(107,138,58,0.3);
-      --red-seal: #8b4500;
-      --text-dark: #2d3a1a;
-      --text-body: #333;
-      --text-muted: #666;
-      --text-muted2: #999;
-      --card-hover-shadow: rgba(107,138,58,0.4);
-      --progress-gradient: linear-gradient(90deg, #6b8a3a, #cc6633);
-      --tooltip-bg: #2d3a1a;
-      --wind-particle: rgba(200,180,100,0.15);
-      --font-sans: 'Noto Serif JP', serif;
-    }
-
-    [data-theme="dark"] {
-      --landing-bg: #0a1a0a;
-      --landing-bg-mid: #143d14;
-      --landing-bg-end: #1a3a1a;
-      --paper: #1a1f2e;
-      --paper-border: #2a3040;
-      --paper-texture: rgba(100,130,100,0.03);
-      --accent: #8ab85a;
-      --accent-dark: #6a9a3a;
-      --accent-glow: rgba(138,184,90,0.3);
-      --red-seal: #cc6633;
-      --text-dark: #e0e0d0;
-      --text-body: #c8c8b8;
-      --text-muted: #a0a090;
-      --text-muted2: #777;
-      --card-hover-shadow: rgba(138,184,90,0.4);
-      --progress-gradient: linear-gradient(90deg, #8ab85a, #cc6633);
-      --tooltip-bg: #3a5a2a;
-      --wind-particle: rgba(200,180,100,0.08);
-    }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: var(--paper);
+      background: linear-gradient(135deg, #1a2a4a, #2d1810, #4a3a2a);
+      background-size: 400% 400%;
+      animation: bgShift 14s ease infinite;
       font-family: 'Noto Serif JP', serif;
       display: flex;
       justify-content: center;
-      padding: clamp(1rem, 3vw, 2rem) clamp(0.5rem, 2vw, 1rem);
+      padding: 2rem 1rem;
       min-height: 100vh;
-      transition: background 0.5s ease;
+    }
+
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     .scroll-progress {
       position: fixed; top: 0; left: 0;
       height: 3px; width: 0%;
-      background: var(--progress-gradient);
+      background: linear-gradient(90deg, #8a7a2a, #c0392b, #a32c2c);
       z-index: 1000; transition: width 0.1s linear;
     }
 
@@ -75,7 +38,6 @@
     }
     .wind-particle {
       position: absolute; border-radius: 50%;
-      background: var(--wind-particle);
       animation: windDrift linear infinite; opacity: 0;
     }
     @keyframes windDrift {
@@ -85,43 +47,30 @@
       100% { transform: translateX(110vw) translateY(-40px) scale(1.5); opacity: 0; }
     }
 
-    .theme-toggle {
-      position: fixed; top: 1rem; right: 1rem;
-      background: var(--paper); border: 1px solid var(--paper-border);
-      border-radius: 8px; cursor: pointer;
-      padding: 6px 12px; font-size: 1rem;
-      color: var(--text-muted); transition: all 0.3s ease;
-      z-index: 1000; line-height: 1;
-    }
-    .theme-toggle:hover {
-      color: var(--accent); background: rgba(107,138,58,0.06); border-color: var(--accent);
-    }
-
     .portal {
       max-width: 960px;
       width: 100%;
-      background: var(--paper);
-      padding: clamp(1rem, 3vw, 2rem);
-      box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 0 0 1px var(--paper-border) inset;
+      background: #f5f0e1;
+      padding: 2rem 2rem 1.5rem;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 0 0 1px #c4b89a inset;
       position: relative;
       z-index: 1;
       border-radius: 2px;
       animation: paperFadeIn 1s ease-out;
-      transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    @keyframes paperFadeIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .portal::before {
       content: '';
       position: absolute; inset: 0;
       background:
-        repeating-linear-gradient(0deg, transparent, transparent 2px, var(--paper-texture) 2px, var(--paper-texture) 4px),
-        repeating-linear-gradient(90deg, transparent, transparent 3px, var(--paper-texture) 3px, var(--paper-texture) 6px);
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(180,150,100,0.03) 2px, rgba(180,150,100,0.03) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(160,130,80,0.02) 3px, rgba(160,130,80,0.02) 6px);
       pointer-events: none; border-radius: 2px;
-    }
-
-    @keyframes paperFadeIn {
-      from { opacity: 0; transform: translateY(30px) scale(0.97); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .reveal {
@@ -132,12 +81,12 @@
 
     .extra-banner {
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 3px double var(--accent);
+      border-bottom: 3px double #8a7a2a;
       padding-bottom: 0.5rem; margin-bottom: 1rem;
       font-family: 'Yusei Magic', cursive;
     }
     .extra-banner .extra-left {
-      font-size: clamp(1.2rem, 4vw, 1.8rem); color: var(--red-seal); letter-spacing: 0.3em;
+      font-size: 1.8rem; color: #8a7a2a; letter-spacing: 0.3em;
       position: relative; overflow: hidden;
     }
     .extra-banner .extra-left::after {
@@ -151,14 +100,14 @@
       50% { left: 100%; }
       100% { left: 100%; }
     }
-    .extra-banner .extra-right { font-size: 0.85rem; color: var(--accent); }
+    .extra-banner .extra-right { font-size: 0.85rem; color: #8a7a2a; }
 
     .headline-wrap {
       text-align: center; margin-bottom: 1.5rem; position: relative;
     }
     .headline-wrap::after {
       content: ''; display: block; width: 80px; height: 3px;
-      background: var(--accent); margin: 0.5rem auto;
+      background: #8a7a2a; margin: 0.5rem auto;
       animation: lineGrow 1.2s ease-out forwards; transform-origin: left;
     }
     @keyframes lineGrow {
@@ -166,17 +115,16 @@
       to { transform: scaleX(1); }
     }
     .headline-main {
-      font-family: 'Yusei Magic', cursive; font-size: clamp(1.6rem, 5vw, 2.6rem);
-      color: var(--text-dark); line-height: 1.3; letter-spacing: 0.05em;
-      transition: color 0.4s ease;
+      font-family: 'Yusei Magic', cursive; font-size: 2.6rem;
+      color: #1a2a4a; line-height: 1.3; letter-spacing: 0.05em;
     }
     .headline-main .accent {
-      color: var(--accent); font-size: clamp(1.8rem, 6vw, 3rem); display: inline-block;
+      color: #8a7a2a; font-size: 3rem; display: inline-block;
       animation: accentPulse 3s ease-in-out infinite;
     }
     @keyframes accentPulse {
-      0%, 100% { text-shadow: 0 0 0 var(--accent-glow); }
-      50% { text-shadow: 0 0 12px var(--accent-glow); }
+      0%, 100% { text-shadow: 0 0 0 rgba(138,122,42,0); }
+      50% { text-shadow: 0 0 12px rgba(138,122,42,0.3); }
     }
     .headline-main .letter {
       display: inline-block; opacity: 0;
@@ -196,26 +144,27 @@
     .headline-main .letter:nth-child(12) { animation-delay: 1.4s; }
     .headline-main .letter:nth-child(13) { animation-delay: 1.5s; }
     .headline-main .letter:nth-child(14) { animation-delay: 1.6s; }
+    .headline-main .letter:nth-child(15) { animation-delay: 1.7s; }
+    .headline-main .letter:nth-child(16) { animation-delay: 1.8s; }
     @keyframes letterFadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .headline-sub {
       font-family: 'Noto Serif JP', serif; font-size: 1rem;
-      color: var(--text-muted); margin-top: 0.3rem; font-style: italic;
-      transition: color 0.4s ease;
+      color: #666; margin-top: 0.3rem; font-style: italic;
     }
 
     .course-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-      gap: clamp(1rem, 2vw, 1.5rem);
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
       margin-bottom: 1.5rem;
     }
 
     .course-card {
-      background: var(--paper);
-      border: 1px solid var(--paper-border);
+      background: #fff;
+      border: 1px solid #e0d8c8;
       border-radius: 6px;
       overflow: hidden;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -225,7 +174,6 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      -webkit-tap-highlight-color: transparent;
     }
     .course-card:hover {
       transform: translateY(-6px) scale(1.02);
@@ -240,14 +188,6 @@
       display: flex; align-items: center; justify-content: center;
     }
     .course-card:hover::after { opacity: 1; }
-    .touch .course-card:active::after { opacity: 1; }
-
-    .course-card.coming-soon {
-      cursor: default;
-    }
-    .course-card.coming-soon::after {
-      content: 'COMING SOON';
-    }
 
     .card-row {
       display: flex;
@@ -258,12 +198,10 @@
       width: 130px;
       flex-shrink: 0;
       background: #e8e0d0;
-      overflow: hidden;
     }
     .card-img img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
       display: block;
       transition: filter 0.3s ease;
     }
@@ -274,68 +212,65 @@
     .card-accent {
       height: 4px; width: 100%;
     }
-    .card-accent.sylphiette { background: #4a7c59; }
-    .card-accent.roxy { background: linear-gradient(90deg, #5a3a8a, #8a5ab8); }
-    .card-accent.eris { background: linear-gradient(90deg, #c0392b, #e8a050); }
+    .card-accent.zanka { background: #2c3e6e; }
+    .card-accent.rudo { background: #c0392b; }
+    .card-accent.enjin { background: linear-gradient(90deg, #a32c2c, #b8860b); }
+    .card-accent.amo { background: linear-gradient(90deg, #d46a1c, #e8a050); }
 
     .card-body {
       padding: 1.2rem; flex: 1; display: flex; flex-direction: column;
     }
 
     .card-character {
-      font-family: 'Yusei Magic', cursive; font-size: clamp(0.65rem, 1.8vw, 0.8rem);
-      color: var(--text-muted2); letter-spacing: 0.15em; margin-bottom: 0.3rem;
+      font-family: 'Yusei Magic', cursive; font-size: 0.8rem;
+      color: #999; letter-spacing: 0.15em; margin-bottom: 0.3rem;
       text-transform: uppercase;
-      transition: color 0.4s ease;
-      overflow-wrap: break-word;
     }
 
     .card-title {
-      font-family: 'Yusei Magic', cursive; font-size: clamp(1.1rem, 3vw, 1.4rem);
-      color: var(--text-dark); line-height: 1.3; margin-bottom: 0.5rem;
-      transition: color 0.4s ease;
-      overflow-wrap: break-word;
+      font-family: 'Yusei Magic', cursive; font-size: 1.4rem;
+      color: #1a1a1a; line-height: 1.3; margin-bottom: 0.5rem;
     }
-    .card-title .accent { font-size: clamp(1.3rem, 3.5vw, 1.6rem); }
-    .card-title .accent.sylphiette { color: #4a7c59; }
-    .card-title .accent.roxy { color: #5a3a8a; }
-    .card-title .accent.eris { color: #c0392b; }
+    .card-title .accent { font-size: 1.6rem; }
+    .card-title .accent.zanka { color: #2c3e6e; }
+    .card-title .accent.rudo { color: #c0392b; }
+    .card-title .accent.enjin { color: #a32c2c; }
+    .card-title .accent.amo { color: #d46a1c; }
 
     .card-subtitle {
-      font-size: clamp(0.65rem, 1.8vw, 0.75rem); color: var(--text-muted); font-style: italic;
+      font-size: 0.75rem; color: #666; font-style: italic;
       margin-bottom: 0.8rem; line-height: 1.4;
-      transition: color 0.4s ease;
     }
 
     .card-desc {
-      font-size: clamp(0.7rem, 1.8vw, 0.8rem); color: var(--text-body); line-height: 1.7;
+      font-size: 0.8rem; color: #444; line-height: 1.7;
       flex: 1; text-align: justify;
-      transition: color 0.4s ease;
     }
 
     .card-meta {
       display: flex; justify-content: space-between; align-items: center;
-      padding-top: 0.8rem; border-top: 1px solid var(--paper-border);
+      padding-top: 0.8rem; border-top: 1px solid #e8e0d0;
       margin-top: auto;
-      transition: border-color 0.4s ease;
     }
-    .card-lessons, .card-phases {
-      font-size: 0.7rem; color: var(--text-muted2); letter-spacing: 0.1em;
-      transition: color 0.4s ease;
+    .card-lessons {
+      font-size: 0.7rem; color: #999; letter-spacing: 0.1em;
+    }
+    .card-phases {
+      font-size: 0.7rem; color: #999; letter-spacing: 0.1em;
     }
 
     .hanko-wrap { text-align: center; margin-bottom: 1rem; }
     .hanko {
       display: inline-flex; align-items: center; justify-content: center;
-      width: 70px; height: 70px; border: 3px solid var(--red-seal);
+      width: 70px; height: 70px; border: 3px solid #8a7a2a;
       border-radius: 50%; font-family: 'Zen Antique', serif;
-      font-size: 1rem; color: var(--red-seal); transform: rotate(-8deg);
-      transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      font-size: 1rem; color: #8a7a2a; transform: rotate(-8deg);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: pointer; user-select: none;
       animation: hankoFloat 4s ease-in-out infinite;
     }
     .hanko:hover {
-      transform: rotate(0deg) scale(1.1); box-shadow: 0 0 20px rgba(139,69,0,0.3);
+      transform: rotate(0deg) scale(1.1); box-shadow: 0 0 20px rgba(138,122,42,0.3);
     }
     .hanko.stamped { animation: stampBurst 0.5s ease; }
     @keyframes stampBurst {
@@ -350,47 +285,17 @@
     }
 
     .footer {
-      border-top: 1px solid var(--paper-border); padding-top: 0.5rem;
-      text-align: center; font-size: 0.7rem; color: var(--text-muted2);
+      border-top: 1px solid #c4b89a; padding-top: 0.5rem;
+      text-align: center; font-size: 0.7rem; color: #999;
       letter-spacing: 0.1em;
-      transition: border-color 0.4s ease, color 0.4s ease;
     }
 
     @media (max-width: 700px) {
-      .extra-banner .extra-left { font-size: clamp(1rem, 3vw, 1.2rem); }
-      .extra-banner { flex-wrap: wrap; gap: 0.2rem; }
-    }
-
-    @media (max-width: 550px) {
-      .card-row {
-        flex-direction: column;
-      }
-      .card-img {
-        width: 100%;
-        max-height: 200px;
-      }
-      .card-img img {
-        height: 200px;
-        width: 100%;
-        object-fit: cover;
-        object-position: top;
-      }
-      .card-body {
-        padding: 0.8rem;
-      }
-      .card-meta {
-        flex-wrap: wrap;
-        gap: 0.3rem;
-      }
-    }
-
-    @media (max-width: 400px) {
-      .portal {
-        padding: 0.8rem;
-      }
-      .headline-main {
-        letter-spacing: 0;
-      }
+      .portal { padding: 1rem; }
+      .course-grid { grid-template-columns: 1fr; }
+      .headline-main { font-size: 2rem; }
+      .headline-main .accent { font-size: 2.4rem; }
+      .extra-banner .extra-left { font-size: 1.2rem; }
     }
   </style>
 </head>
@@ -409,35 +314,33 @@
   <div class="wind-particle"></div>
 </div>
 
-<button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">&#9788;</button>
-
 <div class="portal">
 
   <div class="extra-banner reveal">
     <span class="extra-left">PORTAL</span>
-    <span class="extra-right">MUSHOKU TENSEI</span>
+    <span class="extra-right">COURSE HUB</span>
   </div>
 
   <div class="headline-wrap reveal">
     <div class="headline-main">
       <span class="accent letter">C</span><span class="letter">o</span><span class="letter">u</span><span class="letter">r</span><span class="letter">s</span><span class="letter">e</span><span class="letter">s</span>
       <span class="letter"> </span>
-      <span class="letter">P</span><span class="letter">o</span><span class="letter">r</span><span class="letter">t</span><span class="letter">a</span><span class="letter">l</span>
+      <span class="letter">P</span><span class="letter">l</span><span class="letter">a</span><span class="letter">t</span><span class="letter">f</span><span class="letter">o</span><span class="letter">r</span><span class="letter">m</span>
     </div>
     <div class="headline-sub">Choose your path. Every course, a different hero.</div>
   </div>
 
   <div class="course-grid">
 
-    <a href="landing-page/sylphiette.html" target="_blank" class="course-card reveal">
-      <div class="card-accent sylphiette"></div>
+    <a href="../../animate/zanka.html" target="_blank" class="course-card reveal">
+      <div class="card-accent zanka"></div>
       <div class="card-row">
-        <div class="card-img"><img src="animate/sylphiette-img.png" alt="Sylphiette"></div>
+        <div class="card-img"><img src="../../animate/zanka-img.jpg" alt="Zanka Nijiku"></div>
         <div class="card-body">
-          <div class="card-character">Sylphiette</div>
-          <div class="card-title"><span class="accent sylphiette">T</span>he Wind Hero</div>
-          <div class="card-subtitle">A Gentle Guide Through Backend Engineering</div>
-          <div class="card-desc">Like the wind — free, gentle, yet firm. Sylphiette guides you from basics to system design with a soft but steady hand. Every concept builds naturally on the last, like a breeze that grows to a gale.</div>
+          <div class="card-character">Zanka Nijiku</div>
+          <div class="card-title"><span class="accent zanka">T</span>he Pierce</div>
+          <div class="card-subtitle">A Sharp Mind for System Design</div>
+          <div class="card-desc">Not everyone is a genius — but that doesn't mean you can't be great. Zanka proved that intelligence isn't just about speed, it's about observation and understanding. Learn resilience and strategy through backend fundamentals.</div>
           <div class="card-meta">
             <span class="card-lessons">23 lessons</span>
             <span class="card-phases">6 phases</span>
@@ -446,41 +349,56 @@
       </div>
     </a>
 
-    <a href="#" class="course-card coming-soon reveal">
-      <div class="card-accent roxy"></div>
+    <a href="../../animate/rudo.html" target="_blank" class="course-card reveal">
+      <div class="card-accent rudo"></div>
       <div class="card-row">
-        <div class="card-img"><img src="animate/roxy-img.png" alt="Roxy Migurdia"></div>
+        <div class="card-img"><img src="../../animate/rudo-img.jpg" alt="Rudo Surebrec"></div>
         <div class="card-body">
-          <div class="card-character">Roxy Migurdia</div>
-          <div class="card-title"><span class="accent roxy">T</span>he Demon God</div>
-          <div class="card-subtitle">Wisdom of the Migurdia Clan</div>
-          <div class="card-desc">Roxy's journey across continents mirrors the depth of backend mastery. From water magic to database architecture — her path teaches that true skill comes from perseverance and heart.</div>
+          <div class="card-character">Rudo Surebrec</div>
+          <div class="card-title"><span class="accent rudo">T</span>he Brush</div>
+          <div class="card-subtitle">A Survivor's Journey Through Backend Engineering</div>
+          <div class="card-desc">Thrown from the Sphere down to the Ground — Rudo learned to wield 3R through sheer creativity and determination. You don't need a degree to become skilled, only resilience and the willingness to learn.</div>
           <div class="card-meta">
-            <span class="card-lessons">Coming Soon</span>
-            <span class="card-phases">—</span>
+            <span class="card-lessons">23 lessons</span>
+            <span class="card-phases">6 phases</span>
           </div>
         </div>
       </div>
     </a>
 
-    <a href="#" class="course-card coming-soon reveal">
-      <div class="card-accent eris"></div>
+    <a href="../../animate/enjin.html" target="_blank" class="course-card reveal">
+      <div class="card-accent enjin"></div>
       <div class="card-row">
-        <div class="card-img"><img src="animate/eris-img.png" alt="Eris Boreas Greyrat"></div>
+        <div class="card-img"><img src="../../animate/enjin-img.jpg" alt="Enjin"></div>
         <div class="card-body">
-          <div class="card-character">Eris Boreas Greyrat</div>
-          <div class="card-title"><span class="accent eris">T</span>he Sword Princess</div>
-          <div class="card-subtitle">Strength Through Systematic Mastery</div>
-          <div class="card-desc">Eris conquered her fears through relentless training. System design demands the same courage — face complexity head-on, sharpen your instincts, and emerge stronger than before.</div>
+          <div class="card-character">Enjin</div>
+          <div class="card-title"><span class="accent enjin">T</span>he Flame</div>
+          <div class="card-subtitle">A Blazing Path to Backend Mastery</div>
+          <div class="card-desc">Enjin connects others — an ensign who shows the way. His true strength lies in uniting people under a single purpose. Become an ensign yourself, connecting concepts and guiding others through system design.</div>
           <div class="card-meta">
-            <span class="card-lessons">Coming Soon</span>
-            <span class="card-phases">—</span>
+            <span class="card-lessons">23 lessons</span>
+            <span class="card-phases">6 phases</span>
           </div>
         </div>
       </div>
     </a>
 
-
+    <a href="../../animate/amo-empool.html" target="_blank" class="course-card reveal">
+      <div class="card-accent amo"></div>
+      <div class="card-row">
+        <div class="card-img"><img src="../../animate/amo-empool-img.png" alt="Amo Empool"></div>
+        <div class="card-body">
+          <div class="card-character">Amo Empool</div>
+          <div class="card-title"><span class="accent amo">T</span>he Lady of Penta</div>
+          <div class="card-subtitle">Fragrance of Love Through Backend Engineering</div>
+          <div class="card-desc">Like a fragrance carried by the wind, backend engineering touches everything. From database normalization to system design — every topic is taught with warmth and purpose. You will feel the love in what you build.</div>
+          <div class="card-meta">
+            <span class="card-lessons">23 lessons</span>
+            <span class="card-phases">6 phases</span>
+          </div>
+        </div>
+      </div>
+    </a>
 
   </div>
 
@@ -489,7 +407,7 @@
   </div>
 
   <div class="footer reveal">
-    Courses Portal — Mushoku Tensei Edition
+    Courses Platform
   </div>
 
 </div>
@@ -497,30 +415,6 @@
 <script>
 (function() {
   'use strict';
-
-  if ('ontouchstart' in window) {
-    document.documentElement.classList.add('touch');
-  }
-
-  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
-  var themeBtn = document.getElementById('themeToggle');
-  if (themeBtn) {
-    themeBtn.innerHTML = isDark ? '&#9790;' : '&#9788;';
-    themeBtn.addEventListener('click', function() {
-      var html = document.documentElement;
-      isDark = html.getAttribute('data-theme') === 'dark';
-      if (isDark) {
-        html.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-        themeBtn.innerHTML = '&#9788;';
-      } else {
-        html.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        themeBtn.innerHTML = '&#9790;';
-      }
-    });
-  }
 
   var revealEls = document.querySelectorAll('.reveal');
   var observer = new IntersectionObserver(function(entries) {
@@ -561,7 +455,7 @@
     p.style.left = '-10px';
     p.style.animationDuration = (10 + Math.random() * 14) + 's';
     p.style.opacity = '0';
-    p.style.background = Math.random() > 0.5 ? 'rgba(200,180,100,0.15)' : 'rgba(107,138,58,0.08)';
+    p.style.background = Math.random() > 0.5 ? 'rgba(138,122,42,0.15)' : 'rgba(255,255,255,0.08)';
     windContainer.appendChild(p);
     setTimeout(function() { if (p.parentNode) p.remove(); }, 25000);
   }
