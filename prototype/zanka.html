@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zanka Nijiku — Backend Course</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Yusei+Magic&family=Zen+Antique&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a2a4a;
+      font-family: 'Noto Serif JP', serif;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .newspaper {
+      max-width: 900px;
+      width: 100%;
+      background: #f5f0e1;
+      padding: 2rem 2rem 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px #c4b89a inset;
+      position: relative;
+    }
+    .newspaper::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(180,150,100,0.03) 2px, rgba(180,150,100,0.03) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(160,130,80,0.02) 3px, rgba(160,130,80,0.02) 6px);
+      pointer-events: none;
+    }
+
+    .extra-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px double #2c3e6e;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      font-family: 'Yusei Magic', cursive;
+    }
+    .extra-banner .extra-left { font-size: 1.8rem; color: #8a7a2a; letter-spacing: 0.3em; }
+    .extra-banner .extra-right { font-size: 0.85rem; color: #2c3e6e; }
+    .extra-banner .extra-price { font-size: 0.75rem; color: #666; }
+
+    .headline-wrap {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .headline-wrap::after {
+      content: '';
+      display: block;
+      width: 80px; height: 3px;
+      background: #2c3e6e;
+      margin: 0.5rem auto;
+    }
+    .headline-main {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 2.8rem;
+      color: #1a2a4a;
+      line-height: 1.3;
+      letter-spacing: 0.05em;
+    }
+    .headline-main .accent { color: #2c3e6e; font-size: 3.2rem; }
+    .headline-sub {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1rem;
+      color: #666;
+      margin-top: 0.3rem;
+      font-style: italic;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .character-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .character-img {
+      width: 150px;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .char-name {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.3rem;
+      color: #1a2a4a;
+      margin-top: 0.5rem;
+    }
+    .char-title { font-size: 0.75rem; color: #666; letter-spacing: 0.15em; }
+
+    .article { columns: 2; column-gap: 1.2rem; column-rule: 1px solid #c4b89a; }
+    .article p { font-size: 0.85rem; line-height: 1.9; margin-bottom: 0.8rem; text-align: justify; color: #333; text-indent: 1em; }
+    .article p:first-of-type { text-indent: 0; }
+    .article .dropcap::first-letter {
+      font-size: 2.8rem; float: left; line-height: 0.8; margin-right: 0.3rem;
+      font-family: 'Yusei Magic', cursive; color: #2c3e6e;
+    }
+
+    .curriculum {
+      border-top: 2px solid #2c3e6e;
+      padding-top: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .curriculum h3 {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.1rem;
+      color: #1a2a4a;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .curriculum-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem 1rem;
+    }
+    .curriculum-item {
+      font-size: 0.75rem;
+      padding: 0.3rem 0;
+      border-bottom: 1px dotted #d4c8b0;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .curriculum-item .phase { color: #2c3e6e; font-weight: 700; white-space: nowrap; }
+
+    .hanko-wrap { text-align: center; margin-bottom: 1rem; }
+    .hanko {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 70px;
+      height: 70px;
+      border: 3px solid #8a7a2a;
+      border-radius: 50%;
+      font-family: 'Zen Antique', serif;
+      font-size: 1rem;
+      color: #8a7a2a;
+      transform: rotate(-8deg);
+    }
+
+    .cta-wrap { text-align: center; margin-bottom: 1rem; }
+    .btn-start {
+      display: inline-block;
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.2rem;
+      color: #fff;
+      background: #2c3e6e;
+      padding: 0.8rem 2.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background 0.2s;
+      letter-spacing: 0.1em;
+    }
+    .btn-start:hover { background: #1a2a4a; }
+    .btn-start .sub { font-family: 'Noto Serif JP', serif; font-size: 0.7rem; opacity: 0.8; display: block; }
+
+    .quote-box {
+      text-align: center;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-left: 3px solid #2c3e6e;
+      background: rgba(44,62,110,0.06);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .footer {
+      border-top: 1px solid #c4b89a;
+      padding-top: 0.5rem;
+      text-align: center;
+      font-size: 0.7rem;
+      color: #999;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 700px) {
+      .newspaper { padding: 1rem; }
+      .content-grid { grid-template-columns: 1fr; }
+      .character-img { width: 120px; }
+      .article { columns: 1; }
+      .curriculum-grid { grid-template-columns: 1fr; }
+      .headline-main { font-size: 2rem; }
+      .extra-banner .extra-left { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="newspaper">
+
+  <div class="extra-banner">
+    <span class="extra-left">EXTRA</span>
+    <span class="extra-price">SPECIAL EDITION</span>
+    <span class="extra-right">BACKEND COURSE</span>
+  </div>
+
+  <div class="headline-wrap">
+    <div class="headline-main">
+      <span class="accent">The Piercer</span> Nijiku<br>
+      Backend Course
+    </div>
+    <div class="headline-sub">— A Sharp Mind for System Design —</div>
+  </div>
+
+  <div class="content-grid">
+    <div class="character-box">
+      <img src="zanka-img.jpg" alt="Zanka Nijiku" class="character-img">
+      <div class="char-name">Zanka Nijiku</div>
+      <div class="char-title">The Average Genius</div>
+    </div>
+
+    <div class="article">
+      <p class="dropcap">Not everyone is a genius — but that doesn't mean you can't be great. Zanka, once the top student at the Hell Guard Academy, realized his limits when Hyo surpassed him effortlessly. He discovered that true strength doesn't come from innate talent, but from dedication and persistence. He accepted being "average," but that never stopped him from striving to improve.</p>
+      <p>In backend development, you'll encounter people who seem like naturals — they learn fast, solve problems instantly. But Zanka, with his Lovely Assistaff and his vibration sensing ability, proved that intelligence isn't just about speed — it's about observation, about understanding every move before you make it. In this course, you'll learn to be resilient like Zanka — facing challenges head-on instead of running from them.</p>
+      <p>Zanka's greatest lesson: never underestimate the mind of an "average" person. An ordinary person, when armed with determination and strategy, can overcome any genius. In backend development, it's the same — you don't have to be special to be exceptional. You just need the right training and the right mindset.</p>
+    </div>
+  </div>
+
+  <div class="curriculum">
+    <h3>CURRICULUM — 6 Phases / 23 Lessons</h3>
+    <div class="curriculum-grid">
+      <div class="curriculum-item"><span class="phase">Phase 1</span> Database Fundamentals</div>
+      <div class="curriculum-item"><span class="phase">Phase 2</span> API Design</div>
+      <div class="curriculum-item"><span class="phase">Phase 3</span> Caching &amp; Performance</div>
+      <div class="curriculum-item"><span class="phase">Phase 4</span> Scalability</div>
+      <div class="curriculum-item"><span class="phase">Phase 5</span> Security Fundamentals</div>
+      <div class="curriculum-item"><span class="phase">Phase 6</span> Interview Prep</div>
+    </div>
+  </div>
+
+  <div class="hanko-wrap">
+    <div class="hanko">Pierce</div>
+  </div>
+
+  <div class="quote-box">
+    "Don't look down on the mind of an average person!" — Zanka
+  </div>
+
+  <div class="cta-wrap">
+    <a href="../lessons/0001-normalization-schema-design.html" class="btn-start">
+      START COURSE
+      <span class="sub">Begin your journey</span>
+    </a>
+  </div>
+
+  <div class="footer">
+    Backend Concepts &amp; System Design — Zanka Nijiku Edition
+  </div>
+
+</div>
+</body>
+</html>
