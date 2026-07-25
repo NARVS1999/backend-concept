@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backend Concepts — Quick Reference</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+  <style>
+    .ref-section { margin-bottom: 2rem; }
+    .ref-section h2 { border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+    .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .ref-item { padding: 0.5rem; background: var(--code-bg); border-radius: 6px; font-size: 0.85rem; }
+    .ref-item strong { display: block; font-family: var(--font-sans); color: var(--accent); }
+    .ref-item em { font-size: 0.8rem; color: var(--muted); }
+    @media (max-width: 600px) { .ref-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="landing" style="text-align:left;max-width:800px;">
+  <h1>Backend Concepts — Quick Reference</h1>
+  <p class="subtitle">Cheat sheet para sa Jr → Mid-Level interview prep</p>
+
+  <div class="ref-section">
+    <h2>Database</h2>
+    <div class="ref-grid">
+      <div class="ref-item"><strong>Normalization</strong> 1NF (atomic), 2NF (no partial dependency), 3NF (no transitive dependency) <em>— iwas redundancy</em></div>
+      <div class="ref-item"><strong>B-tree Index</strong> O(log n) search. Effective para sa <code>= &gt; &lt; BETWEEN</code>. May write overhead.</div>
+      <div class="ref-item"><strong>Composite Index</strong> Column order matters — equality columns first. <em>Index ng multiple columns.</em></div>
+      <div class="ref-item"><strong>N+1 Problem</strong> 1 query + N queries per row. Fix: eager loading (JOIN / WHERE IN).</div>
+      <div class="ref-item"><strong>ACID</strong> Atomicity, Consistency, Isolation, Durability. <em>Reliable transactions.</em></div>
+      <div class="ref-item"><strong>Isolation Levels</strong> Read Uncommitted → Read Committed → Repeatable Read → Serializable.</div>
+    </div>
+  </div>
+
+  <div class="ref-section">
+    <h2>API Design</h2>
+    <div class="ref-grid">
+      <div class="ref-item"><strong>REST</strong> Stateless, resource-based, uniform interface. <em>Plural nouns, proper HTTP verbs.</em></div>
+      <div class="ref-item"><strong>PUT vs PATCH</strong> PUT = replace entire resource. PATCH = partial update lang.</div>
+      <div class="ref-item"><strong>Status Codes</strong> GET=200, POST=201, DELETE=204, 429=Rate Limited.</div>
+      <div class="ref-item"><strong>Pagination</strong> Offset (simple, unstable) vs Cursor (stable, fast, no page jump).</div>
+      <div class="ref-item"><strong>Rate Limiting</strong> Token bucket (allows bursts) or Sliding window (accurate). <em>Use Redis for distributed.</em></div>
+      <div class="ref-item"><strong>Versioning</strong> URL (<code>/v1/</code>) or Header (Accept). Deprecate muna, huwag biglang tanggalin.</div>
+    </div>
+  </div>
+
+  <div class="ref-section">
+    <h2>Caching &amp; Performance</h2>
+    <div class="ref-grid">
+      <div class="ref-item"><strong>Cache-Aside</strong> Check cache → miss → query DB → store in cache → return. <em>Read-heavy workloads.</em></div>
+      <div class="ref-item"><strong>Write-Through</strong> Write to cache + DB simultaneously. <em>Always fresh, pero slower writes.</em></div>
+      <div class="ref-item"><strong>Cache Invalidation</strong> TTL (auto-expire), Event-based (real-time), Cache tagging (batch clear).</div>
+      <div class="ref-item"><strong>Background Jobs</strong> Sync blocks user; async uses queues (RabbitMQ, SQS, Redis) for offloading.</div>
+    </div>
+  </div>
+
+  <div class="ref-section">
+    <h2>Scalability</h2>
+    <div class="ref-grid">
+      <div class="ref-item"><strong>Vertical Scaling</strong> Palakasin ang isang server. Simple pero may upper limit.</div>
+      <div class="ref-item"><strong>Horizontal Scaling</strong> Dagdagan ang servers. Unlimited pero need statelessness + load balancer.</div>
+      <div class="ref-item"><strong>Load Balancer</strong> Round Robin, Least Connections, IP Hash. Health checks auto-remove dead servers.</div>
+      <div class="ref-item"><strong>Replication</strong> Copy DB for read scaling. Writes sa master, reads sa replicas. <em>May replication lag.</em></div>
+      <div class="ref-item"><strong>Sharding</strong> Split DB for write scaling. <em>Key-based, range-based, or directory-based.</em></div>
+      <div class="ref-item"><strong>CAP Theorem</strong> Choose 2 of 3: Consistency, Availability, Partition Tolerance. CP (banking) vs AP (social media).</div>
+    </div>
+  </div>
+
+  <div class="ref-section">
+    <h2>Security</h2>
+    <div class="ref-grid">
+      <div class="ref-item"><strong>Authentication vs Authorization</strong> Auth = identity verification. Authz = permission checking.</div>
+      <div class="ref-item"><strong>JWT</strong> Stateless token. Payload ay naka-encode, hindi naka-encrypt — wag lagyan ng sensitive data.</div>
+      <div class="ref-item"><strong>SQL Injection</strong> Prevention: prepared statements / parameterized queries.</div>
+      <div class="ref-item"><strong>Password Hashing</strong> Use bcrypt or Argon2. Slow + salt. Huwag gumamit ng MD5/SHA1.</div>
+    </div>
+  </div>
+
+  <div class="ref-section">
+    <h2>Interview Prep</h2>
+    <div class="ref-grid">
+      <div class="ref-item"><strong>STAR Method</strong> Situation, Task, Action, Result — i-frame ang stories.</div>
+      <div class="ref-item"><strong>System Design Framework</strong> Clarify → High-level → Deep Dive → Tradeoffs.</div>
+      <div class="ref-item"><strong>Anki</strong> Spaced repetition. I-export ang quiz questions bilang CSV, i-import sa Anki app.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('themeToggle').addEventListener('click', function() {
+    var html = document.documentElement;
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+    else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+  });
+</script>
+</body>
+</html>

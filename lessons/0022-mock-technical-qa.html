@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0022: Mock Technical Q&A</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 6: Interview Preparation</strong> — Lesson 3 of 4
+      </div>
+
+      <h1>Mock Technical Q&amp;A</h1>
+      <p><em>Practice ng random technical questions mula sa lahat ng phases — sagot nang walang notes.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Masanay sumagot ng technical questions nang walang tulong ng notes o AI.
+      </div>
+
+      <h2>How to Simulate</h2>
+      <ol>
+        <li>Sabihin sa AI agent na maging interviewer</li>
+        <li>Magta-type o magsasalita ng sagot</li>
+        <li>Review ang sagot pagkatapos</li>
+        <li>I-identify kung saang concepts ka nahihirapan — i-review ulit</li>
+      </ol>
+
+      <h2>Sample Questions per Phase</h2>
+      <table>
+        <tr><th>Phase</th><th>Sample Question</th></tr>
+        <tr><td>Database</td><td>"Explain the difference between clustered and non-clustered index."</td></tr>
+        <tr><td>API</td><td>"How would you design a paginated API for a social media feed?"</td></tr>
+        <tr><td>Caching</td><td>"What happens when cache is full? How does Redis handle eviction?"</td></tr>
+        <tr><td>Scalability</td><td>"Explain how you would migrate from a single DB to a sharded setup."</td></tr>
+        <tr><td>Security</td><td>"How do you prevent CSRF attacks in a REST API?"</td></tr>
+      </table>
+
+      <h2>Tips for Answering</h2>
+      <ul>
+        <li>I-structure ang sagot: definition → how it works → tradeoffs → example</li>
+        <li>Kung hindi alam ang exact answer, magsimula sa "Based on my understanding..."</li>
+        <li>Wag mag-panic — pwede mag-hinge ng clarification</li>
+        <li>Gumamit ng examples mula sa actual experience</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: Mock Q&A</h3>
+        <p>Ipagawa sa agent na maging interviewer — magtanong ng random questions mula sa Phase 1-5. Sagutin mo nang walang notes. I-review ang mga sagot.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Practice answering without notes — ito ang actual interview setting</li>
+        <li>Structure: definition → how it works → tradeoffs → example</li>
+        <li>Review weak areas after each mock session</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Explain the difference between clustered and non-clustered index."
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>Pramp</strong> — Free mock interviews with peers. <a href="https://www.pramp.com/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0022';
+  var questions = [
+    {
+      question: 'Ano ang pinagkaiba ng clustered at non-clustered index?',
+      options: [
+        'Parehas lang — parehong index type',
+        'Clustered index ay nagre-reorder ng physical storage ng data; non-clustered ay hiwalay na structure na nagpo-point sa data',
+        'Clustered = mabagal; Non-clustered = mabilis',
+        'Clustered = para sa strings; Non-clustered = para sa numbers'
+      ],
+      correct: 'b',
+      answer: 'Clustered index determines the physical order of data in the table (isa lang per table). Non-clustered index is a separate structure that points to the actual data rows (marami per table).'
+    },
+    {
+      question: 'Ano ang tamang structure ng pagsagot sa technical questions?',
+      options: [
+        'Diretso sagot lang ng isang sentence',
+        'Definition → how it works → tradeoffs → example',
+        'Magkwento lang ng personal experience',
+        'Magtanong ng counter-question'
+      ],
+      correct: 'b',
+      answer: 'Structure: definition (ano ito) → how it works (paano) → tradeoffs (pros/cons) → example (real-world scenario).'
+    },
+    {
+      question: 'Ano ang dapat mong gawin kung hindi mo alam ang exact answer sa isang technical question?',
+      options: [
+        'Magsabi na lang na "I don\'t know" at tumigil',
+        'Magpanggap na alam',
+        'Magsimula sa "Based on my understanding..." at i-explain ang logical reasoning',
+        'Magpalit ng topic'
+      ],
+      correct: 'c',
+      answer: 'Magsimula sa "Based on my understanding..." at i-explain ang logical reasoning. Ipakita ang problem-solving approach mo kahit hindi mo alam ang exact answer.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

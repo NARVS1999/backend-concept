@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0009: Caching Fundamentals</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 3: Caching &amp; Performance</strong> — Lesson 1 of 3
+      </div>
+
+      <h1>Caching Fundamentals</h1>
+      <p><em>Paano pabilisin ang application mo sa pamamagitan ng pag-store ng frequently-access na data sa mabilis na storage layer.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang mga common caching patterns — cache-aside, write-through, at write-behind — at kung kelan gagamitin ang bawat isa.
+      </div>
+
+      <h2>Ano ang Caching?</h2>
+      <p>Ang caching ay ang pag-store ng kopya ng data sa isang <strong>fast storage layer</strong> (usually in-memory, like Redis o Memcached) para hindi na kailanganing i-query ang slower primary database sa bawat request.</p>
+
+      <h2>Caching Patterns</h2>
+
+      <h3>1. Cache-Aside (Lazy Loading)</h3>
+      <pre><code>1. Check kung nasa cache
+2. Kung wala (cache miss): query DB, i-store sa cache, return
+3. Kung meron (cache hit): return directly from cache</code></pre>
+      <ul>
+        <li>Pros: Efficient for read-heavy workloads</li>
+        <li>Cons: May <strong>cache miss penalty</strong> — unang request ay mabagal</li>
+        <li>Pwedeng mag-serve ng stale data kung hindi i-invalidate</li>
+      </ul>
+
+      <h3>2. Write-Through</h3>
+      <ul>
+        <li>Data ay sinusulat sa cache at DB nang sabay</li>
+        <li>Pros: Laging fresh ang cache data</li>
+        <li>Cons: Mas mabagal ang writes (doble ang sinusulatan)</li>
+      </ul>
+
+      <h3>3. Write-Behind (Write-Back)</h3>
+      <ul>
+        <li>Data ay sinusulat sa cache muna, tapos <strong>asynchronously</strong> sa DB</li>
+        <li>Pros: Napakabilis ng writes</li>
+        <li>Cons: Pwedeng mawala ang data kung mag-crash ang cache bago ma-sync sa DB</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: Redis Caching</h3>
+        <p>Mag-set up ng Redis, i-cache ang isang expensive database query, i-measure ang performance improvement.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Cache-aside: DB muna pag miss, saka i-cache — common at efficient</li>
+        <li>Write-through: laging fresh, pero mas mabagal writes</li>
+        <li>Write-behind: super fast writes, pero may data loss risk</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Ano ang tradeoff ng cache-aside pattern?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>Redis Caching Patterns</strong> — Official patterns guide. <a href="https://redis.io/docs/manual/patterns/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0009';
+  var questions = [
+    {
+      question: 'Ano ang tradeoff ng cache-aside pattern?',
+      options: [
+        'Walang tradeoff — perfect solution',
+        'May cache miss penalty (mabagal ang unang request) at pwedeng mag-serve ng stale data',
+        'Hindi pwedeng mag-cache ng malalaking data',
+        'Kailangan ng multiple databases'
+      ],
+      correct: 'b',
+      answer: 'May cache miss penalty — ang first request ay mabagal kasi kailangan pang mag-query ng DB. At pwedeng mag-serve ng stale data kung hindi maayos ang invalidation.'
+    },
+    {
+      question: 'Ano ang pinakamalaking risk ng write-behind caching?',
+      options: [
+        'Napakabagal ng writes',
+        'Pwedeng mawala ang data kung mag-crash ang cache bago ma-sync sa DB',
+        'Hindi supported ng Redis',
+        'Kailangan ng manual intervention'
+      ],
+      correct: 'b',
+      answer: 'Pwedeng mawala ang data kung mag-crash ang cache bago magka-opportunity na i-sync ang data sa persistent database.'
+    },
+    {
+      question: 'Ano ang ideal use case para sa write-through caching?',
+      options: [
+        'Read-heavy workloads kung saan tolerable ang stale data',
+        'Write-heavy workloads kung saan priority ang bilis ng writes',
+        'Kapag kelangan laging fresh ang cache at acceptable ang slower writes',
+        'Kapag walang database'
+      ],
+      correct: 'c',
+      answer: 'Kapag kelangan laging fresh ang cache data at acceptable ang slightly slower writes dahil sa double-write operation.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0010: Cache Invalidation</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 3: Caching &amp; Performance</strong> — Lesson 2 of 3
+      </div>
+
+      <h1>Cache Invalidation</h1>
+      <p><em>"There are only two hard things in computer science: cache invalidation and naming things." — Phil Karlton</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang iba't ibang strategies para i-invalidate ang stale cache data at maiwasan ang pag-serve ng outdated information.
+      </div>
+
+      <h2>Bakit Mahirap ang Cache Invalidation?</h2>
+      <p>Kapag may nagbago sa source of truth (database), kailangan ma-reflect ang pagbabago sa cache. Pero <strong>hindi agad alam ng cache</strong> na may nagbago sa DB — kaya pwedeng mag-serve ang cache ng lumang data.</p>
+
+      <h2>Invalidation Strategies</h2>
+
+      <h3>1. TTL (Time-To-Live)</h3>
+      <ul>
+        <li>Set ng expiration time sa cached data</li>
+        <li>Simplest approach — pero pwedeng mag-serve ng stale data hanggang mag-expire ang TTL</li>
+        <li>Dapat i-balance ang TTL: masyadong mahaba = stale data; masyadong maikli = hindi effective ang cache</li>
+      </ul>
+
+      <h3>2. Event-based Invalidation</h3>
+      <ul>
+        <li>Kapag may nagbago sa DB, mag-send ng event na magti-trigger ng cache invalidation</li>
+        <li>Mas accurate — halos real-time</li>
+        <li>Mas complex — kailangan ng event system</li>
+      </ul>
+
+      <h3>3. Cache Tagging</h3>
+      <ul>
+        <li>I-tag ang cached data para i-invalidate lahat ng related entries nang sabay-sabay</li>
+        <li>Example: i-tag ang "user:123" at "users:list" — kapag may nagbago sa user, i-invalidate lahat ng may related tags</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: Stale Cache Simulation</h3>
+        <p>I-simulate ang stale cache scenario — magpalit ng data sa DB, tignan kung kelan mag-uupdate ang cached response, tapos ayusin gamit ang proper invalidation.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>TTL: simplest, pero may window ng stale data</li>
+        <li>Event-based: real-time, pero mas complex</li>
+        <li>Cache tagging: i-invalidate related entries nang sabay-sabay</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo sisiguraduhin na hindi laos ang datos na nasa cache?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>Cache Invalidation Strategies (Martin Fowler)</strong> — Deep dive. <a href="https://martinfowler.com/bliki/Cache.html" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0010';
+  var questions = [
+    {
+      question: 'Paano mo sisiguraduhin na hindi laos ang datos na nasa cache?',
+      options: [
+        'Wag gumamit ng cache',
+        'Combination: appropriate TTL + event-based invalidation kapag may nagbago sa DB',
+        'Palaging i-set ang TTL sa 1 second',
+        'Gamitin lang ang write-through'
+      ],
+      correct: 'b',
+      answer: 'Combination ng appropriate TTL at event-based invalidation — auto-expire ang lumang data at magti-trigger ng refresh kapag may update sa source of truth.'
+    },
+    {
+      question: 'Ano ang disadvantage ng TTL-based invalidation?',
+      options: [
+        'Napakabilis',
+        'Pwedeng mag-serve ng stale data hanggang mag-expire ang TTL',
+        'Hindi supported ng Redis',
+        'Kailangan ng external service'
+      ],
+      correct: 'b',
+      answer: 'Pwedeng mag-serve ng stale data sa loob ng TTL window — kung 5 minutes ang TTL, pwedeng 4-minute-old data ang ma-serve.'
+    },
+    {
+      question: 'Ano ang cache tagging?',
+      options: [
+        'Pagbibigay ng physical label sa cache server',
+        'Pagta-tag ng cached entries para i-invalidate lahat ng related cache keys nang sabay-sabay',
+        'Pag-encode ng cache keys',
+        'Pag-delete ng lahat ng cache'
+      ],
+      correct: 'b',
+      answer: 'Pagta-tag ng cached entries para i-invalidate lahat ng related keys nang sabay — e.g., i-tag ang "user:123" entries at i-clear lahat pag may update.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

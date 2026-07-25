@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0018: Common Vulnerabilities</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 5: Security Fundamentals</strong> — Lesson 2 of 3
+      </div>
+
+      <h1>Common Vulnerabilities</h1>
+      <p><em>Ang mga karaniwang atake na kailangan mong malaman bilang backend developer.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matukoy ang SQL injection, XSS, at CSRF — kung paano ito nangyayari at paano maiiwasan.
+      </div>
+
+      <h2>1. SQL Injection</h2>
+      <p>Nangyayari kapag ang user input ay direktang <strong>naco-concatenate</strong> sa SQL query:</p>
+      <pre><code>// VULNERABLE!
+$query = "SELECT * FROM users WHERE email = '" . $_POST['email'] . "'";
+
+// Kung i-input ng attacker: ' OR '1'='1
+// Magiging: SELECT * FROM users WHERE email = '' OR '1'='1'</code></pre>
+      <p><strong>Prevention:</strong> Gumamit ng <strong>prepared statements</strong> o ORM na may parameterized queries. Huwag mag-build ng SQL sa pamamagitan ng string concatenation.</p>
+
+      <h2>2. XSS (Cross-Site Scripting)</h2>
+      <p>Kapag ang attacker ay nakapag-inject ng malicious JavaScript code sa isang webpage na tinitignan ng ibang users.</p>
+      <ul>
+        <li>Stored XSS: naka-store sa database ang malicious script</li>
+        <li>Reflected XSS: nasa URL/request ang malicious script</li>
+        <li><strong>Prevention:</strong> I-sanitize ang user input bago i-render (HTML encoding)</li>
+      </ul>
+
+      <h2>3. CSRF (Cross-Site Request Forgery)</h2>
+      <p>Kapag ang attacker ay nagpadala ng request mula sa ibang site gamit ang naka-log-in na session ng biktima.</p>
+      <ul>
+        <li>Example: mag-click ang user sa isang link na nagti-trigger ng fund transfer</li>
+        <li><strong>Prevention:</strong> CSRF tokens, SameSite cookies, re-authentication</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: Hanapin ang Vulnerability</h3>
+        <p>Magpakita ang agent ng vulnerable code example (query concatenation). Ikaw ang mag-identify ng issue bago ipa-fix.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>SQL injection: prepared statements ang solusyon</li>
+        <li>XSS: i-sanitize ang user input bago i-render</li>
+        <li>CSRF: gumamit ng CSRF tokens at SameSite cookies</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Bakit hindi safe ang string concatenation sa pag-build ng SQL query?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>OWASP Top 10</strong> — The definitive guide. <a href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0018';
+  var questions = [
+    {
+      question: 'Bakit hindi safe ang string concatenation sa pag-build ng SQL query?',
+      options: [
+        'Safe naman — ganun lagi ang ginagawa',
+        'Pwedeng ma-inject ng attacker ang malicious SQL code sa pamamagitan ng user input (SQL injection)',
+        'Mabagal lang',
+        'Hindi supported ng modern databases'
+      ],
+      correct: 'b',
+      answer: 'Ang attacker ay pwedeng mag-inject ng malicious SQL code sa user input — halimbawa, ang input na \' OR \'1\'=\'1 ay magre-return ng lahat ng users imbes na isa lang.'
+    },
+    {
+      question: 'Ano ang pinakamagandang depensa laban sa SQL injection?',
+      options: [
+        'I-escape ang single quotes',
+        'Gumamit ng prepared statements / parameterized queries',
+        'Gumamit ng CAPTCHA',
+        'I-validate ang input length'
+      ],
+      correct: 'b',
+      answer: 'Prepared statements / parameterized queries — ang SQL structure at user input ay pinaghihiwalay, kaya hindi pwedeng baguhin ng input ang SQL query.'
+    },
+    {
+      question: 'Ano ang CSRF attack?',
+      options: [
+        'Pag-inject ng JavaScript code',
+        'Paggamit ng naka-log-in na session ng biktima para magpadala ng unauthorized requests mula sa ibang site',
+        'Pag-crack ng password',
+        'Pag-delete ng database'
+      ],
+      correct: 'b',
+      answer: 'CSRF ay kapag ang attacker ay nagpadala ng request mula sa ibang site (e.g., malicious link) gamit ang naka-log-in na session ng biktima para gumawa ng unauthorized action.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -19,7 +19,12 @@
 
   var html =
     '<div class="sidebar-section">' +
-      '<div class="sidebar-header">Course</div>' +
+      '<div class="sidebar-header">' +
+        '<span>Course</span>' +
+        '<a href="' + baseDir + '../index.html" class="sidebar-home" title="Back to Home">' +
+          '<button class="sidebar-home-btn">\u2302</button>' +
+        '</a>' +
+      '</div>' +
       '<nav class="sidebar-nav"><ul>';
 
   for (var i = 0; i < LESSONS.length; i++) {

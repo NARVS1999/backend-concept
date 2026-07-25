@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0014: Database Replication & Sharding</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 4: Scalability &amp; Distributed Systems</strong> — Lesson 3 of 5
+      </div>
+
+      <h1>Database Replication &amp; Sharding</h1>
+      <p><em>Paano i-handle ang paglaki ng database — both reads (replication) at writes (sharding).</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang pagkakaiba ng replication at sharding, at kung kelan gagamitin ang bawat isa.
+      </div>
+
+      <h2>Database Replication (Read Replicas)</h2>
+      <p>Pagawa ng <strong>kopya</strong> ng database sa ibang server. Ang writes ay pupunta sa <strong>primary (master)</strong>, at ang reads ay pwedeng ipamahagi sa <strong>replicas (slaves)</strong>.</p>
+      <pre><code>Master: INSERT, UPDATE, DELETE
+Replica 1: SELECT (read-only)
+Replica 2: SELECT (read-only)</code></pre>
+
+      <h3>Replication Lag</h3>
+      <p>Ang delay sa pagitan ng pag-write sa master at pag-reflect sa replicas. Pwedeng magbasa ang user ng <strong>stale data</strong> kung nagbasa sa replica bago mag-sync.</p>
+
+      <div class="warning">
+        <strong>Important</strong>
+        Replication solves read scaling, NOT write scaling. Lahat ng writes ay sa master pa rin napupunta.
+      </div>
+
+      <h2>Database Sharding</h2>
+      <p>Paghati ng data sa <strong>multiple databases (shards)</strong> based sa isang key (shard key). Bawat shard ay may bahagi lang ng data.</p>
+      <pre><code>Shard 1: users 1-1,000,000
+Shard 2: users 1,000,001-2,000,000
+Shard 3: users 2,000,001-3,000,000</code></pre>
+
+      <h3>Sharding Strategies</h3>
+      <ul>
+        <li><strong>Key-based</strong> — Hash ng shard key para i-determine ang shard (consistent hashing)</li>
+        <li><strong>Range-based</strong> — Based sa range ng values (e.g., A-M sa isang shard, N-Z sa iba)</li>
+        <li><strong>Directory-based</strong> — Lookup table na nagsasabi kung saang shard ang data</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: Shard Design</h3>
+        <p>Theoretical exercise — i-design kung paano mo i-shard ang isang users table na may 100 million rows.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Replication = kopyahin ang DB para sa read scaling</li>
+        <li>Sharding = hatiin ang DB para sa write scaling</li>
+        <li>Replication lag = delay bago mag-reflect ang writes sa replicas</li>
+        <li>Shard key selection ay critical para sa balanced distribution</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Ano ang replication lag at bakit importante ito?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>Database Sharding (Wikipedia)</strong> — Comprehensive overview. <a href="https://en.wikipedia.org/wiki/Shard_(database_architecture)" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0014';
+  var questions = [
+    {
+      question: 'Ano ang replication lag at bakit importante ito?',
+      options: [
+        'Ang bilis ng pag-query sa replica — importante para sa performance',
+        'Ang delay sa pag-sync ng data mula master papuntang replica — importante kasi pwedeng magbasa ng stale data ang user',
+        'Ang laki ng database — importante para sa storage',
+        'Ang encryption ng data — importante para sa security'
+      ],
+      correct: 'b',
+      answer: 'Ang delay sa pag-sync ng data mula master papuntang replica. Mahalaga ito kasi pwedeng magbasa ang user ng hindi updated na data kung nagbasa sa replica bago matapos ang sync.'
+    },
+    {
+      question: 'Ano ang pinagkaiba ng replication at sharding?',
+      options: [
+        'Parehas lang sila',
+        'Replication = kopyahin ang DB for read scaling; Sharding = hatiin ang DB for write scaling',
+        'Replication = hatiin ang DB; Sharding = kopyahin ang DB',
+        'Replication = pabilisin ang writes; Sharding = pabilisin ang reads'
+      ],
+      correct: 'b',
+      answer: 'Replication creates copies of the entire DB for read scaling. Sharding splits the DB into smaller pieces for write scaling.'
+    },
+    {
+      question: 'Bakit hindi solve ng replication ang write scaling problem?',
+      options: [
+        'Solve naman — lahat ng writes pwede sa replicas',
+        'Kasi lahat ng writes ay sa master pa rin napupunta, hindi napapamahagi',
+        'Kasi mas mabagal ang writes sa replicas',
+        'Kasi hindi pwedeng mag-write sa replicas'
+      ],
+      correct: 'b',
+      answer: 'Lahat ng writes ay sa master pa rin napupunta — ang replicas ay read-only. Kaya replication solves read scaling, pero hindi write scaling.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0006: Versioning & Backward Compatibility</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 2: API Design</strong> — Lesson 2 of 4
+      </div>
+
+      <h1>Versioning &amp; Backward Compatibility</h1>
+      <p><em>Paano i-evolve ang API mo nang hindi sinisira ang existing clients.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang iba't ibang versioning strategies at kung paano mag-handle ng breaking changes nang hindi naaapektuhan ang mga lumang clients.
+      </div>
+
+      <h2>Bakit Kailangan ng Versioning?</h2>
+      <p>Kapag may nagbago sa API mo (new fields, renamed fields, removed endpoints), ang existing clients (mobile apps, other services) ay pwedeng masira. Solusyon: <strong>i-version</strong> ang API para parehong gumana ang luma at bagong versions.</p>
+
+      <h2>Versioning Strategies</h2>
+
+      <h3>1. URL Versioning</h3>
+      <pre><code>GET /api/v1/users
+GET /api/v2/users</code></pre>
+      <ul>
+        <li>Pros: Simple at explicit</li>
+        <li>Cons: "Pollutes" ang URL space</li>
+      </ul>
+
+      <h3>2. Header Versioning</h3>
+      <pre><code>Accept: application/vnd.myapp.v1+json
+Accept: application/vnd.myapp.v2+json</code></pre>
+      <ul>
+        <li>Pros: Mas malinis ang URL</li>
+        <li>Cons: Mas mahirap i-test (kailangan mag-set ng headers)</li>
+      </ul>
+
+      <h2>Breaking vs Non-breaking Changes</h2>
+      <ul>
+        <li><strong>Non-breaking</strong> — Magdagdag ng bagong field sa response, magdagdag ng bagong endpoint</li>
+        <li><strong>Breaking</strong> — Mag-rename o mag-remove ng field, magpalit ng data type, magpalit ng endpoint URL</li>
+      </ul>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Kung may existing mobile app na tumatawag sa API mo at kailangan mong magdagdag ng required field, gawin mo munang optional ang field (non-breaking). Pag handa na ang mobile app, saka mo gawing required sa susunod na version.
+      </div>
+
+      <div class="project">
+        <h3>Mini-Project: v1 to v2 Evolution</h3>
+        <p>Gumawa ng v1 endpoint, tapos i-evolve papuntang v2 nang hindi sinisira ang v1 clients.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Versioning protects existing clients from breaking changes</li>
+        <li>URL versioning at header versioning ang most common strategies</li>
+        <li>Adding fields = non-breaking; removing/renaming fields = breaking</li>
+        <li>I-deprecate muna, huwag biglang tanggalin</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "May existing mobile app na tumatawag sa API mo. Paano ka magdadagdag ng required field nang hindi nakaka-break sa kanila?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>API Versioning Strategies (Microsoft)</strong> — Best practices. <a href="https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#versioning" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0006';
+  var questions = [
+    {
+      question: 'May existing mobile app na tumatawag sa API mo. Paano ka magdadagdag ng required field nang hindi nakaka-break sa kanila?',
+      options: [
+        'Diretso add lang — kailangan nilang mag-adjust',
+        'Gawing optional muna ang field, i-deprecate ang old behavior, saka gawing required sa next major version',
+        'Remove the old field completely',
+        'Gumawa ng bagong API sa ibang domain'
+      ],
+      correct: 'b',
+      answer: 'Gawing optional muna ang field (non-breaking change). I-announce ang deprecation. Pag handa na ang mobile app, saka gawing required sa next version.'
+    },
+    {
+      question: 'Alin sa mga ito ang non-breaking change?',
+      options: [
+        'Mag-remove ng field sa response',
+        'Magpalit ng data type ng field',
+        'Magdagdag ng bagong optional field sa response',
+        'Mag-rename ng endpoint URL'
+      ],
+      correct: 'c',
+      answer: 'Magdagdag ng bagong optional field — hindi masisira ang existing clients kasi hindi naman nila kailangan i-handle ang bagong field.'
+    },
+    {
+      question: 'Ano ang disadvantage ng URL versioning (/api/v1/ vs /api/v2/)?',
+      options: [
+        'Hindi pwedeng i-cache',
+        'Pwedeng mag-pollute sa URL space at magdulot ng duplication',
+        'Hindi supported ng HTTP',
+        'Hindi pwedeng gumamit ng HTTPS'
+      ],
+      correct: 'b',
+      answer: 'Pwedeng mag-pollute sa URL space at magdulot ng code duplication sa server-side.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0001: Normalization & Schema Design</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Database Fundamentals</strong> — Lesson 1 of 4
+      </div>
+
+      <h1>Normalization &amp; Schema Design</h1>
+      <p><em>Paano i-structure ang database para hindi magulo, maintainable, at scalable.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Sa lesson na ito, magagawa mong mag-design ng normalized database schema para sa isang real-world application at ma-explain kung bakit ganun ang structure.
+      </div>
+
+      <h2>Ano ang Normalization?</h2>
+      <p>Ang normalization ay ang process ng pag-oorganize ng data sa database para mabawasan ang <strong>redundancy</strong> at maiwasan ang <strong>anomalies</strong> (insert, update, delete).</p>
+
+      <h3>1NF (First Normal Form)</h3>
+      <ul>
+        <li>Bawat column ay dapat may atomic values (isang value lang per cell)</li>
+        <li>Walang repeating groups o arrays sa isang column</li>
+      </ul>
+
+      <h3>2NF (Second Normal Form)</h3>
+      <ul>
+        <li>Dapat nasa 1NF na</li>
+        <li>Lahat ng non-key columns ay dapat fully dependent sa <em>entire</em> primary key (walang partial dependency)</li>
+      </ul>
+
+      <h3>3NF (Third Normal Form)</h3>
+      <ul>
+        <li>Dapat nasa 2NF na</li>
+        <li>Walang transitive dependency — non-key columns ay hindi dapat dependent sa ibang non-key columns</li>
+      </ul>
+
+      <h3>Kailan Mag-denormalize?</h3>
+      <p>Minsan, kailangan nating <strong>i-break</strong> ang normalization rules para sa performance. Halimbawa: sa read-heavy systems, pwedeng magdagdag ng redundant data para iwasan ang maraming JOINs.</p>
+
+      <div class="warning">
+        <strong>Remember</strong>
+        Normalize for correctness, denormalize for performance — pero sukatin mo muna kung kelangan talaga.
+      </div>
+
+      <h2>Schema Design: E-commerce Example</h2>
+      <p>Isipin natin ang schema para sa isang e-commerce app:</p>
+      <ul>
+        <li><strong>users</strong> — id, name, email, created_at</li>
+        <li><strong>products</strong> — id, name, price, stock</li>
+        <li><strong>orders</strong> — id, user_id (FK), order_date, status</li>
+        <li><strong>order_items</strong> — id, order_id (FK), product_id (FK), quantity, price</li>
+      </ul>
+      <p>Pansinin na ang <code>order_items</code> ay ang <strong>junction table</strong> para sa M:M relationship between orders and products.</p>
+
+      <h2>Relationships</h2>
+      <ul>
+        <li><strong>1:1</strong> — One user has one profile (pwedeng i-merge sa iisang table)</li>
+        <li><strong>1:M</strong> — One user has many orders (FK sa orders table)</li>
+        <li><strong>M:M</strong> — Many products in many orders (junction table)</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: E-commerce Schema</h3>
+        <p>Gamit ang AI agent, magpagawa ng schema para sa isang e-commerce app (users, orders, products, order_items). Tanungin ang agent kung <em>bakit</em> ganun ang structure — huwag lang tanggapin ang output.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Normalization (1NF, 2NF, 3NF) ay para mabawasan ang redundancy at anomalies</li>
+        <li>Denormalization ay para sa performance — pero dapat naka-measure na kelangan</li>
+        <li>Relationships: 1:1, 1:M, M:M — bawat isa may appropriate table structure</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Bakit hindi mo lagyan ng repeating columns (product_1, product_2...) yung isang order?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Database Normalization Explained</strong> — freeCodeCamp guide sa 1NF/2NF/3NF. <a href="https://www.freecodecamp.org/news/database-normalization-1nf-2nf-3nf/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0001';
+  var questions = [
+    {
+      question: 'Bakit hindi mo lagyan ng repeating columns (product_1, product_2...) yung isang order?',
+      options: [
+        'Mas mabilis mag-query',
+        'Violates 1NF — kelangan atomic values per column',
+        'Hindi suportado ng SQL',
+        'Mas madaling mag-validate'
+      ],
+      correct: 'b',
+      answer: 'Violates 1NF — kelangan atomic values per column para maintainable at queryable ang schema.'
+    },
+    {
+      question: 'Ano ang pinakamagandang relationship sa pagitan ng Orders at Products?',
+      options: [
+        '1:1 — isang order ay laging isang product lang',
+        '1:M — isang order may maraming products pero isang product sa isang order lang',
+        'M:M — maraming products sa isang order, at maraming orders para sa isang product',
+        'Walang relationship — separate tables lang'
+      ],
+      correct: 'c',
+      answer: 'M:M — kasi ang isang order ay pwedeng maglaman ng maraming products, at ang isang product ay pwedeng lumitaw sa maraming orders.'
+    },
+    {
+      question: 'Kailan ka magde-denormalize ng schema?',
+      options: [
+        'Always — para laging mabilis',
+        'Never — normalization lang ang tama',
+        'Kapag napatunayan na bottleneck ang JOINs at kelangan ng performance boost',
+        'Kapag gusto mong mag-ADD lang ng columns'
+      ],
+      correct: 'c',
+      answer: 'Kapag napatunayan na bottleneck ang JOINs at kelangan ng performance boost. Denormalize for performance, normalize for correctness.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

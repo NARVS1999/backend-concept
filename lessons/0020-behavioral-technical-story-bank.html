@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0020: Behavioral + Technical Story Bank</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 6: Interview Preparation</strong> — Lesson 1 of 4
+      </div>
+
+      <h1>Behavioral + Technical Story Bank</h1>
+      <p><em>I-convert ang iyong mga karanasan bilang Jr developer sa mga kwentong sagot sa interview.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makabuo ng 5+ na project/scenario stories na naka-frame gamit ang STAR method at naka-relate sa backend concepts.
+      </div>
+
+      <h2>STAR Method</h2>
+      <ul>
+        <li><strong>S</strong>ituation — Ano ang context? Saan ka nagtatrabaho? Anong project?</li>
+        <li><strong>T</strong>ask — Ano ang responsibility mo? Anong problema ang kailangan mong i-solve?</li>
+        <li><strong>A</strong>ction — Ano ang ginawa mo? Specific steps, technical decisions.</li>
+        <li><strong>R</strong>esult — Ano ang outcome? Numbers, impact, learnings.</li>
+      </ul>
+
+      <h2>Halimbawa: "Nag-optimize ako ng slow query"</h2>
+      <pre><code>**Situation:** Sa dating company, may reporting module na umaabot ng 30 seconds mag-load.
+**Task:** Kailangan kong pabilisin ito dahil naaapektuhan ang daily operations ng team.
+**Action:** Na-diagnose ko gamit ang EXPLAIN ANALYZE na walang index ang isang JOIN sa 500k-row table. Nag-add ako ng composite index sa (status, created_at).
+**Result:** Bumaba ang query time from 30 seconds to 200ms — 99% improvement.</code></pre>
+
+      <h2>How to Build Your Story Bank</h2>
+      <ol>
+        <li>Think of 5 projects/scenarios from your Jr experience</li>
+        <li>For each, write down the STAR framework</li>
+        <li>Identify which backend concepts you used (indexing, caching, REST, etc.)</li>
+        <li>Practice telling it in 1-2 minutes</li>
+      </ol>
+
+      <div class="project">
+        <h3>Mini-Project: Build Your Story Bank</h3>
+        <p>Gumawa ng listahan ng 5 project/scenario mula sa Jr experience mo. I-frame gamit ang STAR method. I-relate sa mga backend concepts na natutunan.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>STAR = Situation, Task, Action, Result</li>
+        <li>I-relate ang iyong stories sa backend concepts</li>
+        <li>Practice 1-2 minute versions ng bawat story</li>
+        <li>Quantify results kung possible (%, seconds, etc.)</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Tell me about a time you solved a difficult technical problem. Use STAR format."
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>STAR Interview Method (The Balance)</strong> — How to use STAR. <a href="https://www.thebalancemoney.com/what-is-the-star-interview-response-technique-2061029" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0020';
+  var questions = [
+    {
+      question: 'Ano ang ibig sabihin ng "S" sa STAR method?',
+      options: [
+        'Solution — ang ginawa mong fix',
+        'Skill — ang ability na ginamit',
+        'Situation — ang context at background ng scenario',
+        'Score — ang rating ng performance'
+      ],
+      correct: 'c',
+      answer: 'Situation — ilarawan ang context, team, at project para maintindihan ng interviewer ang setting ng iyong kwento.'
+    },
+    {
+      question: 'Bakit mahalagang mag-relate ng STAR stories sa specific backend concepts?',
+      options: [
+        'Hindi naman kailangan',
+        'Para maipakita na alam mo ang technical side at hindi lang storytelling',
+        'Para mas mahaba ang sagot',
+        'Para ma-impress sa jargon'
+      ],
+      correct: 'b',
+      answer: 'Para maipakita na naiintindihan mo ang technical concepts sa likod ng iyong actions — hindi lang "nag-fix" kundi "na-diagnose gamit ang EXPLAIN ANALYZE at nag-add ng composite index."'
+    },
+    {
+      question: 'Ano ang dapat mong iwasan sa STAR stories?',
+      options: [
+        'Maging specific sa numbers at results',
+        'Gamit ang technical terms',
+        'Maging vague at walang concrete results',
+        'Practice 1-2 minute version'
+      ],
+      correct: 'c',
+      answer: 'Iwasan ang vague na stories na walang concrete results — i-quantify ang impact (e.g., "bumaba ang load time from 30s to 200ms").'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

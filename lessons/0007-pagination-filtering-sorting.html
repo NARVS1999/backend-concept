@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0007: Pagination, Filtering, Sorting</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 2: API Design</strong> — Lesson 3 of 4
+      </div>
+
+      <h1>Pagination, Filtering, Sorting</h1>
+      <p><em>Paano mag-handle ng malalaking datasets sa API nang hindi nabobomba ang server o client.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang offset vs cursor-based pagination at kung kelan gagamitin ang bawat isa.
+      </div>
+
+      <h2>Bakit Kailangan ng Pagination?</h2>
+      <p>Kung ang isang endpoint ay puwedeng magreturn ng libo-libo o milyon-milyong records, kailangan nating i-break ito sa mas maliliit na <strong>pages</strong>. Hindi pwedeng i-load lahat nang sabay — mauubos ang memory ng server at babagal ang client.</p>
+
+      <h2>Offset Pagination</h2>
+      <pre><code>GET /users?offset=0&limit=20
+GET /users?offset=20&limit=20
+GET /users?page=1&per_page=20</code></pre>
+      <ul>
+        <li>Simple at madaling i-implement</li>
+        <li>Problema: <strong>unstable</strong> kapag may bagong records na na-insert (pwedeng ma-duplicate o ma-skip ang records)</li>
+        <li>Mabagal sa malaking offset (kailangan pa ring i-scan ng database ang naunang rows)</li>
+      </ul>
+
+      <h2>Cursor-based Pagination</h2>
+      <pre><code>GET /users?cursor=eyJsYXN0X2lkIjogMTAwfQ==&limit=20</code></pre>
+      <ul>
+        <li>Gumagamit ng <strong>cursor</strong> (usually encoded ID or timestamp) para ituro kung saan magsisimula</li>
+        <li><strong>Stable</strong> — kahit may new records na na-insert, hindi magbabago ang results</li>
+        <li>Mas mabilis sa malaking datasets (direktang <code>WHERE id &gt; cursor</code>)</li>
+        <li>Hindi pwedeng mag-jump sa arbitrary page number</li>
+      </ul>
+
+      <div class="warning">
+        <strong>Remember</strong>
+        Cursor-based pagination ang preferred pag infinite scroll feeds (Facebook, Twitter, Instagram). Offset pagination okay para sa admin panels na may "Go to page 5" feature.
+      </div>
+
+      <h2>Filtering at Sorting</h2>
+      <pre><code>GET /users?role=admin&status=active&sort=created_at&order=desc</code></pre>
+      <ul>
+        <li>Gamit ang query parameters</li>
+        <li>Consistent naming convention</li>
+        <li>I-limit ang allowed sort fields para iwasan ang abuse</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: Pagination Showdown</h3>
+        <p>I-implement ang parehong offset at cursor pagination sa isang listing endpoint. I-benchmark performance sa malaking dataset.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Offset pagination: simple, unstable, mabagal sa malaking offset</li>
+        <li>Cursor pagination: stable, mabilis, hindi pwedeng mag-jump sa arbitrary page</li>
+        <li>Gamitin ang query parameters para sa filtering at sorting</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Bakit cursor-based pagination ang preferred sa infinite scroll feeds?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>Offset vs Cursor Pagination (Slack Blog)</strong> — Real-world comparison. <a href="https://slack.engineering/evolving-api-pagination-at-slack/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0007';
+  var questions = [
+    {
+      question: 'Bakit cursor-based pagination ang preferred sa infinite scroll feeds?',
+      options: [
+        'Mas madaling i-implement',
+        'Stable kahit may new records na na-insert — hindi nagma-move ang cursor position',
+        'Pwedeng mag-jump sa kahit anong page',
+        'Hindi kailangan ng database'
+      ],
+      correct: 'b',
+      answer: 'Stable ang cursor-based pagination — kahit may bagong records sa unahan, hindi magbabago ang results na na-fetch mo na.'
+    },
+    {
+      question: 'Ano ang disadvantage ng offset pagination sa malalaking datasets?',
+      options: [
+        'Hindi pwedeng mag-filter',
+        'Mabagal sa malaking offset — kailangan pa ring i-scan ang naunang rows para mabilang',
+        'Hindi supported ng SQL',
+        'Walang disadvantage'
+      ],
+      correct: 'b',
+      answer: 'Mabagal sa malaking offset — kahit gusto mo lang ng page 100, kailangan pa rin ng database na i-scan ang naunang 1980 rows.'
+    },
+    {
+      question: 'Paano mo lilimitahan ang allowed sort fields sa API?',
+      options: [
+        'Hayaan lang kahit anong field',
+        'Mag-validate sa server-side laban sa isang allowlist ng sortable columns',
+        'Gamitin ang database default',
+        'Hindi pwedeng mag-sort sa API'
+      ],
+      correct: 'b',
+      answer: 'Mag-validate against an allowlist ng sortable columns para iwasan ang abuse at unexpected behavior.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

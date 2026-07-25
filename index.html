@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backend Concepts & System Design</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+  <style>
+    .anki-section { margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid var(--border); }
+    .anki-section h2 { border-bottom: none; }
+    .btn-anki-master {
+      display: inline-block;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: #16a34a;
+      padding: 0.8rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-anki-master:hover { background: #15803d; }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="landing">
+  <h1>Backend Concepts & System Design</h1>
+  <p class="subtitle">Jr → Mid-Level Backend Developer Transition — may halong Taglish para madaling maintindihan</p>
+
+  <ul class="desc">
+    <li>Database fundamentals — normalization, indexing, transactions, ACID</li>
+    <li>API Design — REST, versioning, pagination, rate limiting</li>
+    <li>Caching &amp; Performance — Redis, cache invalidation, background jobs</li>
+    <li>Scalability &amp; Distributed Systems — load balancing, sharding, CAP theorem</li>
+    <li>Security — authentication, authorization, common vulnerabilities</li>
+    <li>Interview Prep — mock interviews, STAR method, Anki review</li>
+  </ul>
+
+  <a class="btn-start" href="lessons/0001-normalization-schema-design.html">Start the Course</a>
+
+  <div class="phases">
+    <h2 style="text-align:center;border-bottom:none;margin-bottom:1rem;">Course Overview</h2>
+    <div class="phase-item"><span class="phase-num">Phase 1</span><span class="phase-name">Database Fundamentals</span><span class="phase-count">4 lessons</span></div>
+    <div class="phase-item"><span class="phase-num">Phase 2</span><span class="phase-name">API Design</span><span class="phase-count">4 lessons</span></div>
+    <div class="phase-item"><span class="phase-num">Phase 3</span><span class="phase-name">Caching &amp; Performance</span><span class="phase-count">3 lessons</span></div>
+    <div class="phase-item"><span class="phase-num">Phase 4</span><span class="phase-name">Scalability &amp; Distributed Systems</span><span class="phase-count">5 lessons</span></div>
+    <div class="phase-item"><span class="phase-num">Phase 5</span><span class="phase-name">Security Fundamentals</span><span class="phase-count">3 lessons</span></div>
+    <div class="phase-item"><span class="phase-num">Phase 6</span><span class="phase-name">Interview Preparation</span><span class="phase-count">4 lessons</span></div>
+  </div>
+
+  <div class="anki-section">
+    <h2>Anki Review Deck</h2>
+    <p>I-download ang master Anki CSV file na naglalaman ng lahat ng quiz questions mula sa buong course. I-import ito sa <a href="https://apps.ankiweb.net" target="_blank" rel="noopener">Anki</a> para sa spaced repetition review.</p>
+    <p style="margin-bottom:1.5rem;color:var(--muted);font-family:var(--font-sans);font-size:0.9rem;">
+      Available after completing at least one lesson.
+    </p>
+    <button class="btn-anki-master" id="ankiMasterBtn" onclick="downloadMasterAnki()">Download Master Anki CSV</button>
+    <div id="ankiStatus" style="margin-top:0.5rem;font-family:var(--font-sans);font-size:0.85rem;color:var(--muted);"></div>
+  </div>
+</div>
+
+<script src="assets/quiz-widget.js"></script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+        else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+      });
+    }
+  })();
+
+  function downloadMasterAnki() {
+    if (window.QuizWidget && QuizWidget.count() > 0) {
+      QuizWidget.exportMaster();
+      document.getElementById('ankiStatus').textContent = 'Downloaded ' + QuizWidget.count() + ' questions!';
+    } else {
+      var status = document.getElementById('ankiStatus');
+      status.textContent = 'Wala pang quiz questions na na-complete. Mag-lesson ka muna!';
+    }
+  }
+</script>
+</body>
+</html>

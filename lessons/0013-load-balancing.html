@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0013: Load Balancing</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 4: Scalability &amp; Distributed Systems</strong> — Lesson 2 of 5
+      </div>
+
+      <h1>Load Balancing</h1>
+      <p><em>Paano ipamahagi ang incoming traffic sa maraming servers para walang isa ang ma-overload.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang mga common load balancing algorithms at kung paano mag-set up ng multiple app instances na may load balancer.
+      </div>
+
+      <h2>Ano ang Load Balancer?</h2>
+      <p>Ang load balancer ay nakaupo sa <strong>harap ng servers</strong> at nagde-distribute ng incoming requests. Parang receptionist na nag-a-assign ng customers sa available na tellers.</p>
+
+      <h2>Load Balancing Algorithms</h2>
+
+      <h3>1. Round Robin</h3>
+      <ul>
+        <li>Sunod-sunod na pag-assign ng requests sa servers</li>
+        <li>Simple at predictable</li>
+        <li>Problema: hindi ini-consider ang current load ng server</li>
+      </ul>
+
+      <h3>2. Least Connections</h3>
+      <ul>
+        <li>I-forward ang request sa server na may <strong>pinakakaunting active connections</strong></li>
+        <li>Mas maganda pag uneven ang processing time ng requests</li>
+        <li>Kailangan i-track ng load balancer ang connections</li>
+      </ul>
+
+      <h3>3. IP Hash</h3>
+      <ul>
+        <li>Gamit ang client IP para i-determine kung saang server pupunta</li>
+        <li>Consistent — same client, same server</li>
+        <li>Useful for session affinity (sticky sessions)</li>
+      </ul>
+
+      <h2>Health Checks</h2>
+      <p>Ang load balancer ay regular na nag-che-check kung alive ang servers. Kung mamatay ang isang server, <strong>awtomatikong hihinto ang load balancer</strong> sa pagpapadala ng traffic doon.</p>
+
+      <div class="project">
+        <h3>Mini-Project: Docker Load Balancing</h3>
+        <p>Gamit ang docker-compose, mag-set up ng 2 app instances sa likod ng isang simpleng load balancer (nginx).</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Round Robin: simple, sunod-sunod</li>
+        <li>Least Connections: i-consider ang current load</li>
+        <li>IP Hash: consistent routing per client</li>
+        <li>Health checks: auto-remove ang patay na servers</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Ano ang mangyayari kung mamatay ang isang server instance habang tumatakbo ang load balancer?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>NGINX Load Balancing</strong> — Official guide. <a href="https://docs.nginx.com/nginx/admin-guide/load-balancer/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0013';
+  var questions = [
+    {
+      question: 'Ano ang mangyayari kung mamatay ang isang server instance habang tumatakbo ang load balancer?',
+      options: [
+        'Magca-crash ang buong system',
+        'Awtomatikong ide-detect ng health check na patay ang server at hihinto ang load balancer sa pagpapadala ng traffic doon',
+        'Kailangan manual i-remove ang server',
+        'Magdodoble ang traffic sa ibang servers pero walang issue'
+      ],
+      correct: 'b',
+      answer: 'Awtomatikong ide-detect ng health check na hindi na responsive ang server — hihinto ang load balancer sa pagpapadala ng bagong traffic doon, at ang natitira pang servers ang hahawak ng load.'
+    },
+    {
+      question: 'Kailan mas maganda ang Least Connections kaysa Round Robin?',
+      options: [
+        'Kapag pare-parehas ang processing time ng requests',
+        'Kapag uneven ang processing time — may requests na mabilis, may matagal',
+        'Hindi naman kailanman maganda',
+        'Kapag isang server lang'
+      ],
+      correct: 'b',
+      answer: 'Kapag uneven ang processing time — ang Least Connections ay nagdi-distribute ng bagong requests sa server na may pinakakaunting active connections para balanced ang load.'
+    },
+    {
+      question: 'Ano ang disbentahe ng IP Hash algorithm?',
+      options: [
+        'Hindi consistent',
+        'Kapag maraming users galing sa same IP (e.g., office network), pwedeng hindi evenly distributed ang load',
+        'Hindi supported ng popular load balancers',
+        'Napakabagal'
+      ],
+      correct: 'b',
+      answer: 'Kapag maraming users galing sa same IP address (like corporate network na naka-NAT), lahat sila mapupunta sa iisang server.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

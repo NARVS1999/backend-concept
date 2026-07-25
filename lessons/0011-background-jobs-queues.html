@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0011: Background Jobs & Queues</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 3: Caching &amp; Performance</strong> — Lesson 3 of 3
+      </div>
+
+      <h1>Background Jobs &amp; Queues</h1>
+      <p><em>Paano i-offload ang mababagal o non-urgent tasks para hindi maka-block ang user request.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan kung kelan gagamit ng background jobs, paano gumagana ang message queues, at ang tradeoffs ng sync vs async processing.
+      </div>
+
+      <h2>Sync vs Async Processing</h2>
+      <table>
+        <tr><th>Synchronous</th><th>Asynchronous (Background Job)</th></tr>
+        <tr><td>Naka-block ang user hanggang matapos</td><td>Nagfa-fail ang user pag may error</td></tr>
+        <tr><td>Simple i-implement</td><td>Complex — kailangan ng queue infrastructure</td></tr>
+        <tr><td>Direct feedback sa user</td><td>Need feedback mechanism (email, websocket, polling)</td></tr>
+      </table>
+
+      <h2>Kailan Gumamit ng Background Jobs?</h2>
+      <ul>
+        <li>Pag-send ng email — hindi naman kailangan agad ng user</li>
+        <li>Image/video processing — CPU-intensive</li>
+        <li>Report generation — matagal gawin</li>
+        <li>Webhook calls — third-party na pwedeng mabagal</li>
+        <li>Data synchronization sa external services</li>
+      </ul>
+
+      <h2>Message Queue Technologies</h2>
+      <ul>
+        <li><strong>Redis Queue</strong> — Simple, gamit ang Redis lists</li>
+        <li><strong>RabbitMQ</strong> — Full-featured, may routing at exchanges</li>
+        <li><strong>Amazon SQS</strong> — Managed, scalable, walang infrastructure kelangan</li>
+        <li><strong>Bull / Sidekiq</strong> — Popular job libraries para sa Node.js at Ruby</li>
+      </ul>
+
+      <div class="warning">
+        <strong>Remember</strong>
+        Bakit hindi dapat naka-block ang user request habang nagse-send ng email? Kasi ang email sending ay slow I/O operation — pwedeng 1-5 seconds. Kung naka-block ang user, baka mag-timeout o umalis na lang sila.
+      </div>
+
+      <div class="project">
+        <h3>Mini-Project: Email Background Job</h3>
+        <p>Gumawa ng endpoint na nagse-send ng email — i-move ito sa background job/queue instead of synchronous call.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Background jobs = i-offload ang mababagal tasks</li>
+        <li>Sync: simple pero naka-block ang user</li>
+        <li>Async: complex pero better UX at scalability</li>
+        <li>RabbitMQ, Redis Queue, SQS ang common technologies</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Bakit hindi dapat naka-block ang user request habang nagse-send ng email?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>RabbitMQ Tutorials</strong> — Official guides. <a href="https://www.rabbitmq.com/tutorials" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0011';
+  var questions = [
+    {
+      question: 'Bakit hindi dapat naka-block ang user request habang nagse-send ng email?',
+      options: [
+        'Wala namang problema',
+        'Email sending ay slow I/O — pwedeng 1-5 seconds. Naka-block ang user = poor UX at potential timeout',
+        'Hindi supported ng HTTP',
+        'Mas secure kung naka-block'
+      ],
+      correct: 'b',
+      answer: 'Email sending ay slow I/O operation (1-5 seconds). Kapag naka-block ang user, pwedeng mag-timeout ang request o umalis na lang ang user dahil sa bagal.'
+    },
+    {
+      question: 'Alin sa mga ito ang HINDI magandang candidate para sa background job?',
+      options: [
+        'Pag-send ng welcome email',
+        'Image resizing',
+        'Pagsagot sa isang GET request na kelangan agad ng user',
+        'Report generation'
+      ],
+      correct: 'c',
+      answer: 'GET request na kelangan agad ng user — ito ay synchronous at dapat mabilis ang response. Background jobs para sa non-urgent o CPU-intensive tasks.'
+    },
+    {
+      question: 'Ano ang advantage ng message queue sa background job processing?',
+      options: [
+        'Pinapabilis ang network',
+        'Binibigyan ng reliability (retry mechanism), scalability (multiple workers), at decoupling ng services',
+        'Hindi na kailangan ng database',
+        'Automatic na na-delete ang failed jobs'
+      ],
+      correct: 'b',
+      answer: 'Nagbibigay ng reliability (automatic retry pag nag-fail), scalability (pwedeng magdagdag ng workers), at decoupling ng producer at consumer services.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

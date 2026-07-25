@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0004: Transactions & ACID</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Database Fundamentals</strong> — Lesson 4 of 4
+      </div>
+
+      <h1>Transactions &amp; ACID</h1>
+      <p><em>Paano siguraduhin na ang database operations ay reliable kahit may failures.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang ACID properties, isolation levels, at kung paano gamitin ang transactions para sa data integrity.
+      </div>
+
+      <h2>Ano ang Transaction?</h2>
+      <p>Ang transaction ay isang <strong>group of operations</strong> na ginagawa bilang isang unit. Either lahat mag-succeed, o lahat mag-fail at i-rollback.</p>
+
+      <p>Classic example — bank transfer:</p>
+      <pre><code>BEGIN TRANSACTION;
+UPDATE accounts SET balance = balance - 500 WHERE id = 1;
+UPDATE accounts SET balance = balance + 500 WHERE id = 2;
+COMMIT;</code></pre>
+      <p>Kung mag-crash ang server pagkatapos ng first UPDATE pero bago ang second, awtomatikong ibabalik ng database ang lahat (ROLLBACK).</p>
+
+      <h2>ACID Properties</h2>
+      <ul>
+        <li><strong>A</strong>tomicity — Lahat ng operations sa transaction ay either lahat mag-succeed o lahat mag-fail.</li>
+        <li><strong>C</strong>onsistency — Ang database ay nasa valid state bago at pagkatapos ng transaction.</li>
+        <li><strong>I</strong>solation — Ang concurrent transactions ay hindi dapat mag- interfere sa isa't isa.</li>
+        <li><strong>D</strong>urability — Kapag na-commit ang transaction, mananatili ang changes kahit mag-crash ang system.</li>
+      </ul>
+
+      <h2>Isolation Levels</h2>
+      <table>
+        <tr><th>Level</th><th>Dirty Read</th><th>Non-repeatable Read</th><th>Phantom Read</th></tr>
+        <tr><td>Read Uncommitted</td><td>Possible</td><td>Possible</td><td>Possible</td></tr>
+        <tr><td>Read Committed</td><td>Prevented</td><td>Possible</td><td>Possible</td></tr>
+        <tr><td>Repeatable Read</td><td>Prevented</td><td>Prevented</td><td>Possible</td></tr>
+        <tr><td>Serializable</td><td>Prevented</td><td>Prevented</td><td>Prevented</td></tr>
+      </table>
+
+      <h2>Deadlocks</h2>
+      <p>Nangyayari kapag dalawang transactions ay naghihintay sa isa't isa para mag-release ng lock. Detection: awtomatikong dine-detect ng database at ni-rollback ang isang transaction.</p>
+
+      <div class="project">
+        <h3>Mini-Project: Bank Transfer</h3>
+        <p>Gumawa ng simple bank transfer function na atomic (parehong deduct at add sa isang transaction). Subukan i-simulate ang failure mid-transaction.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Transaction = group of operations na either lahat mag-succeed o lahat mag-fail</li>
+        <li>ACID: Atomicity, Consistency, Isolation, Durability</li>
+        <li>Higher isolation level = more data safety pero lower concurrency</li>
+        <li>Deadlocks ay awtomatikong dine-detect ng database</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Ano ang mangyayari kung mag-crash ang server sa gitna ng transaction?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>PostgreSQL Transactions Docs</strong> — Official documentation. <a href="https://www.postgresql.org/docs/current/tutorial-transactions.html" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0004';
+  var questions = [
+    {
+      question: 'Ano ang mangyayari kung mag-crash ang server sa gitna ng transaction?',
+      options: [
+        'Mawawala ang lahat ng data permanently',
+        'Awtomatikong ika-rollback ng database ang transaction (Atomicity)',
+        'Magfa-fail ang database at hindi na magre-restart',
+        'Magsa-save ang partial changes'
+      ],
+      correct: 'b',
+      answer: 'Awtomatikong ika-rollback ng database ang transaction dahil sa Atomicity — either lahat ng operations mag-succeed, o walang mag-apply.'
+    },
+    {
+      question: 'Ano ang ibig sabihin ng "I" sa ACID?',
+      options: [
+        'Integrity — dapat tama ang data',
+        'Isolation — hindi dapat mag-interfere ang concurrent transactions',
+        'Indexing — dapat may index ang lahat',
+        'Idempotency — pwedeng i-replay ang operations'
+      ],
+      correct: 'b',
+      answer: 'Isolation — concurrent transactions ay hindi dapat mag-interfere sa isat isa. Ang isolation level ang nagde-determine kung gaano sila "separated".'
+    },
+    {
+      question: 'Anong isolation level ang nagpre-prevent sa dirty read?',
+      options: [
+        'Read Uncommitted lang',
+        'Read Committed pataas (Read Committed, Repeatable Read, Serializable)',
+        'Serializable lang',
+        'Wala — hindi maiiwasan ang dirty read'
+      ],
+      correct: 'b',
+      answer: 'Read Committed pataas. Ang Read Uncommitted lang ang pumapayag ng dirty read.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0023: Anki Review System</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 6: Interview Preparation</strong> — Lesson 4 of 4
+      </div>
+
+      <h1>Anki Review System</h1>
+      <p><em>I-convert ang lahat ng natutunan papuntang spaced repetition flashcards para sa review bago ang actual interview.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Ma-export ang lahat ng quiz questions mula sa buong course papuntang Anki para sa efficient review.
+      </div>
+
+      <h2>Ano ang Spaced Repetition?</h2>
+      <p>Ang spaced repetition ay isang study technique kung saan ang review intervals ay tumataas habang mas naaalala mo ang isang concept. Ang Anki ay ang pinaka-popular na tool para dito.</p>
+
+      <h2>How to Use the Export</h2>
+      <ol>
+        <li>Bawat lesson ay may <strong>"Export to Anki"</strong> button sa bawat quiz question</li>
+        <li>May <strong>"Export All to Anki CSV"</strong> button sa bawat lesson para i-download lahat ng questions ng lesson na yun</li>
+        <li>Ang <strong>master export</strong> ay nasa landing page (<code>index.html</code>) — i-download lahat ng questions mula sa buong course</li>
+      </ol>
+
+      <h2>How to Import to Anki</h2>
+      <ol>
+        <li>Open Anki desktop app</li>
+        <li>Click "File" → "Import"</li>
+        <li>Select the CSV file</li>
+        <li>Set the import options: Field separator = Comma, Deck = pick or create new</li>
+        <li>Map fields: Front → Front, Back → Back</li>
+        <li>Click "Import"</li>
+      </ol>
+
+      <h2>Anki Tips for Interview Prep</h2>
+      <ul>
+        <li>Every day, mag-review ng at least 10-20 cards</li>
+        <li>Answer out loud — parang nasa actual interview</li>
+        <li>Kung hindi mo masagot, i-mark as "Again" para bumalik ulit</li>
+        <li>Focus on weak areas — kung confident, i-mark as "Easy" para mas matagal bumalik</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: I-export at I-import sa Anki</h3>
+        <p>Pumunta sa <a href="../index.html" target="_blank">landing page</a>, i-download ang Master Anki CSV, at i-import ito sa Anki app.</p>
+      </div>
+
+      <h2>Quiz — Final Check</h2>
+      <p>Subukan ang iyong natutunan sa buong course gamit ang random questions mula sa lahat ng phases.</p>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Congratulations!</h2>
+      <p>Natapos mo ang buong <strong>Backend Concepts & System Design</strong> course! Narito ang next steps:</p>
+      <ul>
+        <li>Gamitin ang Anki deck araw-araw hanggang interview</li>
+        <li>Practice system design questions gamit ang AI agent</li>
+        <li>Update ang iyong STAR story bank habang nagkaka-experience ka</li>
+        <li>Balikan ang mga lessons na may concepts na kailangan mo pang i-review</li>
+      </ul>
+
+      <div class="info">
+        <strong>Good luck sa iyong interview!</strong>
+        You've put in the work — now go get that Mid-Level role!
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0023';
+  var questions = [
+    {
+      question: 'Ano ang spaced repetition?',
+      options: [
+        'Pag-uulit ng parehong bagay sa parehong araw',
+        'Study technique kung saan tumataas ang review intervals habang mas naaalala mo ang concept',
+        'Pagbabasa ng libro nang isang beses',
+        'Pag-cramming bago ang exam'
+      ],
+      correct: 'b',
+      answer: 'Spaced repetition increases review intervals as you remember the concept better — efficient long-term retention.'
+    },
+    {
+      question: 'Ano ang field mapping kung iki-import ang CSV sa Anki?',
+      options: [
+        'Front → Question, Back → Answer',
+        'Front → Answer, Back → Question',
+        'Wala — auto na yun',
+        'Front → Tags, Back → Deck'
+      ],
+      correct: 'a',
+      answer: 'Front → Question (na may bullet options), Back → Correct Answer.'
+    },
+    {
+      question: 'Ano ang dapat mong gawin kung hindi mo masagot ang isang Anki card?',
+      options: [
+        'I-skip at huwag ng balikan',
+        'I-mark as "Again" para bumalik ulit sa maikling interval',
+        'I-delete ang card',
+        'I-mark as "Easy" para mas matagal bumalik'
+      ],
+      correct: 'b',
+      answer: 'I-mark as "Again" — ibig sabihin hindi mo pa alam, kaya dapat bumalik ito sa mas maikling interval para ma-practice ulit.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  // Render master export button
+  var masterDiv = document.createElement('div');
+  masterDiv.style.marginTop = '1.5rem';
+  masterDiv.style.padding = '1rem';
+  masterDiv.style.background = 'var(--accent-light)';
+  masterDiv.style.borderRadius = 'var(--radius)';
+  masterDiv.style.textAlign = 'center';
+  masterDiv.innerHTML = '<p style="margin-bottom:0.5rem;font-family:var(--font-sans);font-weight:600;">Download All Questions</p>';
+  var masterBtn = document.createElement('button');
+  masterBtn.className = 'quiz-submit quiz-anki-btn';
+  masterBtn.style.background = '#16a34a';
+  masterBtn.textContent = 'Download Master Anki CSV (All 23 Lessons)';
+  masterBtn.onclick = function() {
+    QuizWidget.exportMaster();
+  };
+  masterDiv.appendChild(masterBtn);
+  document.querySelector('.lesson-container').appendChild(masterDiv);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

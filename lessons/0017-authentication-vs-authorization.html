@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0017: Authentication vs Authorization</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 5: Security Fundamentals</strong> — Lesson 1 of 3
+      </div>
+
+      <h1>Authentication vs Authorization</h1>
+      <p><em>Sino ka? (Authentication) at Ano ang pinapayagan mong gawin? (Authorization)</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang pagkakaiba ng authentication at authorization, session-based vs token-based auth, at JWT.
+      </div>
+
+      <h2>Authentication vs Authorization</h2>
+      <ul>
+        <li><strong>Authentication</strong> — "Sino ka?" Pag-verify ng identity (login with username/password, OAuth, biometrics)</li>
+        <li><strong>Authorization</strong> — "Ano ang pwede mong gawin?" Pag-check kung may permission ang isang authenticated user</li>
+      </ul>
+
+      <h2>Session-based Auth</h2>
+      <ul>
+        <li>Server ang nagke-keep ng session data (in-memory o sa DB)</li>
+        <li>Client ay nagse-send ng session ID (cookie)</li>
+        <li>Problema: hindi pwedeng i-scale horizontally agad (kailangan ng shared session store)</li>
+      </ul>
+
+      <h2>Token-based Auth (JWT)</h2>
+      <ul>
+        <li>Server ay nag-i-issue ng <strong>token</strong> (JWT) na naka-sign</li>
+        <li>Client ay nagse-send ng token sa <code>Authorization</code> header</li>
+        <li>Server ay nagve-validate ng signature — hindi kailangan ng session storage</li>
+      </ul>
+
+      <div class="warning">
+        <strong>Important</strong>
+        Ang JWT payload ay <strong>naka-encode lang, hindi naka-encrypt</strong> — kahit sino ay pwedeng mag-decode (base64). Huwag maglagay ng sensitive data sa JWT payload!
+      </div>
+
+      <div class="project">
+        <h3>Mini-Project: JWT Middleware</h3>
+        <p>Mag-implement ng JWT-based authentication middleware.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Authentication = identity verification; Authorization = permission checking</li>
+        <li>Session-based: server-side state, pwedeng i-revoke agad</li>
+        <li>Token-based (JWT): stateless, scalable, pero hindi pwedeng i-revoke agad</li>
+        <li>JWT payload ay encoded lang — wag lagyan ng sensitive data</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Bakit hindi dapat naka-store ang sensitive data sa JWT payload?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>JWT.io</strong> — JWT debugger at introduction. <a href="https://jwt.io/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0017';
+  var questions = [
+    {
+      question: 'Bakit hindi dapat naka-store ang sensitive data sa JWT payload?',
+      options: [
+        'Pwede naman — secure ang JWT',
+        'Ang JWT payload ay naka-encode lang (base64), hindi naka-encrypt — kahit sino ay pwedeng mag-decode',
+        'Kasi mabagal',
+        'Kasi hindi enough ang storage'
+      ],
+      correct: 'b',
+      answer: 'Ang JWT payload ay naka-encode lang (base64), hindi naka-encrypt. Madali itong ma-decode at mabasa ng kahit sino na may access sa token.'
+    },
+    {
+      question: 'Ano ang pinagkaiba ng authentication at authorization?',
+      options: [
+        'Parehas lang — magkaibang term para sa same concept',
+        'Authentication = sino ka (identity). Authorization = ano ang pwede mong gawin (permissions)',
+        'Authentication = permissions. Authorization = identity.',
+        'Authentication = session. Authorization = token.'
+      ],
+      correct: 'b',
+      answer: 'Authentication verifies identity ("Sino ka?"). Authorization checks permissions ("Ano ang pwede mong gawin?").'
+    },
+    {
+      question: 'Ano ang disadvantage ng token-based auth (JWT) compared sa session-based?',
+      options: [
+        'Walang disadvantage',
+        'Hindi pwedeng i-revoke agad ang JWT — once issued, valid hanggang mag-expire',
+        'Mas mabagal',
+        'Hindi scalable'
+      ],
+      correct: 'b',
+      answer: 'Hindi agad pwedeng i-revoke ang JWT. Kapag na-issue na, valid ito hanggang mag-expire maliban kung mag-implement ka ng blocklist.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

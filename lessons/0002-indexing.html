@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0002: Indexing</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Database Fundamentals</strong> — Lesson 2 of 4
+      </div>
+
+      <h1>Indexing</h1>
+      <p><em>Paano pabilisin ang database queries gamit ang index — at kung kelan ito masama.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan kung paano gumagana ang B-tree index, kung kailan ito effective, at kung bakit hindi lahat ng columns dapat may index.
+      </div>
+
+      <h2>Ano ang Database Index?</h2>
+      <p>Ang index ay parang <strong>talaan ng nilalaman</strong> ng libro. Sa halip na basahin ang buong libro para maghanap ng isang topic, titingnan mo lang ang index para malaman kung saang page ito.</p>
+      <p>Kung walang index, kailangan ng database na i-scan ang <strong>bawat row</strong> (full table scan) — sobrang bagal para sa malalaking tables.</p>
+
+      <h2>B-tree Index</h2>
+      <p>Ang default na index type sa karamihan ng databases ay <strong>B-tree</strong> (Balanced Tree).</p>
+      <ul>
+        <li>Hierarchical structure na parang tree</li>
+        <li>Balanced — parehas ang lalim ng lahat ng leaf nodes</li>
+        <li>Effective para sa: <code>=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>BETWEEN</code>, <code>LIKE 'prefix%'</code></li>
+        <li><strong>O(log n)</strong> search time — sobrang bilis vs O(n) ng full scan</li>
+      </ul>
+
+      <h2>Composite Index</h2>
+      <p>Index na may multiple columns:</p>
+      <pre><code>CREATE INDEX idx_orders_user_date ON orders (user_id, order_date);</code></pre>
+      <p>Mahalaga ang <strong>column order</strong> — dapat mauna ang column na ginagamit sa <code>WHERE</code> na may equality filter.</p>
+
+      <h2>Kailan Masamang Idea ang Mag-index?</h2>
+      <ul>
+        <li>Every index ay nagda-dagdag ng <strong>write overhead</strong> — pag may INSERT/UPDATE/DELETE, kailangan i-update din ang index</li>
+        <li>Kumakain ng <strong>disk space</strong> ang index</li>
+        <li>Hindi nakakatulong ang index sa maliliit na tables (mas mabilis pa rin ang full scan)</li>
+        <li>Hindi effective ang index sa columns na may <strong>low cardinality</strong> (konting unique values lang, like boolean)</li>
+      </ul>
+
+      <div class="warning">
+        <strong>Remember</strong>
+        Index everything that slows you down — but measure first. Hindi lahat ng query kelangan ng index.
+      </div>
+
+      <div class="project">
+        <h3>Mini-Project: Index Performance Test</h3>
+        <p>Gumawa ng table na may 100k+ rows (seed data via agentic script). I-compare ang query speed with vs without index gamit ang <code>EXPLAIN ANALYZE</code>.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Index ay parang talaan ng nilalaman — pinapabilis ang reads</li>
+        <li>B-tree ang default at most common na index type</li>
+        <li>Composite index: column order matters</li>
+        <li>May tradeoff: mas mabilis na reads vs mas mabagal na writes at extra disk space</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Bakit hindi lahat ng columns dapat may index?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Use the Index, Luke</strong> — Comprehensive guide sa indexing. <a href="https://use-the-index-luke.com/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0002';
+  var questions = [
+    {
+      question: 'Bakit hindi lahat ng columns dapat may index?',
+      options: [
+        'Walang problema — dapat lahat may index',
+        'Index consumes disk space at nagpapabagal ng writes (INSERT/UPDATE/DELETE)',
+        'Hindi kaya ng database ang maraming index',
+        'Parehas lang ang performance kahit maraming index'
+      ],
+      correct: 'b',
+      answer: 'Index consumes disk space at nagpapabagal ng writes — every INSERT/UPDATE/DELETE ay kailangan ding i-update ang index.'
+    },
+    {
+      question: 'Anong search time complexity ang B-tree index?',
+      options: [
+        'O(n) — kailangan i-scan lahat',
+        'O(log n) — logarithmic, sobrang bilis',
+        'O(1) — constant time',
+        'O(n^2) — parang full scan'
+      ],
+      correct: 'b',
+      answer: 'O(log n) — balanced tree structure ensures logarithmic search time.'
+    },
+    {
+      question: 'Kailan HINDI effective ang index?',
+      options: [
+        'Kapag nagse-search ng exact match',
+        'Kapag nagse-search ng range (BETWEEN)',
+        'Kapag low cardinality ang column (konting unique values lang)',
+        'Kapag gumagamit ng prefix search'
+      ],
+      correct: 'c',
+      answer: 'Kapag low cardinality ang column — konting unique values lang, hindi makakatulong ang index para mag-filter.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

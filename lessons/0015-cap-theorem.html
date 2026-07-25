@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0015: CAP Theorem</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 4: Scalability &amp; Distributed Systems</strong> — Lesson 4 of 5
+      </div>
+
+      <h1>CAP Theorem</h1>
+      <p><em>Bakit hindi pwedeng magkaroon ng lahat ng magandang katangian ang isang distributed system.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang CAP theorem at kung paano ito nagde-drive ng architectural decisions sa distributed systems.
+      </div>
+
+      <h2>Ang Tatlong Katangian</h2>
+      <ul>
+        <li><strong>C</strong>onsistency — Bawat read ay nakakakuha ng pinakabagong write (o error)</li>
+        <li><strong>A</strong>vailability — Bawat request ay nakakatanggap ng response (kahit hindi latest ang data)</li>
+        <li><strong>P</strong>artition Tolerance — Patuloy na gumagana ang system kahit may network failure sa pagitan ng nodes</li>
+      </ul>
+
+      <h2>Ang Theorem: Choose 2 out of 3</h2>
+      <p>Sa isang distributed system, kapag may network partition (P), kailangan mong pumili sa pagitan ng Consistency (C) at Availability (A).</p>
+
+      <h3>CP Systems (Consistency + Partition Tolerance)</h3>
+      <ul>
+        <li>Kapag may partition, magha-hang o mag-e-error ang system hanggang ma-resolve</li>
+        <li>Example: Traditional RDBMS, MongoDB (default), HBase</li>
+        <li>Use case: Banking systems, kung saan bawal ang maling data</li>
+      </ul>
+
+      <h3>AP Systems (Availability + Partition Tolerance)</h3>
+      <ul>
+        <li>Kapag may partition, patuloy na tumatanggap ng writes at nagre-return ng responses — pero pwedeng hindi consistent</li>
+        <li>Example: Cassandra, CouchDB, DNS</li>
+        <li>Use case: Social media feeds, kung saan okay lang ang slight inconsistency</li>
+      </ul>
+
+      <div class="info">
+        <strong>Reflection</strong>
+        Isulat sa sarili mong salita kung saan babagsak ang mga common databases (MySQL, MongoDB, Cassandra) sa CAP spectrum.
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>CAP = Consistency, Availability, Partition Tolerance</li>
+        <li>Kapag may network partition, pumili sa pagitan ng C at A</li>
+        <li>CP: consistent pero pwedeng hindi available (banking)</li>
+        <li>AP: available pero pwedeng inconsistent (social media)</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Bakit hindi pwedeng ma-guarantee ang parehong consistency at availability kapag may network partition?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>CAP Theorem (Eric Brewer)</strong> — Original article. <a href="https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0015';
+  var questions = [
+    {
+      question: 'Bakit hindi pwedeng ma-guarantee ang parehong consistency at availability kapag may network partition?',
+      options: [
+        'Pwede naman — kayang gawin ng modern databases',
+        'Kasi kapag may partition, kailangan mong pumili: either i-block ang requests (consistency over availability) o mag-serve ng possible stale data (availability over consistency)',
+        'Kasi hindi kaya ng hardware',
+        'Dahil sa database license'
+      ],
+      correct: 'b',
+      answer: 'Kapag may network partition, either hintayin mong mag-sync ang nodes (C over A — possible downtime) o mag-serve kahit hindi consistent (A over C — possible stale data). Hindi pwedeng pareho.'
+    },
+    {
+      question: 'Anong uri ng system ang Cassandra (Apache Cassandra)?',
+      options: [
+        'CP — consistency priority',
+        'AP — availability priority',
+        'CA — walang partition tolerance',
+        'Wala sa nabanggit'
+      ],
+      correct: 'b',
+      answer: 'AP — Availability + Partition Tolerance. Cassandra prioritizes availability; eventual consistency ang approach.'
+    },
+    {
+      question: 'Anong use case ang ideal para sa CP systems?',
+      options: [
+        'Social media news feed',
+        'Banking system kung saan bawal ang maling data',
+        'Content delivery network',
+        'DNS'
+      ],
+      correct: 'b',
+      answer: 'Banking system — kung saan critical ang consistency at acceptable ang pagiging temporarily unavailable sa halip na magbigay ng maling data.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

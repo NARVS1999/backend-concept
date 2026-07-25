@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0003: N+1 Query Problem</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 1: Database Fundamentals</strong> — Lesson 3 of 4
+      </div>
+
+      <h1>N+1 Query Problem</h1>
+      <p><em>Isang common performance issue sa ORMs na pwedeng magpabagal ng application mo nang sobra.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matukoy kung ano ang N+1 query problem, paano ito nangyayari, at paano ito i-fix gamit ang eager loading.
+      </div>
+
+      <h2>Ano ang N+1 Query Problem?</h2>
+      <p>Ang N+1 ay nangyayari kapag nag-query ka ng isang listahan ng records (1 query), tapos para sa <strong>bawat record</strong>, may hiwalay pang query (N queries).</p>
+
+      <p>Halimbawa — kumuha ng lahat ng users at ang kanilang orders:</p>
+      <pre><code>// 1 query: kunin lahat ng users
+$users = User::all();
+
+// N queries: para sa bawat user, kunin ang orders
+foreach ($users as $user) {
+    $orders = $user->orders; // ito ay isa pang query per user
+}</code></pre>
+      <p>Kung may 100 users, ang total queries ay <strong>1 + 100 = 101</strong> queries!</p>
+
+      <h2>Eager Loading vs Lazy Loading</h2>
+      <ul>
+        <li><strong>Lazy Loading</strong> — Ang related data ay nila-load lamang kapag in-access. Ito ang dahilan ng N+1.</li>
+        <li><strong>Eager Loading</strong> — Ang related data ay nila-load na agad gamit ang JOIN o isang hiwalay na query na may WHERE IN.</li>
+      </ul>
+
+      <p>Sa Laravel, ang fix ay gamit ang <code>with()</code>:</p>
+      <pre><code>// Eager loading — 2 queries lang
+$users = User::with('orders')->get();</code></pre>
+
+      <h2>Paano Ma-detect sa Production?</h2>
+      <ul>
+        <li>Gamit ang <strong>database query log</strong> — i-monitor kung ilang queries ang na-e-execute per page load</li>
+        <li>Gamit ang <strong>ORM tools</strong> (Laravel Debugbar, Django Debug Toolbar)</li>
+        <li>Manual inspection ng SQL logs</li>
+      </ul>
+
+      <div class="project">
+        <h3>Mini-Project: Hanapin ang N+1</h3>
+        <p>Magpagawa ng agent ng intentionally-buggy code na may N+1 issue. Ikaw mismo ang mag-identify at mag-fix — huwag muna hayaan i-fix ng agent agad.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>N+1 = 1 query para sa listahan + N queries para sa related data ng bawat item</li>
+        <li>Lazy loading ang karaniwang dahilan</li>
+        <li>Fix: eager loading gamit ang JOIN o dedicated query na may WHERE IN</li>
+        <li>I-monitor ang query count sa production para ma-detect</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Paano mo made-detect ang N+1 sa production?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa:</em></p>
+      <ul>
+        <li><strong>Awesome N+1</strong> — Examples in different ORMs. <a href="https://github.com/janestreet/awesome-n-plus-one" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0003';
+  var questions = [
+    {
+      question: 'Paano mo made-detect ang N+1 sa production?',
+      options: [
+        'Hindi na kailangan — automatic na naaayos ng ORM',
+        'Sa pamamagitan ng pag-check ng query count sa database query log o ORM debug tools',
+        'Sa pamamagitan ng pagtingin sa HTTP status codes',
+        'Hindi posible sa production'
+      ],
+      correct: 'b',
+      answer: 'I-monitor ang query count per page load gamit ang database query log o ORM tools tulad ng Laravel Debugbar o Django Debug Toolbar.'
+    },
+    {
+      question: 'Ano ang pinagkaiba ng eager loading at lazy loading?',
+      options: [
+        'Parehas lang sila',
+        'Lazy loading ay nagla-load ng related data on demand; eager loading ay nagla-load nang sabay-sabay',
+        'Eager loading ay mas mabagal palagi',
+        'Lazy loading ay hindi ginagamit ng ORMs'
+      ],
+      correct: 'b',
+      answer: 'Lazy loading nagla-load ng related data kapag in-access (pwede mag-cause ng N+1). Eager loading nagla-load ng lahat nang sabay gamit ang JOIN o WHERE IN.'
+    },
+    {
+      question: 'Kung may 50 users at bawat isa may 3 orders, ilang queries ang magagawa ng N+1 pattern?',
+      options: [
+        '3 queries lang',
+        '50 queries',
+        '51 queries (1 + 50)',
+        '150 queries'
+      ],
+      correct: 'c',
+      answer: '51 queries — 1 query para sa lahat ng users, tapos 1 query per user (50) para sa orders.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

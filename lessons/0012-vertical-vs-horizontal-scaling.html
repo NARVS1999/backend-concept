@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0012: Vertical vs Horizontal Scaling</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Phase 4: Scalability &amp; Distributed Systems</strong> — Lesson 1 of 5
+      </div>
+
+      <h1>Vertical vs Horizontal Scaling</h1>
+      <p><em>Paano lumalaki ang isang system mula sa isang server papuntang milyun-milyong users.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang tradeoffs ng vertical at horizontal scaling, at kung bakit kailangan ang statelessness para sa horizontal scaling.
+      </div>
+
+      <h2>Vertical Scaling (Scale Up)</h2>
+      <p>Magdagdag ng mas malakas na resources sa <strong>iisang server</strong> — mas mabilis na CPU, mas maraming RAM, mas malaking disk.</p>
+      <ul>
+        <li>Pros: Simple, walang code changes, walang distributed system complexity</li>
+        <li>Cons: May <strong>upper limit</strong> (di pwedeng infinite ang specs ng isang machine), <strong>single point of failure</strong>, mas mahal per unit of compute</li>
+      </ul>
+
+      <h2>Horizontal Scaling (Scale Out)</h2>
+      <p>Magdagdag ng <strong>mas maraming servers</strong> sa halip na palakasin ang isa.</p>
+      <ul>
+        <li>Pros: <strong>Theoretically unlimited</strong> (dagdag lang ng servers), <strong>fault-tolerant</strong> (may iba pang servers kung may isang mamatay), cost-effective</li>
+        <li>Cons: Complex — need load balancer, distributed data management, <strong>statelessness</strong></li>
+      </ul>
+
+      <h2>Statelessness: Requirement para sa Horizontal Scaling</h2>
+      <p>Kung naka-store ang session data sa local memory ng isang server instance, hindi pwedeng i-forward ang next request ng same user sa ibang server.</p>
+
+      <p>Solution: i-store ang session sa <strong>shared external storage</strong> (Redis, database) para kahit saang server mapunta ang request, parehas ang experience.</p>
+
+      <div class="project">
+        <h3>Mini-Project: Architecture Diagram</h3>
+        <p>Gumawa ng diagram (pwedeng markdown/mermaid) ng architecture na naka-scale horizontally.</p>
+      </div>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Vertical scaling: palakasin ang isang server — simple pero may limit</li>
+        <li>Horizontal scaling: dagdagan ang servers — unlimited pero complex</li>
+        <li>Statelessness ay critical para sa horizontal scaling</li>
+      </ul>
+
+      <div class="info">
+        <strong>Interview Angle</strong>
+        "Bakit mahirap i-scale horizontally ang application na naka-store ng session sa local memory?"
+      </div>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <h2>Recommended Resource</h2>
+      <ul>
+        <li><strong>System Design Primer</strong> — Comprehensive guide. <a href="https://github.com/donnemartin/system-design-primer" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0012';
+  var questions = [
+    {
+      question: 'Bakit mahirap i-scale horizontally ang application na naka-store ng session sa local memory?',
+      options: [
+        'Hindi naman mahirap',
+        'Kasi ang load balancer ay pwedeng mag-forward ng next request sa ibang server na walang session data nun',
+        'Kasi hindi pwedeng magkaroon ng multiple servers',
+        'Kasi mas mabagal ang local memory'
+      ],
+      correct: 'b',
+      answer: 'Ang load balancer ay pwedeng mag-forward ng next request ng same user sa ibang server na walang kopya ng session — kaya kelangan shared storage (Redis) para sa session.'
+    },
+    {
+      question: 'Ano ang pinakamalaking disadvantage ng vertical scaling?',
+      options: [
+        'Napakamura',
+        'May upper limit — hindi pwedeng mag-upgrade forever ng isang machine',
+        'Napakadali',
+        'Walang disadvantage'
+      ],
+      correct: 'b',
+      answer: 'May upper limit — eventually hindi ka na pwedeng mag-upgrade pa ng isang machine. At mas mahal ang high-end hardware per unit of compute.'
+    },
+    {
+      question: 'Ano ang requirement para mag-work ang horizontal scaling?',
+      options: [
+        'Dapat naka-store ang session sa local memory',
+        'Dapat stateless ang application servers',
+        'Dapat isang database lang',
+        'Dapat naka-cloud lang'
+      ],
+      correct: 'b',
+      answer: 'Statelessness — hindi dapat naka-store sa local server memory ang session o state data. Dapat nasa shared external storage (Redis, DB) para accessible sa lahat ng instances.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>
