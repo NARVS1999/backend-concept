@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0016: Chapter 16 — The Trial Begins</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 5 of 10
+      </div>
+
+      <h1>Chapter 16 — The Trial Begins</h1>
+      <p><em>Maycomb gathers for the spectacle of justice</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        The town gathers for the trial. Scout, Jem, and Dill sneak into the courtroom and watch from the Black balcony.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>"It was a gala occasion" — the trial as entertainment and spectacle</li>
+        <li>People from all over the county flood Maycomb</li>
+        <li>Courtroom is segregated: Black gallery upstairs</li>
+        <li>Reverend Sykes saves seats for the children in the colored balcony</li>
+        <li>Judge Taylor: old, sleepy-looking, misses nothing</li>
+        <li>Dolphus Raymond: white man who prefers Black company</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Why does the town treat the trial as a public spectacle? How does the segregated courtroom reflect Maycomb's social structure?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "It was a gala occasion" — Scout's narration
+      </blockquote>
+      <p>The irony is sharp — a man's life is on trial, but the white community treats it as entertainment.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>The trial is a public event — the town gathers as if for entertainment</li>
+        <li>The segregated courtroom mirrors the town's racial divisions</li>
+        <li>Judge Taylor proves to be a fair and watchful judge</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0016';
+  var questions = [
+    {
+      question: 'Where do Scout, Jem, and Dill sit during the trial?',
+      options: ['In the front row', 'In the jury box', 'In the colored balcony with Reverend Sykes', 'Outside the courthouse'],
+      correct: 'c',
+      answer: 'Reverend Sykes saves seats for them in the colored balcony, where the Black community watches.'
+    },
+    {
+      question: 'How does Judge Taylor behave during the trial?',
+      options: ['He is strict and formal', 'He seems sleepy but misses nothing', 'He is openly biased against Tom', 'He falls asleep'],
+      correct: 'b',
+      answer: 'Judge Taylor appears sleepy and relaxed, but he is sharp and attentive — he intentionally assigned the case to Atticus.'
+    },
+    {
+      question: 'Why does the town treat the trial as a "gala occasion"?',
+      options: ['They support Tom', 'They see it as entertainment and a social event', 'They are celebrating justice', 'They are protesting'],
+      correct: 'b',
+      answer: 'To Maycomb\'s white citizens, the trial is a spectacle — a break from daily life rather than a serious matter of justice.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

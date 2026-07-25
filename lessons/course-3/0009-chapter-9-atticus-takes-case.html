@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0009: Chapter 9 — Atticus Takes the Case</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Two: The Mockingbird Theme</strong> — Lesson 1 of 3
+      </div>
+
+      <h1>Chapter 9 — Atticus Takes the Case</h1>
+      <p><em>Atticus agrees to defend Tom Robinson</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Atticus agrees to defend Tom Robinson, a Black man accused of raping a white woman. Scout faces taunts at school and at the family Christmas gathering.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Scout fights Cecil Jacobs for saying Atticus "defends niggers"</li>
+        <li>Atticus: "I'm simply defending a Negro"</li>
+        <li>"I couldn't hold my head up in town" — Atticus explains his conscience</li>
+        <li>Christmas at Finch's Landing: Aunt Alexandra, Uncle Jack, Francis</li>
+        <li>Francis calls Atticus a "nigger-lover" — Scout punches him</li>
+        <li>Atticus: "When a child asks you something, answer him"</li>
+        <li>Atticus's legal strategy: the Ewells are lying</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Atticus says he couldn't "hold up his head" if he didn't defend Tom. Is he guided more by his conscience, his reputation, or his sense of duty? What's the difference?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "I couldn't hold my head up in town" — Atticus explaining why he must defend Tom
+      </blockquote>
+      <p>Atticus links his self-respect to doing what is right, even when it is unpopular.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Atticus takes on the controversial defense of Tom Robinson</li>
+        <li>Scout faces social pressure and fights to defend her father's honor</li>
+        <li>The community's racism begins to surface</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0009';
+  var questions = [
+    {
+      question: 'Why does Scout fight Cecil Jacobs?',
+      options: ['He steals her lunch', 'He insults Atticus for defending a Black man', 'He makes fun of her costume', 'He pushes Jem'],
+      correct: 'b',
+      answer: 'Cecil Jacobs says Atticus "defends niggers," and Scout fights him to defend her father\'s honor.'
+    },
+    {
+      question: 'At Christmas, what does Francis call Atticus that makes Scout punch him?',
+      options: ['A coward', 'A liar', 'A nigger-lover', 'A poor lawyer'],
+      correct: 'c',
+      answer: 'Francis calls Atticus a "nigger-lover," which provokes Scout to punch him — she doesn\'t fully understand the term but knows it\'s an insult.'
+    },
+    {
+      question: 'What does Atticus teach Uncle Jack about children?',
+      options: ['They should be spanked for fighting', 'When a child asks you something, answer him honestly', 'Children should not attend trials', 'Never punish a child in front of others'],
+      correct: 'b',
+      answer: 'Atticus tells Uncle Jack that when a child asks a question, you should answer it honestly — a lesson in treating children with respect.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

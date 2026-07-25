@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0018: Chapter 18 — Mayella Ewell Testifies</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 7 of 10
+      </div>
+
+      <h1>Chapter 18 — Mayella Ewell Testifies</h1>
+      <p><em>The accuser's story falls apart</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Mayella takes the stand — lonely, scared, and lying. Atticus treats her with courtesy but exposes the cracks in her story.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Mayella is 19: lonely, responsible for many siblings</li>
+        <li>She accuses Tom of beating and raping her</li>
+        <li>She asked Tom inside to "fix a door that didn't need fixing"</li>
+        <li>Mayella admits there was "nothing wrong with the door"</li>
+        <li>She refuses to answer what happened with her siblings</li>
+        <li>Tom's crippled left arm: can't use it, can't have caused the injuries</li>
+        <li>Mayella is both liar and victim: she's afraid of her father</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Mayella is both the accuser and a victim. How does Lee create sympathy for her while still maintaining Tom's innocence?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "She was as sad as what Atticus said" — Scout on Mayella
+      </blockquote>
+      <p>Even Scout recognizes Mayella's tragedy — she is a victim of her father's abuse and her own lies.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Mayella's testimony reveals her loneliness and fear</li>
+        <li>Tom's crippled arm makes the accusation physically impossible</li>
+        <li>Mayella is both perpetrator and victim</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0018';
+  var questions = [
+    {
+      question: 'Why did Mayella ask Tom Robinson into the house?',
+      options: ['She needed groceries', 'She wanted to fix a door that wasn\'t broken', 'She was sick', 'She wanted him to chop wood'],
+      correct: 'b',
+      answer: 'Mayella admits she asked Tom to fix a door that "didn\'t need fixing" — the pretext was a lie.'
+    },
+    {
+      question: 'What physical detail makes Tom\'s guilt impossible?',
+      options: ['Tom is too weak', 'Tom is blind', 'Tom\'s left arm is crippled — he can\'t use it for beating or rape', 'Tom is too short'],
+      correct: 'c',
+      answer: 'Tom\'s left arm was crippled in a cotton gin accident — he physically cannot inflict the injuries described.'
+    },
+    {
+      question: 'How does Lee create sympathy for Mayella despite her false accusation?',
+      options: ['She is beautiful', 'She is rich', 'She is lonely and afraid of her abusive father', 'She confesses the truth'],
+      correct: 'c',
+      answer: 'Mayella is a victim of poverty, loneliness, and her father\'s abuse — she is trapped in a system she cannot escape.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0011: Chapter 11 — Mrs. Dubose and Real Courage</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Two: The Mockingbird Theme</strong> — Lesson 3 of 3
+      </div>
+
+      <h1>Chapter 11 — Mrs. Dubose and Real Courage</h1>
+      <p><em>Atticus redefines what it means to be brave</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Mrs. Dubose insults Atticus for defending Tom. Jem destroys her camellia bushes and is sentenced to read to her daily. She dies, and Atticus reveals she was fighting morphine addiction — the bravest person he ever knew.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Mrs. Dubose: cantankerous, racist, old and ill</li>
+        <li>Calls Atticus a "nigger-lover" — Jem destroys her camellia bushes</li>
+        <li>Punishment: read to Mrs. Dubose every day for a month</li>
+        <li>Mrs. Dubose is dying and addicted to morphine</li>
+        <li>She wanted to "die beholden to nothing and nobody"</li>
+        <li>"Real courage is when you know you're licked before you begin but you begin anyway and see it through no matter what"</li>
+        <li>She leaves Jem a camellia — forgiveness and recognition</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Compare Mrs. Dubose's courage with Atticus's. What is Atticus's definition of "real courage"?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "I wanted you to see what real courage is, instead of getting the idea that courage is a man with a gun in his hand." — Atticus
+      </blockquote>
+      <p>Atticus redefines courage as moral endurance — fighting a battle you know you'll lose because it's right.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Mrs. Dubose's battle with addiction teaches Jem about real courage</li>
+        <li>Atticus redefines bravery as moral strength, not physical power</li>
+        <li>The camellia symbolizes forgiveness and recognition of true victory</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0011';
+  var questions = [
+    {
+      question: "What does Jem do to Mrs. Dubose's property after she insults Atticus?",
+      options: ['He spray-paints her fence', 'He destroys her camellia bushes', 'He steals her flowers', 'He breaks her window'],
+      correct: 'b',
+      answer: "In a rage, Jem uses Scout's baton to destroy Mrs. Dubose's camellia bushes."
+    },
+    {
+      question: 'What is Mrs. Dubose really fighting during her final months?',
+      options: ['An infection', 'Old age', 'Morphine addiction', 'Loneliness'],
+      correct: 'c',
+      answer: 'Mrs. Dubose is fighting a morphine addiction — she wants to die "beholden to nothing and nobody."'
+    },
+    {
+      question: 'What does Atticus say is "real courage"?',
+      options: ['Fighting even when you know you\'ll lose', 'Owning a gun', 'Being physically strong', 'Winning every argument'],
+      correct: 'a',
+      answer: 'Atticus defines real courage as knowing you\'re "licked before you begin but you begin anyway and see it through no matter what."'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

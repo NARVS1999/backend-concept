@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0012: Chapter 12 — Calpurnia's Church</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 1 of 10
+      </div>
+
+      <h1>Chapter 12 — Calpurnia's Church</h1>
+      <p><em>The children experience the Black community's faith</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Dill doesn't come for the summer. Jem is growing moody. Calpurnia takes the children to First Purchase African M.E. Church, where they witness the Black community's faith and resilience.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Dill stays in Meridian — Scout misses him</li>
+        <li>Jem is 12 — moody, tells Scout to "act like a girl"</li>
+        <li>Calpurnia takes them to First Purchase African M.E. Church</li>
+        <li>Lula objects: "You ain't got no business bringin' white chillun here"</li>
+        <li>Reverend Sykes welcomes them: "We don't have split churches"</li>
+        <li>Calpurnia code-switches: talks differently at church vs. at Finch house</li>
+        <li>"It's not necessary to tell all you know" — Calpurnia's lesson on discretion</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Calpurnia speaks differently at church than she does at the Finch house. Why? What does this reveal about navigating a segregated society?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "It's not necessary to tell all you know." — Calpurnia
+      </blockquote>
+      <p>This reveals Calpurnia's wisdom about navigating different social worlds — knowing when to adapt and when to remain silent.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>The children experience the Black church community</li>
+        <li>Calpurnia's two worlds reveal the complexity of navigating segregation</li>
+        <li>Reverend Sykes emerges as a figure of moral authority</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0012';
+  var questions = [
+    {
+      question: 'Why does Lula object to Scout and Jem attending Calpurnia\'s church?',
+      options: ['They are too young', 'They are white', 'They are not dressed properly', 'They don\'t have permission'],
+      correct: 'b',
+      answer: 'Lula objects because Scout and Jem are white children in a Black church — she sees it as an intrusion.'
+    },
+    {
+      question: 'What does Calpurnia do differently at church compared to at the Finch house?',
+      options: ['She cooks different food', 'She talks differently — code-switches her language', 'She dresses differently', 'She sits in a different pew'],
+      correct: 'b',
+      answer: 'Calpurnia code-switches — she uses different language patterns at church than she does at the Finch house, adapting to her audience.'
+    },
+    {
+      question: 'What does Calpurnia mean by "It\'s not necessary to tell all you know"?',
+      options: ['Keep your knowledge hidden', 'Discretion is sometimes wise', 'Never be honest', 'Only speak when spoken to'],
+      correct: 'b',
+      answer: 'Calpurnia means that discretion is important — you don\'t need to reveal everything you know in every situation.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

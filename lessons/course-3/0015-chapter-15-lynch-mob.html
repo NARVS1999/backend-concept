@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0015: Chapter 15 — The Lynch Mob</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 4 of 10
+      </div>
+
+      <h1>Chapter 15 — The Lynch Mob</h1>
+      <p><em>Scout's innocence disarms the mob</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        A mob gathers to lynch Tom Robinson before the trial. Atticus waits at the jail to stop them. Scout's innocence disarms the mob.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Heck Tate and others warn Atticus about potential trouble</li>
+        <li>Atticus sits outside the jail, reading, guarding Tom</li>
+        <li>The Old Sarum bunch (Cunninghams) arrive to lynch Tom</li>
+        <li>The children follow Atticus and find him at the jail</li>
+        <li>Scout recognizes Mr. Cunningham — starts a conversation about entailment</li>
+        <li>Mr. Cunningham is shamed: "I'll tell him you said hey, little lady"</li>
+        <li>The mob disperses — Scout unknowingly saves Tom</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Scout's simple conversation disarms the mob. How does this scene demonstrate the power of Atticus's "climb into his skin" lesson?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "I'll tell him you said hey, little lady" — Mr. Cunningham
+      </blockquote>
+      <p>Scout's recognition of Mr. Cunningham as an individual breaks the mob's anonymity and shames them into leaving.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>A lynch mob gathers to kill Tom Robinson</li>
+        <li>Atticus faces them with calm courage</li>
+        <li>Scout unknowingly saves Tom by humanizing Mr. Cunningham</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0015';
+  var questions = [
+    {
+      question: 'What is Atticus doing when the mob arrives at the jail?',
+      options: ['Sleeping', 'Reading a book', 'Talking to Tom', 'Cleaning his gun'],
+      correct: 'b',
+      answer: 'Atticus sits outside the jail reading, calmly guarding Tom despite the threat.'
+    },
+    {
+      question: 'How does Scout unknowingly disarm the lynch mob?',
+      options: ['She threatens them', 'She screams for help', 'She talks to Mr. Cunningham about his legal entailment', 'She runs to get the sheriff'],
+      correct: 'c',
+      answer: 'Scout recognizes Mr. Cunningham and starts a friendly conversation, humanizing him and breaking the mob\'s anonymous courage.'
+    },
+    {
+      question: 'What does Scout\'s success with the mob demonstrate about Atticus\'s teachings?',
+      options: ['Violence solves problems', 'Empathy and seeing people as individuals can defuse hatred', 'Children should never speak to adults', 'The law always protects the innocent'],
+      correct: 'b',
+      answer: 'Scout unconsciously applies Atticus\'s "climb into his skin" lesson — she treats Mr. Cunningham as a person, not a mob member.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

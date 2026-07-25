@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0029: Chapter 29 — The Reveal: Boo Radley</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 8 of 10
+      </div>
+
+      <h1>Chapter 29 — The Reveal: Boo Radley</h1>
+      <p><em>The recluse becomes real</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        At Finch house, Scout finally meets Boo Radley face to face — the man who saved them is not a monster but a shy, gentle man.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Doctor tends to Jem — broken arm, unconscious but alive</li>
+        <li>Sheriff Tate: Bob Ewell is dead</li>
+        <li>Scout realizes the quiet man in the corner is Boo Radley</li>
+        <li>Boo's appearance: pale, thin, shy, young-looking despite being in his 30s</li>
+        <li>"His lips were thin, but they had no other function"</li>
+        <li>Boo asks: "Will you take me home?"</li>
+        <li>The contrast: monster vs. gentle man</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Describe the contrast between the "monster" Boo the children imagined and the real Boo. What is the effect of finally meeting him?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "Will you take me home?" — Boo Radley's first words to Scout
+      </blockquote>
+      <p>Boo's gentle request reveals his vulnerability — the "monster" is simply a shy, traumatized man asking for kindness.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Scout finally meets Boo Radley face to face</li>
+        <li>The "monster" is revealed as a gentle, shy man</li>
+        <li>All the childhood fears dissolve in the light of reality</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0029';
+  var questions = [
+    {
+      question: 'What is Boo Radley\'s physical appearance when Scout finally sees him?',
+      options: ['Tall and menacing', 'Pale, thin, shy, and young-looking', 'Old and frail', 'Strong and muscular'],
+      correct: 'b',
+      answer: 'Boo is pale, thin, shy, and looks younger than his age — the opposite of the monster the children imagined.'
+    },
+    {
+      question: 'What are Boo\'s first words to Scout?',
+      options: ['Hello', 'Are you okay?', 'Will you take me home?', 'I\'m sorry'],
+      correct: 'c',
+      answer: 'Boo\'s first words are "Will you take me home?" — a gentle, vulnerable request.'
+    },
+    {
+      question: 'How does the real Boo compare to the monster of the children\'s imagination?',
+      options: ['He is more frightening', 'He is gentle, shy, and timid — the complete opposite', 'He is exactly as they imagined', 'He is angry and bitter'],
+      correct: 'b',
+      answer: 'The real Boo is gentle, shy, and timid — a stark contrast to the Gothic monster of the children\'s games.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

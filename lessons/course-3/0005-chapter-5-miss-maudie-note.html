@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0005: Chapter 5 — Miss Maudie and the Note</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part One: Childhood in Maycomb</strong> — Lesson 5 of 8
+      </div>
+
+      <h1>Chapter 5 — Miss Maudie and the Note</h1>
+      <p><em>A more truthful perspective on Boo Radley</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Miss Maudie Atkinson provides a more humane perspective on Boo Radley. The children attempt to deliver a note to Boo through his window but are caught by Atticus.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Miss Maudie: neighbor, friend to children, shares Atticus's moral clarity</li>
+        <li>"Mockingbirds don't do one thing but make music for us to enjoy" — early hint of the title</li>
+        <li>Maudie knew Boo as a boy: "I remember Arthur Radley when he was a boy"</li>
+        <li>Boo's father was a "foot-washing Baptist" — extremely religious, kept Boo inside</li>
+        <li>Boo's teenage "crime": associating with the wrong crowd, a minor legal incident</li>
+        <li>Children try to deliver a note via fishing pole — Atticus catches them</li>
+        <li>Atticus: "Stop tormenting that man"</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Compare Miss Maudie's version of Boo Radley with the children's monster version. Why does Atticus stop them from delivering the note?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "Mockingbirds don't do one thing but make music for us to enjoy." — Miss Maudie
+      </blockquote>
+      <p>This is the first mention of the mockingbird — a symbol of innocence and harmlessness that becomes the novel's central metaphor.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Miss Maudie offers a more compassionate view of Boo as a misunderstood boy</li>
+        <li>The mockingbird symbol is introduced</li>
+        <li>Atticus teaches boundaries — Boo deserves privacy and respect</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0005';
+  var questions = [
+    {
+      question: 'Miss Maudie tells the children she remembers Arthur Radley. What was he like as a boy?',
+      options: ['Violent and dangerous', 'A normal boy who got into minor trouble', 'A genius who was misunderstood', 'A cruel prankster'],
+      correct: 'b',
+      answer: 'Miss Maudie remembers Arthur as a normal boy — his "crime" was associating with the wrong crowd as a teenager.'
+    },
+    {
+      question: 'Why does Atticus stop the children from delivering the note to Boo?',
+      options: ['The note is offensive', 'He wants to protect Boo\'s privacy and dignity', 'He is afraid of Nathan Radley', 'He thinks Boo will hurt them'],
+      correct: 'b',
+      answer: 'Atticus sees that the children are "tormenting" Boo by invading his privacy and treating him like a spectacle.'
+    },
+    {
+      question: "What does Miss Maudie's view of Boo reveal about the town's stories?",
+      options: ['The stories are completely accurate', 'The stories exaggerate and dehumanize Boo', 'Miss Maudie is lying', 'Boo was always dangerous'],
+      correct: 'b',
+      answer: 'Miss Maudie reveals that the town\'s monstrous version of Boo is exaggerated — he was simply a quiet boy who was harshly punished by his father.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

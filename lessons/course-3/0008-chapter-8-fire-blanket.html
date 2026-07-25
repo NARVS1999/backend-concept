@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0008: Chapter 8 — Fire and the Blanket</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part One: Childhood in Maycomb</strong> — Lesson 8 of 8
+      </div>
+
+      <h1>Chapter 8 — Fire and the Blanket</h1>
+      <p><em>Boo's unseen presence is revealed</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        It snows in Maycomb — a rare event — and Miss Maudie's house burns down. In the chaos, Boo Radley places a blanket on Scout's shoulders without her noticing.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>First snow in Maycomb since 1885 — school canceled</li>
+        <li>Jem and Scout build a snowman (mud base, snow cover)</li>
+        <li>Miss Maudie's house catches fire overnight</li>
+        <li>Scout watches from the Radley gate, wrapped in a blanket</li>
+        <li>Atticus: "Boo Radley. You were so busy looking at the fire you didn't know it when he put the blanket around you"</li>
+        <li>Scout is stunned: "I damn near died"</li>
+        <li>Miss Maudie: not upset about losing her house — she'll have more yard for flowers</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Scout didn't feel Boo approach. What does this say about his character — his gentleness, his stealth, his care? Miss Maudie responds to the fire with optimism — what does this reveal?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "Always wanted a smaller house, Jem. Gives me more yard" — Miss Maudie after the fire
+      </blockquote>
+      <p>Miss Maudie's optimism in the face of loss mirrors Atticus's definition of courage — grace under pressure.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Miss Maudie's house burns down, but she responds with grace and optimism</li>
+        <li>Boo Radley reveals his presence by covering Scout with a blanket</li>
+        <li>The children finally recognize Boo as a real, caring person</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0008';
+  var questions = [
+    {
+      question: 'What clue reveals that Boo Radley was near Scout during the fire?',
+      options: ['A footprint in the snow', 'A note in her pocket', 'A blanket on her shoulders', 'Her hair is brushed'],
+      correct: 'c',
+      answer: 'Atticus realizes that Boo placed a blanket on Scout\'s shoulders during the commotion, and she never felt him approach.'
+    },
+    {
+      question: 'How does Miss Maudie react to losing her house in the fire?',
+      options: ['She is devastated and weeps', 'She is optimistic — she always wanted a smaller house', 'She blames the children', 'She plans to leave Maycomb'],
+      correct: 'b',
+      answer: 'Miss Maudie is surprisingly cheerful — she says she always wanted a smaller house so she could have more yard for her flowers.'
+    },
+    {
+      question: 'What does the blanket scene reveal about Boo Radley?',
+      options: ['He is dangerous and stalks the children', 'He is a gentle caretaker watching over them', 'He is forced by Nathan to help', 'He wants something from Atticus'],
+      correct: 'b',
+      answer: 'Boo\'s act of placing the blanket on Scout reveals his gentle, protective nature — he is carefully watching over the children.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

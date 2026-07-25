@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0021: Chapter 21 — The Verdict</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 10 of 10
+      </div>
+
+      <h1>Chapter 21 — The Verdict</h1>
+      <p><em>Justice fails</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        The jury returns after hours of deliberation — longer than expected. Verdict: guilty. Tom is convicted despite all evidence. The Black community stands as Atticus passes.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>The jury is out for hours — Jem is hopeful: "We're gonna win"</li>
+        <li>The jury returns — Atticus is sweating despite being "ice in the courtroom"</li>
+        <li>Verdict: guilty</li>
+        <li>Jem is devastated: "It ain't right"</li>
+        <li>The entire Black gallery stands as Atticus walks out</li>
+        <li>Reverend Sykes: "Miss Jean Louise, stand up. Your father's passin'"</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>The jury deliberated longer than expected — a sign that at least one person almost held out. Why is this significant? What does the Black community's gesture mean?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "Miss Jean Louise, stand up. Your father's passin'" — Reverend Sykes
+      </blockquote>
+      <p>The Black community rises to honor Atticus — he may have lost the case, but he fought with dignity for justice.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>The jury convicts Tom despite overwhelming evidence</li>
+        <li>Jem's faith in justice is shattered</li>
+        <li>The Black community rises to honor Atticus's integrity</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0021';
+  var questions = [
+    {
+      question: 'Why is Jem initially hopeful during the jury\'s deliberation?',
+      options: ['The jury is laughing', 'The deliberation is taking a long time — someone is fighting for Tom', 'The judge promised an acquittal', 'Atticus told him they would win'],
+      correct: 'b',
+      answer: 'The jury takes hours to deliberate — Jem is hopeful because it means at least one person is holding out for Tom\'s innocence.'
+    },
+    {
+      question: 'What is the verdict?',
+      options: ['Not guilty', 'Guilty', 'Mistrial', 'The case is dismissed'],
+      correct: 'b',
+      answer: 'The jury finds Tom Robinson guilty despite all evidence of his innocence.'
+    },
+    {
+      question: 'Why does the entire Black balcony stand as Atticus walks out?',
+      options: ['They are leaving', 'They are angry at him', 'They are showing respect for his efforts', 'The judge orders them to stand'],
+      correct: 'c',
+      answer: 'The Black community stands to honor Atticus for his courageous and principled defense, even in defeat.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

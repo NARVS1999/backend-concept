@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0017: Chapter 17 — Sheriff Tate and Bob Ewell</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 6 of 10
+      </div>
+
+      <h1>Chapter 17 — Sheriff Tate and Bob Ewell</h1>
+      <p><em>The prosecution's case begins</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Heck Tate testifies about Mayella's injuries — bruises on the right side of her face. Bob Ewell takes the stand, and Atticus reveals he is left-handed.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Heck Tate: Mayella was beaten, bruises mostly on her right side</li>
+        <li>Bob Ewell testifies: vulgar, illiterate, aggressive</li>
+        <li>Atticus makes Bob sign his name — reveals he is left-handed</li>
+        <li>The Ewell property: trash-filled yard, poverty</li>
+        <li>The implication: a left-handed man (Bob) could have caused the right-sided injuries</li>
+        <li>Atticus's strategy: build reasonable doubt through physical evidence</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Why is it significant that Mayella's bruises were on the right side of her face? How does Atticus use small physical details to dismantle Bob Ewell's testimony?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "I seen that black nigger yonder ruttin' on my Mayella" — Bob Ewell
+      </blockquote>
+      <p>Bob Ewell's vulgar language reveals his character and prejudice — he uses racial slurs freely on the witness stand.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Physical evidence begins to unravel the prosecution's case</li>
+        <li>Bob Ewell reveals his character through vulgar testimony</li>
+        <li>Atticus plants the seed of reasonable doubt</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0017';
+  var questions = [
+    {
+      question: 'Where are Mayella\'s bruises located, according to Sheriff Tate?',
+      options: ['On her left side', 'Primarily on the right side of her face', 'On her arms', 'On her back'],
+      correct: 'b',
+      answer: 'Mayella\'s bruises are on the right side of her face — a crucial detail for Atticus\'s case.'
+    },
+    {
+      question: 'What does Atticus prove when he asks Bob Ewell to sign his name?',
+      options: ['Bob Ewell is illiterate', 'Bob Ewell is left-handed', 'Bob Ewell cannot write', 'Bob Ewell is lying about his name'],
+      correct: 'b',
+      answer: 'Atticus proves Bob Ewell is left-handed — meaning he could have inflicted the right-sided bruises.'
+    },
+    {
+      question: 'What is Atticus\'s strategy in this chapter?',
+      options: ['To prove Tom is innocent directly', 'To create reasonable doubt through physical evidence', 'To discredit the entire court system', 'To show that Mayella is lying about everything'],
+      correct: 'b',
+      answer: 'Atticus uses physical evidence — the location of bruises and Bob Ewell\'s left-handedness — to create reasonable doubt about who beat Mayella.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

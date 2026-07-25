@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0007: Chapter 7 — The Knothole Cemented</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part One: Childhood in Maycomb</strong> — Lesson 7 of 8
+      </div>
+
+      <h1>Chapter 7 — The Knothole Cemented</h1>
+      <p><em>Boo's connection is cut off</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        The knothole gifts continue — soap carvings of Scout and Jem, a pocket watch, twine. But Nathan Radley cements the knothole, cutting off Boo's connection to the children.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Jem finally reveals: his pants were mended and hung neatly on the fence</li>
+        <li>More gifts: gray twine, soap carvings (two figures that look like Scout and Jem)</li>
+        <li>More gum, a medal, an old pocket watch with an aluminum knife</li>
+        <li>The soap carvings are unmistakably them — Boo has been watching and caring</li>
+        <li>Jem writes a thank-you note → finds the knothole filled with cement</li>
+        <li>Nathan Radley: "Tree's dying. You plug 'em with cement when they're sick"</li>
+        <li>Atticus notes the tree looks healthy — Jem understands Nathan lied</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Nathan Radley cements the knothole to prevent Boo from communicating with the children. What does this act reveal about Nathan? Why does Jem cry?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "He wanted to stay connected" — Jem's understanding of Boo's intent
+      </blockquote>
+      <p>Jem, more than Scout, understands that the gifts were Boo's way of reaching out — and Nathan's cementing is a cruel rejection.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>The gifts culminate in soap carvings of the children — Boo's affection is clear</li>
+        <li>Nathan Radley cements the knothole, cutting off communication</li>
+        <li>Jem's tears mark his first experience with deliberate adult cruelty</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0007';
+  var questions = [
+    {
+      question: 'What are the soap carvings that appear in the knothole?',
+      options: ['Horses and dogs', 'Birds and trees', 'Two figures that look like Scout and Jem', 'Angels and demons'],
+      correct: 'c',
+      answer: 'The soap carvings are unmistakably Scout and Jem — showing Boo has been watching them closely and cares enough to create likenesses.'
+    },
+    {
+      question: "Why does Nathan Radley tell Jem the tree is dying?",
+      options: ['He believes it is true', "He wants to cut off Boo's connection to the children", 'He is protecting Boo', 'He needs firewood'],
+      correct: 'b',
+      answer: 'Nathan lies about the tree dying to justify cementing the knothole — he is deliberately preventing Boo from communicating with the children.'
+    },
+    {
+      question: 'Why does Jem cry at the end of this chapter?',
+      options: ['He is physically hurt', 'He is angry at Scout', "He is heartbroken by Nathan's cruelty", 'He misses Dill'],
+      correct: 'c',
+      answer: 'Jem cries because he understands that Nathan deliberately severed Boo\'s connection to them — his first real encounter with adult cruelty.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

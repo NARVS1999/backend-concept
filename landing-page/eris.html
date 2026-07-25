@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To Kill a Mockingbird — Eris Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Yusei+Magic&family=Zen+Antique&display=swap" rel="stylesheet">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+  <style>
+    :root {
+      --landing-bg: #5a1535;
+      --landing-bg-mid: #8b2252;
+      --landing-bg-end: #a0436a;
+      --paper: #f0e6d6;
+      --paper-border: #c4b89a;
+      --paper-texture: rgba(180,140,110,0.03);
+      --accent: #8b2252;
+      --accent-dark: #5a1535;
+      --accent-glow: rgba(139,34,82,0.3);
+      --red-seal: #8b0000;
+      --text-dark: #5a1535;
+      --text-body: #333;
+      --text-muted: #666;
+      --text-muted2: #999;
+      --dot-border: #d4c8b0;
+      --quote-bg: rgba(139,34,82,0.06);
+      --quote-border: #8b2252;
+      --progress-gradient: linear-gradient(90deg, #8b2252, #8b0000);
+      --tooltip-bg: #5a1535;
+      --toast-bg: #5a1535;
+      --wind-particle: rgba(255,200,100,0.12);
+      --char-hover-shadow: rgba(139,34,82,0.4);
+      --column-rule: #c4b89a;
+      --font-sans: 'Noto Serif JP', serif;
+    }
+
+    [data-theme="dark"] {
+      --landing-bg: #1a0a12;
+      --landing-bg-mid: #3a1a2a;
+      --landing-bg-end: #5a2a3a;
+      --paper: #1a1f2e;
+      --paper-border: #2a3040;
+      --paper-texture: rgba(100,80,80,0.03);
+      --accent: #d47aa0;
+      --accent-dark: #c05080;
+      --accent-glow: rgba(212,122,160,0.3);
+      --red-seal: #cc4444;
+      --text-dark: #e0d0d0;
+      --text-body: #c8c0c0;
+      --text-muted: #a09090;
+      --text-muted2: #777;
+      --dot-border: #3a3040;
+      --quote-bg: rgba(212,122,160,0.08);
+      --quote-border: #d47aa0;
+      --progress-gradient: linear-gradient(90deg, #d47aa0, #cc4444);
+      --tooltip-bg: #3a2a3a;
+      --toast-bg: #3a2a3a;
+      --wind-particle: rgba(255,200,100,0.06);
+      --char-hover-shadow: rgba(212,122,160,0.4);
+      --column-rule: #3a3040;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: linear-gradient(135deg, var(--landing-bg), var(--landing-bg-mid), var(--landing-bg-end));
+      background-size: 400% 400%;
+      animation: bgShift 12s ease infinite;
+      font-family: 'Noto Serif JP', serif;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+      transition: background 0.5s ease;
+    }
+
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .scroll-progress {
+      position: fixed; top: 0; left: 0;
+      height: 3px; width: 0%;
+      background: var(--progress-gradient);
+      z-index: 1000; transition: width 0.1s linear;
+    }
+
+    .spark-container {
+      position: fixed; inset: 0;
+      pointer-events: none; overflow: hidden; z-index: 0;
+    }
+    .spark {
+      position: absolute; border-radius: 50%;
+      animation: sparkRise linear infinite; opacity: 0;
+    }
+    .spark:nth-child(1) { width: 3px; height: 3px; bottom: -10px; left: 5%; animation-duration: 6s; animation-delay: 0s; background: rgba(255,220,100,0.6); }
+    .spark:nth-child(2) { width: 5px; height: 5px; bottom: -10px; left: 15%; animation-duration: 8s; animation-delay: 1s; background: rgba(255,180,80,0.4); }
+    .spark:nth-child(3) { width: 2px; height: 2px; bottom: -10px; left: 30%; animation-duration: 5s; animation-delay: 2s; background: rgba(255,200,60,0.7); }
+    .spark:nth-child(4) { width: 4px; height: 4px; bottom: -10px; left: 45%; animation-duration: 7s; animation-delay: 0.5s; background: rgba(255,160,40,0.5); }
+    .spark:nth-child(5) { width: 6px; height: 6px; bottom: -10px; left: 60%; animation-duration: 9s; animation-delay: 3s; background: rgba(255,220,120,0.3); }
+    .spark:nth-child(6) { width: 3px; height: 3px; bottom: -10px; left: 75%; animation-duration: 6s; animation-delay: 1.5s; background: rgba(255,190,70,0.6); }
+    .spark:nth-child(7) { width: 5px; height: 5px; bottom: -10px; left: 88%; animation-duration: 8s; animation-delay: 4s; background: rgba(255,170,50,0.4); }
+    .spark:nth-child(8) { width: 2px; height: 2px; bottom: -10px; left: 50%; animation-duration: 5s; animation-delay: 2.5s; background: rgba(255,230,140,0.7); }
+
+    @keyframes sparkRise {
+      0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-110vh) translateX(40px) scale(0.3); opacity: 0; }
+    }
+
+    .newspaper {
+      max-width: 900px;
+      width: 100%;
+      background: var(--paper);
+      padding: 2rem 2rem 1.5rem;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 0 0 1px var(--paper-border) inset;
+      position: relative;
+      z-index: 1;
+      border-radius: 2px;
+      animation: paperFadeIn 1s ease-out;
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    @keyframes paperFadeIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .newspaper::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 2px, var(--paper-texture) 2px, var(--paper-texture) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 3px, var(--paper-texture) 3px, var(--paper-texture) 6px);
+      pointer-events: none;
+      border-radius: 2px;
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .extra-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px double var(--accent);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      font-family: 'Yusei Magic', cursive;
+    }
+    .extra-banner .extra-left {
+      font-size: 1.8rem;
+      color: var(--red-seal);
+      letter-spacing: 0.3em;
+      position: relative;
+      overflow: hidden;
+    }
+    .extra-banner .extra-left::after {
+      content: '';
+      position: absolute; top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,200,150,0.4), transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
+    .extra-banner .extra-right { font-size: 0.85rem; color: var(--accent); }
+    .extra-banner .extra-price { font-size: 0.75rem; color: var(--text-muted); }
+
+    .headline-wrap {
+      text-align: center;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+    .headline-wrap::after {
+      content: '';
+      display: block;
+      width: 80px; height: 3px;
+      background: var(--accent);
+      margin: 0.5rem auto;
+      animation: lineGrow 1.2s ease-out forwards;
+      transform-origin: left;
+    }
+    @keyframes lineGrow {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    .headline-main {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 2.2rem;
+      color: var(--text-dark);
+      line-height: 1.3;
+      letter-spacing: 0.05em;
+      transition: color 0.4s ease;
+    }
+    .headline-main .accent {
+      color: var(--accent);
+      font-size: 2.6rem;
+      display: inline-block;
+      animation: accentPulse 3s ease-in-out infinite;
+    }
+    @keyframes accentPulse {
+      0%, 100% { text-shadow: 0 0 0 var(--accent-glow); }
+      50% { text-shadow: 0 0 12px var(--accent-glow); }
+    }
+    .headline-main .letter {
+      display: inline-block;
+      opacity: 0;
+      animation: letterFadeIn 0.5s ease forwards;
+    }
+    .headline-main .letter:nth-child(1) { animation-delay: 0.3s; }
+    .headline-main .letter:nth-child(2) { animation-delay: 0.4s; }
+    .headline-main .letter:nth-child(3) { animation-delay: 0.5s; }
+    .headline-main .letter:nth-child(4) { animation-delay: 0.6s; }
+    .headline-main .letter:nth-child(5) { animation-delay: 0.7s; }
+    .headline-main .letter:nth-child(6) { animation-delay: 0.8s; }
+    .headline-main .letter:nth-child(7) { animation-delay: 0.9s; }
+    .headline-main .letter:nth-child(8) { animation-delay: 1.0s; }
+    .headline-main .letter:nth-child(9) { animation-delay: 1.1s; }
+    .headline-main .letter:nth-child(10) { animation-delay: 1.2s; }
+    .headline-main .letter:nth-child(11) { animation-delay: 1.3s; }
+    .headline-main .letter:nth-child(12) { animation-delay: 1.4s; }
+    .headline-main .letter:nth-child(13) { animation-delay: 1.5s; }
+    .headline-main .letter:nth-child(14) { animation-delay: 1.6s; }
+    .headline-main .letter:nth-child(15) { animation-delay: 1.7s; }
+    .headline-main .letter:nth-child(16) { animation-delay: 1.8s; }
+    .headline-main .letter:nth-child(17) { animation-delay: 1.9s; }
+    .headline-main .letter:nth-child(18) { animation-delay: 2.0s; }
+    .headline-main .letter:nth-child(19) { animation-delay: 2.1s; }
+    .headline-main .letter:nth-child(20) { animation-delay: 2.2s; }
+
+    @keyframes letterFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .headline-sub {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      font-style: italic;
+      transition: color 0.4s ease;
+    }
+
+    .slash-divider {
+      text-align: center;
+      font-size: 1.5rem;
+      color: var(--accent);
+      letter-spacing: 0.5em;
+      margin-bottom: 1rem;
+      animation: slashGlow 2s ease-in-out infinite;
+    }
+    @keyframes slashGlow {
+      0%, 100% { opacity: 0.4; text-shadow: 0 0 0 var(--accent-glow); }
+      50% { opacity: 0.8; text-shadow: 0 0 10px var(--accent-glow); }
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .character-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      perspective: 500px;
+    }
+    .character-img-wrap {
+      position: relative;
+      transition: transform 0.3s ease;
+      transform-style: preserve-3d;
+    }
+    .character-img-wrap:hover {
+      transform: scale(1.05);
+    }
+    .character-img {
+      width: 150px;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+      transition: filter 0.3s ease;
+      cursor: pointer;
+    }
+    .character-img:hover {
+      filter: brightness(1.1) drop-shadow(0 4px 12px var(--char-hover-shadow));
+    }
+    .char-tooltip {
+      position: absolute;
+      bottom: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--tooltip-bg);
+      color: #fff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, bottom 0.3s ease;
+      font-family: 'Noto Serif JP', serif;
+      z-index: 10;
+    }
+    .char-tooltip::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 6px solid var(--tooltip-bg);
+    }
+    .character-img-wrap:hover .char-tooltip {
+      opacity: 1;
+      bottom: -56px;
+    }
+
+    .char-name {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.3rem;
+      color: var(--text-dark);
+      margin-top: 0.5rem;
+      transition: color 0.4s ease;
+    }
+    .char-name .char-emoji {
+      display: inline-block;
+      animation: floatEmoji 2s ease-in-out infinite;
+    }
+    @keyframes floatEmoji {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    .char-title { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.15em; transition: color 0.4s ease; }
+
+    .article { columns: 2; column-gap: 1.2rem; column-rule: 1px solid var(--column-rule); }
+    .article p {
+      font-size: 0.85rem;
+      line-height: 1.9;
+      margin-bottom: 0.8rem;
+      text-align: justify;
+      color: var(--text-body);
+      text-indent: 1em;
+      transition: color 0.4s ease;
+    }
+    .article p:first-of-type { text-indent: 0; }
+    .article .dropcap::first-letter {
+      font-size: 2.8rem; float: left; line-height: 0.8; margin-right: 0.3rem;
+      font-family: 'Yusei Magic', cursive; color: var(--accent);
+      animation: dropcapGlow 2s ease-in-out infinite;
+    }
+    @keyframes dropcapGlow {
+      0%, 100% { text-shadow: 0 0 0 var(--accent-glow); }
+      50% { text-shadow: 0 0 8px var(--accent-glow); }
+    }
+
+    .curriculum {
+      border-top: 2px solid var(--accent);
+      padding-top: 1rem;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.4s ease;
+    }
+    .curriculum h3 {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+      text-align: center;
+      transition: color 0.4s ease;
+    }
+    .curriculum-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem 1rem;
+    }
+    .curriculum-item {
+      font-size: 0.75rem;
+      color: var(--text-body);
+      padding: 0.3rem 0.5rem;
+      border-bottom: 1px dotted var(--dot-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease, padding 0.3s ease, color 0.4s ease;
+      border-radius: 4px;
+      position: relative;
+      font-family: 'Noto Serif JP', serif;
+    }
+    .curriculum-item:hover {
+      background: var(--quote-bg);
+      padding-left: 0.8rem;
+      transform: translateX(4px);
+    }
+    .curriculum-item .phase { color: var(--accent); font-weight: 700; white-space: nowrap; }
+    .curriculum-item .lesson-badge {
+      background: var(--accent);
+      color: #fff;
+      padding: 0.1rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.6rem;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .curriculum-item:hover .lesson-badge {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .curriculum-item.active-lesson {
+      background: var(--quote-bg);
+      border-left: 3px solid var(--accent);
+      padding-left: 0.8rem;
+    }
+    .curriculum-toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--toast-bg);
+      color: #fff;
+      padding: 0.8rem 1.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: 'Noto Serif JP', serif;
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+      z-index: 500;
+      pointer-events: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .curriculum-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .hanko-wrap { text-align: center; margin-bottom: 1rem; }
+    .hanko {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 70px;
+      height: 70px;
+      border: 3px solid var(--red-seal);
+      border-radius: 50%;
+      font-family: 'Zen Antique', serif;
+      font-size: 1rem;
+      color: var(--red-seal);
+      transform: rotate(-8deg);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      cursor: pointer;
+      user-select: none;
+      animation: hankoFloat 4s ease-in-out infinite;
+    }
+    .hanko:hover {
+      transform: rotate(0deg) scale(1.1);
+      box-shadow: 0 0 20px rgba(139,0,0,0.3);
+    }
+    .hanko.stamped {
+      animation: stampBurst 0.5s ease;
+    }
+    @keyframes stampBurst {
+      0% { transform: rotate(-8deg) scale(1); }
+      30% { transform: rotate(-8deg) scale(1.3); }
+      60% { transform: rotate(-8deg) scale(0.95); }
+      100% { transform: rotate(-8deg) scale(1); }
+    }
+    @keyframes hankoFloat {
+      0%, 100% { transform: rotate(-8deg) translateY(0); }
+      50% { transform: rotate(-8deg) translateY(-4px); }
+    }
+
+    .quote-box {
+      text-align: center;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-left: 3px solid var(--quote-border);
+      background: var(--quote-bg);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      min-height: 3.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .quote-box:hover {
+      background: rgba(139,34,82,0.12);
+      border-left-color: var(--red-seal);
+    }
+    .quote-box .cursor-blink {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--accent);
+      margin-left: 2px;
+      animation: blink 0.8s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .cta-wrap { text-align: center; margin-bottom: 1rem; }
+    .btn-start {
+      display: inline-block;
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.2rem;
+      color: #fff;
+      background: var(--accent);
+      padding: 0.8rem 2.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      letter-spacing: 0.1em;
+      position: relative;
+      box-shadow: 0 0 0 0 var(--accent-glow);
+      animation: ctaGlow 2s ease-in-out infinite;
+    }
+    .btn-start:hover {
+      background: var(--accent-dark);
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 20px rgba(90,21,53,0.4);
+      animation: none;
+    }
+    .btn-start:active {
+      transform: translateY(0) scale(0.98);
+    }
+    @keyframes ctaGlow {
+      0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+      50% { box-shadow: 0 0 16px 4px var(--accent-glow); }
+    }
+    .btn-start .sub {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 0.7rem;
+      opacity: 0.8;
+      display: block;
+    }
+
+    .anki-section {
+      border-top: 1px solid var(--paper-border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+      text-align: center;
+      transition: border-color 0.4s ease;
+    }
+    .anki-section h3 {
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+      transition: color 0.4s ease;
+    }
+    .anki-section p {
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--text-body);
+      margin-bottom: 0.5rem;
+      text-align: center;
+      transition: color 0.4s ease;
+    }
+    .anki-section p a {
+      color: var(--accent);
+    }
+    .anki-section .anki-hint {
+      color: var(--text-muted);
+      font-family: 'Noto Serif JP', serif;
+      font-size: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .btn-anki-master {
+      display: inline-block;
+      font-family: 'Yusei Magic', cursive;
+      font-size: 1rem;
+      color: #fff;
+      background: var(--accent);
+      padding: 0.7rem 2rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-anki-master:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .anki-status {
+      margin-top: 0.5rem;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .footer {
+      border-top: 1px solid var(--paper-border);
+      padding-top: 0.5rem;
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-muted2);
+      letter-spacing: 0.1em;
+      transition: border-color 0.4s ease, color 0.4s ease;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--paper);
+      border: 1px solid var(--paper-border);
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 6px 12px;
+      font-size: 1rem;
+      color: var(--text-muted);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      line-height: 1;
+    }
+    .theme-toggle:hover {
+      color: var(--accent);
+      background: var(--quote-bg);
+      border-color: var(--accent);
+    }
+
+    @media (max-width: 700px) {
+      .newspaper { padding: 1rem; }
+      .content-grid { grid-template-columns: 1fr; }
+      .character-img { width: 120px; }
+      .article { columns: 1; }
+      .curriculum-grid { grid-template-columns: 1fr; }
+      .headline-main { font-size: 1.6rem; }
+      .headline-main .accent { font-size: 2rem; }
+      .extra-banner .extra-left { font-size: 1.2rem; }
+      .extra-banner { flex-wrap: wrap; gap: 0.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<div class="spark-container">
+  <div class="spark"></div>
+  <div class="spark"></div>
+  <div class="spark"></div>
+  <div class="spark"></div>
+  <div class="spark"></div>
+  <div class="spark"></div>
+  <div class="spark"></div>
+  <div class="spark"></div>
+</div>
+
+<div class="curriculum-toast" id="curriculumToast"></div>
+
+<button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">&#9788;</button>
+
+<div class="newspaper">
+
+  <div class="extra-banner reveal">
+    <span class="extra-left">EXTRA</span>
+    <span class="extra-price">SPECIAL EDITION</span>
+    <span class="extra-right">LITERARY COURSE</span>
+  </div>
+
+  <div class="headline-wrap reveal">
+    <div class="headline-main">
+      <span class="accent letter">T</span><span class="letter">o</span>
+      <span class="letter"> </span>
+      <span class="letter">K</span><span class="letter">i</span><span class="letter">l</span><span class="letter">l</span>
+      <span class="letter"> </span>
+      <span class="letter">a</span>
+      <span class="letter"> </span>
+      <span class="letter">M</span><span class="letter">o</span><span class="letter">c</span><span class="letter">k</span><span class="letter">i</span><span class="letter">n</span><span class="letter">g</span><span class="letter">b</span><span class="letter">i</span><span class="letter">r</span><span class="letter">d</span><br>
+      Chapter-by-Chapter Course
+    </div>
+    <div class="headline-sub">— The Sword King: Cut Through the Novel with Unyielding Will —</div>
+  </div>
+
+  <div class="slash-divider reveal">/ \ / \ /</div>
+
+  <div class="content-grid reveal">
+    <div class="character-box">
+      <div class="character-img-wrap" id="charWrap">
+        <img src="../animate/eris-img.png" alt="Eris" class="character-img" id="charImg">
+        <div class="char-tooltip">"Sword King &bull; Fearless Literary Analyst"</div>
+      </div>
+      <div class="char-name"><span class="char-emoji">&#9876;</span> Eris</div>
+      <div class="char-title">The Swordfighter</div>
+    </div>
+
+    <div class="article">
+      <p class="dropcap">No fluff, no shortcuts, no mercy on weak analysis. Eris's discipline cuts through every chapter of Harper Lee's masterpiece like a blade through the darkness. From the Radley Place to the courthouse steps — every scene, every symbol, every character is dissected with relentless precision.</p>
+      <p>This course covers all 31 chapters with laser focus: summary, key details, important quotes, character insights, study tasks. Each lesson sharpens your analytical skills like a sword on a whetstone. You will learn to read, think, and defend your interpretations.</p>
+      <p>Steel your resolve. The path through Maycomb is hard, but the reward — understanding, empathy, mastery — is worth every step.</p>
+    </div>
+  </div>
+
+  <div class="curriculum reveal">
+    <h3>CURRICULUM — 4 Parts / 31 Chapters</h3>
+    <div class="curriculum-grid" id="curriculumGrid">
+      <div class="curriculum-item" data-lessons="8"><span class="phase">Part One</span> Childhood in Maycomb (Ch 1-8)<span class="lesson-badge">8 lessons</span></div>
+      <div class="curriculum-item" data-lessons="3"><span class="phase">Part Two</span> The Mockingbird Theme (Ch 9-11)<span class="lesson-badge">3 lessons</span></div>
+      <div class="curriculum-item" data-lessons="10"><span class="phase">Part Three</span> The Trial (Ch 12-21)<span class="lesson-badge">10 lessons</span></div>
+      <div class="curriculum-item" data-lessons="10"><span class="phase">Part Four</span> Aftermath &amp; Resolution (Ch 22-31)<span class="lesson-badge">10 lessons</span></div>
+    </div>
+  </div>
+
+  <div class="hanko-wrap reveal">
+    <div class="hanko" id="hanko">Will</div>
+  </div>
+
+  <div class="quote-box reveal" id="quoteBox">
+    <span id="quoteText"></span><span class="cursor-blink" id="quoteCursor"></span>
+  </div>
+
+  <div class="cta-wrap reveal">
+    <a href="../lessons/course-3/0001-chapter-1-introduction-maycomb.html" class="btn-start">
+      START COURSE
+      <span class="sub">Begin your journey through Maycomb</span>
+    </a>
+  </div>
+
+  <div class="anki-section reveal">
+    <h3>Anki Review Deck</h3>
+    <p>Download the master Anki CSV file containing all quiz questions from the entire course. Import it to <a href="https://apps.ankiweb.net" target="_blank" rel="noopener">Anki</a> for spaced repetition review.</p>
+    <p class="anki-hint">Available after completing at least one lesson.</p>
+    <button class="btn-anki-master" id="ankiMasterBtn" onclick="downloadMasterAnki()">Download Master Anki CSV</button>
+    <div class="anki-status" id="ankiStatus"></div>
+  </div>
+
+  <div class="footer reveal">
+    To Kill a Mockingbird — Eris Edition
+  </div>
+
+</div>
+
+<script src="../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.innerHTML = isDark ? '&#9790;' : '&#9788;';
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        themeBtn.innerHTML = '&#9788;';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        themeBtn.innerHTML = '&#9790;';
+      }
+    });
+  }
+
+  var revealEls = document.querySelectorAll('.reveal');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+  revealEls.forEach(function(el) { observer.observe(el); });
+  revealEls.forEach(function(el) {
+    var rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.85) {
+      el.classList.add('visible');
+    }
+  });
+
+  var progressBar = document.getElementById('scrollProgress');
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  });
+
+  var quoteText = '"If you\'ve decided to get stronger, don\'t look back. Just move forward." \u2014 Eris';
+  var quoteEl = document.getElementById('quoteText');
+  var cursorEl = document.getElementById('quoteCursor');
+  var idx = 0;
+
+  function typeChar() {
+    if (idx < quoteText.length) {
+      quoteEl.textContent += quoteText.charAt(idx);
+      idx++;
+      var delay = quoteText.charAt(idx - 1) === '.' || quoteText.charAt(idx - 1) === ',' ? 60 : 30;
+      setTimeout(typeChar, delay);
+    } else {
+      cursorEl.style.display = 'none';
+    }
+  }
+  var quoteBox = document.getElementById('quoteBox');
+  var quoteObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        setTimeout(typeChar, 400);
+        quoteObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  quoteObs.observe(quoteBox);
+
+  var charWrap = document.getElementById('charWrap');
+  var charImg = document.getElementById('charImg');
+  charWrap.addEventListener('mousemove', function(e) {
+    var rect = charWrap.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    var centerX = rect.width / 2;
+    var centerY = rect.height / 2;
+    var rotateX = ((y - centerY) / centerY) * -8;
+    var rotateY = ((x - centerX) / centerX) * 8;
+    charImg.style.transform = 'rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.05)';
+  });
+  charWrap.addEventListener('mouseleave', function() {
+    charImg.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+  });
+
+  var curriculumItems = document.querySelectorAll('.curriculum-item');
+  var toast = document.getElementById('curriculumToast');
+  var toastTimeout;
+  curriculumItems.forEach(function(item) {
+    item.addEventListener('click', function() {
+      var phaseName = item.querySelector('.phase').textContent;
+      var lessons = item.getAttribute('data-lessons');
+      toast.textContent = phaseName + ' \u2014 ' + lessons + ' lessons to mastery!';
+      toast.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(function() { toast.classList.remove('show'); }, 2500);
+      curriculumItems.forEach(function(i) { i.classList.remove('active-lesson'); });
+      item.classList.add('active-lesson');
+    });
+  });
+
+  var hanko = document.getElementById('hanko');
+  hanko.addEventListener('click', function() {
+    hanko.classList.remove('stamped');
+    void hanko.offsetWidth;
+    hanko.classList.add('stamped');
+    setTimeout(function() { hanko.classList.remove('stamped'); }, 600);
+  });
+
+  var sparkContainer = document.querySelector('.spark-container');
+  function spawnSpark() {
+    var p = document.createElement('div');
+    p.className = 'spark';
+    var size = 2 + Math.random() * 5;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.bottom = '-10px';
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.animationDuration = (4 + Math.random() * 6) + 's';
+    p.style.opacity = '0';
+    var gold = 160 + Math.floor(Math.random() * 80);
+    p.style.background = 'rgba(255,' + gold + ',60,' + (0.3 + Math.random() * 0.4) + ')';
+    sparkContainer.appendChild(p);
+    setTimeout(function() { if (p.parentNode) p.remove(); }, 12000);
+  }
+  setInterval(spawnSpark, 2500);
+
+})();
+
+function downloadMasterAnki() {
+  if (window.QuizWidget && QuizWidget.count() > 0) {
+    QuizWidget.exportMaster();
+    document.getElementById('ankiStatus').textContent = 'Downloaded ' + QuizWidget.count() + ' questions!';
+  } else {
+    var status = document.getElementById('ankiStatus');
+    status.textContent = 'No quiz questions completed yet. Start a lesson first!';
+  }
+}
+</script>
+</body>
+</html>

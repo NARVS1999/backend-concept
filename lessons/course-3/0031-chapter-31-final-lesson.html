@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0031: Chapter 31 — The Final Lesson</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 10 of 10
+      </div>
+
+      <h1>Chapter 31 — The Final Lesson</h1>
+      <p><em>Scout's moral education is complete</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Scout reflects on the novel's lessons as she returns home. Atticus reads to her, and the story ends with Scout safe, Jem healing.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Scout walks Boo home, stands on his porch</li>
+        <li>"I had never seen our neighborhood from this angle"</li>
+        <li>She reflects: Boo has been watching them all these years</li>
+        <li>"One time he said you never really know a man until you stand in his shoes and walk around in them"</li>
+        <li>Atticus reads The Grey Ghost to Scout</li>
+        <li>Atticus: "Most people are nice, Scout, when you finally see them"</li>
+        <li>"He turned out the light and went into Jem's room. He would be there all night, and he would be there when Jem waked up in the morning."</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Scout stands on the Radley porch and sees the world from Boo's perspective. What is the final lesson she learns? How has she grown from Chapter 1 to Chapter 31?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "Most people are nice, Scout, when you finally see them." — Atticus
+      </blockquote>
+      <p>This is the novel's final moral — not naive optimism, but a hard-won belief that empathy reveals the humanity in everyone.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Scout's moral journey is complete — she finally understands empathy</li>
+        <li>The novel ends with safety, healing, and the promise of a better tomorrow</li>
+        <li>Atticus's final words affirm the value of seeing the good in people</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0031';
+  var questions = [
+    {
+      question: 'What does Scout finally understand when she stands on the Radley porch?',
+      options: ['Boo is dangerous', 'The neighborhood is boring', 'She sees the world from Boo\'s perspective — he was watching over them all along', 'Boo\'s house is haunted'],
+      correct: 'c',
+      answer: 'Standing on the Radley porch, Scout sees the neighborhood as Boo has seen it for years — understanding his quiet, watchful love.'
+    },
+    {
+      question: 'What story does Atticus read to Scout at the end of the novel?',
+      options: ['The Bible', 'A history book', 'The Grey Ghost', 'A fairy tale'],
+      correct: 'c',
+      answer: 'Atticus reads The Grey Ghost, a story about a boy who was misunderstood — just like Boo Radley.'
+    },
+    {
+      question: 'What is Atticus\'s final lesson in the novel?',
+      options: ['People are mostly bad', 'Most people are nice when you finally see them', 'Justice always prevails', 'Never trust strangers'],
+      correct: 'b',
+      answer: 'Atticus\'s final lesson is that most people are essentially good — a belief earned through empathy and understanding.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

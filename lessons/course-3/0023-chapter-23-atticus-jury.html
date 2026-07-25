@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0023: Chapter 23 — Atticus on the Jury</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 2 of 10
+      </div>
+
+      <h1>Chapter 23 — Atticus on the Jury</h1>
+      <p><em>A small sign of progress</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Atticus explains that one person on the jury — a Cunningham — held out for Tom's innocence. Bob Ewell continues his threats.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Atticus: "The jury's a funny thing... they took hours because one man fought for you"</li>
+        <li>That man was a Cunningham (one of the lynchers from Chapter 15)</li>
+        <li>"A Cunningham might be stubborn but he won't take charity"</li>
+        <li>Bob Ewell says "he'll get Atticus if it takes the rest of his life"</li>
+        <li>Atticus isn't worried: "It's not worth wasting fear over"</li>
+        <li>Alexandra: Walter Cunningham can't come over</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>The Cunningham juror almost held out for acquittal. What does this say about "good people" in a flawed system?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "The jury's a funny thing... they took hours because one man fought for you." — Atticus
+      </blockquote>
+      <p>This offers a glimmer of hope — even the most prejudiced group can be influenced by one person's conscience.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>One juror held out for Tom — a small sign of hope</li>
+        <li>Bob Ewell continues his threats</li>
+        <li>Atticus maintains his calm dignity</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0023';
+  var questions = [
+    {
+      question: 'How many people on the jury initially voted for Tom\'s acquittal?',
+      options: ['All twelve', 'One — a Cunningham', 'Three', 'None'],
+      correct: 'b',
+      answer: 'One juror — a Cunningham — held out for Tom\'s innocence, forcing hours of deliberation.'
+    },
+    {
+      question: 'Why is the Cunningham juror\'s vote significant?',
+      options: ['He was bribed', 'He was part of the lynch mob in Chapter 15 but still voted his conscience', 'He was a friend of Atticus', 'He was Black'],
+      correct: 'b',
+      answer: 'The Cunningham was part of the mob that tried to lynch Tom, yet in the jury room he voted for acquittal — showing that even prejudiced people can be reached.'
+    },
+    {
+      question: 'How does Atticus respond to Bob Ewell\'s threats?',
+      options: ['He buys a gun', 'He asks for police protection', 'He says it\'s not worth wasting fear over', 'He leaves Maycomb'],
+      correct: 'c',
+      answer: 'Atticus considers Ewell\'s threats empty — he says Bob already got his revenge by making Atticus lose the case.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

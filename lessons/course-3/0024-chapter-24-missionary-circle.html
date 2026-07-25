@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0024: Chapter 24 — The Missionary Circle</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 3 of 10
+      </div>
+
+      <h1>Chapter 24 — The Missionary Circle</h1>
+      <p><em>Hypocrisy on display</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        The Missionary Society meets at Finch house — the ladies discuss saving African natives while ignoring local injustice. Atticus brings news: Tom Robinson is dead.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Ladies of the Missionary Circle discuss the "Mruna" tribe in Africa</li>
+        <li>Irony: obsessed with foreign missions, blind to local racism</li>
+        <li>Mrs. Merriweather complains about "darkies in this town"</li>
+        <li>Atticus interrupts: Tom Robinson is dead — shot 17 times trying to escape</li>
+        <li>"He took it as a matter of course" — Atticus's grief</li>
+        <li>Scout learns: "If your aunt could be a lady in these circumstances, I could too"</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Contrast the missionary ladies' concern for the "Mruna tribe" with their prejudice against Maycomb's Black community. What is Lee satirizing?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "He took it as a matter of course" — Atticus on Tom's death
+      </blockquote>
+      <p>Atticus's quiet grief reveals the profound injustice — Tom's death was so predictable that even he accepted it as inevitable.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>The missionary ladies' hypocrisy is exposed</li>
+        <li>Tom Robinson is killed trying to escape</li>
+        <li>Scout learns about composure in the face of tragedy</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0024';
+  var questions = [
+    {
+      question: 'What are the missionary ladies discussing when Atticus brings news of Tom\'s death?',
+      options: ['The trial verdict', 'Saving the Mruna tribe in Africa', 'Garden flowers', 'The town\'s economy'],
+      correct: 'b',
+      answer: 'The ladies discuss Christianizing the "Mruna" tribe in Africa — ironic given their indifference to local injustice.'
+    },
+    {
+      question: 'How does Tom Robinson die?',
+      options: ['He is hanged', 'He dies in prison', 'He is shot 17 times trying to escape', 'He is killed by Bob Ewell'],
+      correct: 'c',
+      answer: 'Tom tries to escape from prison and is shot 17 times — a senseless death that mirrors the "senseless slaughter of songbirds."'
+    },
+    {
+      question: 'What does Scout learn about being a lady from Aunt Alexandra during this crisis?',
+      options: ['Ladies should never show emotion', 'Ladies maintain composure even in difficult circumstances', 'Ladies don\'t attend trials', 'Ladies don\'t discuss death'],
+      correct: 'b',
+      answer: 'Scout sees Alexandra maintain her social composure despite the terrible news — learning that being a lady means grace under pressure.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

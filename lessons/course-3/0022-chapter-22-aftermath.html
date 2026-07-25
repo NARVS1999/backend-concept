@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0022: Chapter 22 — The Aftermath</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 1 of 10
+      </div>
+
+      <h1>Chapter 22 — The Aftermath</h1>
+      <p><em>Coping with injustice</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        The town reacts to the verdict. Miss Maudie consoles Jem, and Bob Ewell threatens Atticus.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Jem cries — his faith in the world is broken</li>
+        <li>Miss Maudie consoles him: "There are some men in this world who were born to do our unpleasant jobs for us. Your father is one of them"</li>
+        <li>Atticus is "the only man who can keep a jury out so long on a case like that"</li>
+        <li>Bob Ewell threatens Atticus — spits in his face at the post office</li>
+        <li>Atticus wipes his face and walks away — quiet dignity</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Miss Maudie says some men are "born to do our unpleasant jobs." What does this mean about Atticus's role in Maycomb?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "There are some men in this world who were born to do our unpleasant jobs for us. Your father is one of them." — Miss Maudie
+      </blockquote>
+      <p>Miss Maudie articulates Atticus's role — he does the hard, necessary work that others are too afraid or prejudiced to do.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Jem's innocence about justice is destroyed</li>
+        <li>Miss Maudie reframes Atticus's defeat as a moral victory</li>
+        <li>Bob Ewell's threats escalate</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0022';
+  var questions = [
+    {
+      question: 'How does Jem react to the verdict?',
+      options: ['He is relieved', 'He cries and his faith in justice is broken', 'He is angry at Atticus', 'He doesn\'t understand what happened'],
+      correct: 'b',
+      answer: 'Jem is devastated — the verdict shatters his belief that the justice system is fair.'
+    },
+    {
+      question: 'What is Miss Maudie\'s perspective on the trial outcome?',
+      options: ['Atticus failed', 'Atticus did what was necessary — he made the jury think', 'The verdict doesn\'t matter', 'Jem should forget about it'],
+      correct: 'b',
+      answer: 'Miss Maudie points out that Atticus made the jury deliberate for hours — a small but significant victory in a deeply prejudiced town.'
+    },
+    {
+      question: 'How does Atticus respond when Bob Ewell spits in his face?',
+      options: ['He fights Ewell', 'He wipes his face and walks away with dignity', 'He calls the sheriff', 'He ignores it completely'],
+      correct: 'b',
+      answer: 'Atticus wipes his face and walks away — choosing dignity over retaliation.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

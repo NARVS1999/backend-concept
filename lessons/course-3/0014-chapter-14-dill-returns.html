@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0014: Chapter 14 — Dill Returns</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 3 of 10
+      </div>
+
+      <h1>Chapter 14 — Dill Returns</h1>
+      <p><em>Dill runs away from home</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Dill runs away from home and hides under Scout's bed. Tension between Atticus and Alexandra grows. Bob Ewell threatens Atticus.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Dill runs away from Meridian — hides under Scout's bed</li>
+        <li>Dill's parents "don't want me" — he feels unwanted</li>
+        <li>Jem breaks the childhood "code" by telling Atticus</li>
+        <li>Atticus handles Dill's situation calmly, feeds him</li>
+        <li>Alexandra vs. Atticus: "You'd better take Calpurnia's side"</li>
+        <li>Bob Ewell threatens Atticus publicly</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Why does Jem break the "code of silence" and tell Atticus about Dill? How does this mark Jem's growing maturity?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "They do things... they just do things" — Dill about his parents
+      </blockquote>
+      <p>Dill's vague description of his parents reveals emotional neglect — they don't actively hurt him, they simply don't care.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Dill runs away from neglectful parents</li>
+        <li>Jem shows maturity by breaking the childhood code to protect Dill</li>
+        <li>Bob Ewell threatens Atticus — danger is approaching</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0014';
+  var questions = [
+    {
+      question: 'Why does Dill run away from home?',
+      options: ['He is being abused', 'His parents don\'t want him — they neglect him', 'He wants to see the trial', 'He misses Jem and Scout'],
+      correct: 'b',
+      answer: 'Dill feels unwanted — his parents "do things" but don\'t actively care for him.'
+    },
+    {
+      question: 'Why does Jem tell Atticus about Dill despite the childhood "code of silence"?',
+      options: ['He is angry at Dill', 'He recognizes that Dill needs adult help', 'He wants to get Dill in trouble', 'Atticus forces him to tell'],
+      correct: 'b',
+      answer: 'Jem has matured enough to recognize that Dill\'s situation requires adult intervention — responsibility outweighs the code.'
+    },
+    {
+      question: 'What does Bob Ewell do at the end of this chapter?',
+      options: ['He apologizes to Atticus', 'He threatens Atticus publicly', 'He leaves Maycomb', 'He is arrested'],
+      correct: 'b',
+      answer: 'Bob Ewell threatens Atticus publicly for defending Tom Robinson.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

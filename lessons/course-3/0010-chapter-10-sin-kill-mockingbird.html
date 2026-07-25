@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0010: Chapter 10 — It's a Sin to Kill a Mockingbird</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Two: The Mockingbird Theme</strong> — Lesson 2 of 3
+      </div>
+
+      <h1>Chapter 10 — It's a Sin to Kill a Mockingbird</h1>
+      <p><em>The title is explained</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Jem and Scout think Atticus is old and useless — until he shoots a rabid dog with one shot, revealing he was once "One-Shot Finch." The title phrase is introduced.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Jem and Scout are embarrassed by Atticus — he's old and doesn't do anything</li>
+        <li>Tim Johnson (rabid dog) staggers down the street</li>
+        <li>Heck Tate gives the rifle to Atticus — won't shoot it himself</li>
+        <li>Atticus: one shot, instant kill</li>
+        <li>Miss Maudie: "Your father's the deadest shot in Maycomb County"</li>
+        <li>He stopped hunting because he had an unfair advantage</li>
+        <li>"It's a sin to kill a mockingbird" (Miss Maudie explains)</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Connect the title to this chapter. What makes a mockingbird innocent? Who are the "mockingbirds" in the novel so far — characters who harm no one?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "It's a sin to kill a mockingbird." — Miss Maudie
+      </blockquote>
+      <p>This explains the title — mockingbirds are innocent creatures that do no harm, making their destruction a moral sin.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Atticus reveals his hidden talent — the best shot in Maycomb</li>
+        <li>The mockingbird metaphor is introduced</li>
+        <li>"It's a sin to kill a mockingbird" becomes the novel's central moral</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0010';
+  var questions = [
+    {
+      question: 'Why are Jem and Scout embarrassed by Atticus before the rabies incident?',
+      options: ['He is a bad lawyer', 'He is old and seems to do nothing impressive', 'He wears strange clothes', "He doesn't let them play outside"],
+      correct: 'b',
+      answer: 'Jem and Scout are embarrassed because Atticus is older than other fathers and seems to do nothing active or impressive.'
+    },
+    {
+      question: 'Why does Heck Tate insist Atticus shoot the rabid dog instead of doing it himself?',
+      options: ['Tate is a bad shot', 'Atticus is the best shot in Maycomb', 'Tate is afraid of guns', 'Atticus owes him a favor'],
+      correct: 'b',
+      answer: 'Heck Tate knows Atticus is "the deadest shot in Maycomb County" and trusts him to make the one clean shot needed.'
+    },
+    {
+      question: 'According to Miss Maudie, why is it a sin to kill a mockingbird?',
+      options: ['They are rare', 'They are beautiful', "They don't harm anyone — they only sing", 'They are protected by law'],
+      correct: 'c',
+      answer: 'Miss Maudie explains that mockingbirds are innocent — they "don\'t do one thing but make music for us to enjoy."'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

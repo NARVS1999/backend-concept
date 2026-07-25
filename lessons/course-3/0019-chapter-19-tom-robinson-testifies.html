@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0019: Chapter 19 — Tom Robinson Testifies</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 8 of 10
+      </div>
+
+      <h1>Chapter 19 — Tom Robinson Testifies</h1>
+      <p><em>Tom tells his side of the story</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Tom takes the stand and tells his side: Mayella grabbed him, kissed him, and Bob Ewell caught them. Tom ran because he was afraid.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Tom testifies clearly, respectfully</li>
+        <li>Mayella asked him to do chores regularly — always paid, no trouble</li>
+        <li>"She reached up and kissed me right on the mouth"</li>
+        <li>Bob Ewell appeared at the window — screamed at Mayella</li>
+        <li>Tom ran because of fear: "I was bound to go to jail"</li>
+        <li>Tom's left arm: crippled from a cotton gin accident</li>
+        <li>Link Deas: "I've never had a speck of trouble out of him"</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Tom is physically incapable of committing the crime, and the evidence supports his story. Why is the jury still likely to convict?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "I was scared, suh... if I was to get in a fight I'd lose" — Tom Robinson
+      </blockquote>
+      <p>Tom explains why he ran — not guilt, but fear of being falsely accused by a white woman.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Tom gives a clear, consistent testimony</li>
+        <li>The truth emerges: Mayella made advances, Bob Ewell caught them</li>
+        <li>Tom's physical disability proves he could not have committed the crime</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0019';
+  var questions = [
+    {
+      question: 'According to Tom, who initiated the physical contact?',
+      options: ['Tom did', 'Mayella grabbed and kissed him', 'Bob Ewell forced them', 'No one — nothing happened'],
+      correct: 'b',
+      answer: 'Tom testifies that Mayella "reached up and kissed me right on the mouth" — she initiated the contact.'
+    },
+    {
+      question: 'Why did Tom run away after the incident?',
+      options: ['He was guilty', 'He was afraid of being accused by a white woman', 'He had to get to work', 'He was angry'],
+      correct: 'b',
+      answer: 'Tom ran because he knew a Black man in the South would automatically be blamed if a white woman accused him.'
+    },
+    {
+      question: 'What was the injury that crippled Tom\'s arm?',
+      options: ['A gunshot wound', 'A cotton gin accident', 'A childhood disease', 'A fight'],
+      correct: 'b',
+      answer: 'Tom\'s left arm was crippled in a cotton gin accident when he was 12 years old — the arm is useless.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

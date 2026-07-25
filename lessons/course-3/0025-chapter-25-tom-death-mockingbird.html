@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0025: Chapter 25 — Tom's Death and the Mockingbird</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 4 of 10
+      </div>
+
+      <h1>Chapter 25 — Tom's Death and the Mockingbird</h1>
+      <p><em>The mockingbird metaphor returns</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Mr. Underwood writes an editorial comparing Tom's death to the "senseless slaughter of songbirds." The mockingbird theme is fully articulated.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Mr. Underwood's editorial: compares Tom's death to killing a mockingbird</li>
+        <li>"He was trying to protect himself" — Tom ran, was shot</li>
+        <li>The town: "Typical of a nigger to cut and run"</li>
+        <li>"In the secret courts of men's hearts Atticus had no case"</li>
+        <li>The mockingbird: Tom is innocent, killed for no reason</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Why is Tom a "mockingbird"? How does Mr. Underwood's editorial connect to the title of the novel?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "In the secret courts of men's hearts Atticus had no case." — Scout's narration
+      </blockquote>
+      <p>The law may have failed, but Atticus was also defeated in the "secret courts" of human prejudice — a deeper tragedy.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Mr. Underwood's editorial explicitly connects Tom to the mockingbird symbol</li>
+        <li>The community's racism persists even after Tom's death</li>
+        <li>The depth of prejudice is revealed</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0025';
+  var questions = [
+    {
+      question: 'What does Mr. Underwood\'s editorial compare Tom\'s death to?',
+      options: ['A legal execution', 'The senseless slaughter of songbirds', 'A heroic sacrifice', 'An act of self-defense'],
+      correct: 'b',
+      answer: 'Mr. Underwood compares Tom\'s death to killing a mockingbird — innocent, harmless, destroyed for no reason.'
+    },
+    {
+      question: 'How does the white community generally react to Tom\'s death?',
+      options: ['They mourn him', 'They say it\'s \'typical of a nigger to cut and run\'', 'They protest the injustice', 'They ignore it'],
+      correct: 'b',
+      answer: 'The white community dismisses Tom\'s death as predictable — reinforcing their prejudice even in death.'
+    },
+    {
+      question: 'What does "In the secret courts of men\'s hearts Atticus had no case" mean?',
+      options: ['Atticus was a bad lawyer', 'People\'s prejudice was so deep that no argument could change it', 'The case was thrown out', 'Atticus didn\'t try hard enough'],
+      correct: 'b',
+      answer: 'The line means that logic and evidence couldn\'t overcome the deep-rooted prejudice in people\'s hearts.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

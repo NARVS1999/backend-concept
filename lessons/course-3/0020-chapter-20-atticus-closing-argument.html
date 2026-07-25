@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0020: Chapter 20 — Atticus's Closing Argument</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 9 of 10
+      </div>
+
+      <h1>Chapter 20 — Atticus's Closing Argument</h1>
+      <p><em>The case for justice</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Atticus delivers his closing argument: the case is simple, the evidence is clear, but the jury must choose justice over prejudice.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Atticus's closing argument: "This case is as simple as black and white"</li>
+        <li>Only two witnesses testify against Tom — the Ewells</li>
+        <li>"The defendant is not guilty, but somebody in this courtroom is"</li>
+        <li>The real crime: Maycomb's prejudice and Mayella's betrayal</li>
+        <li>"All men are created equal" — but some think they're "more equal"</li>
+        <li>"In the name of God, do your duty"</li>
+        <li>Dolphus Raymond's secret: his bottle contains Coca-Cola</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Analyze Atticus's "equal before the law" argument. What does he mean that all men are equal "in the courtroom" but not in society?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "In the name of God, do your duty" — Atticus
+      </blockquote>
+      <p>Atticus appeals to the jury's highest moral authority — asking them to rise above prejudice and deliver justice.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Atticus delivers a powerful closing argument for justice</li>
+        <li>He appeals to the jury's conscience and their duty to God</li>
+        <li>Dolphus Raymond's secret reveals the town's hypocrisies</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0020';
+  var questions = [
+    {
+      question: 'How many witnesses testify against Tom Robinson?',
+      options: ['Five', 'Two — only the Ewells', 'Ten', 'None'],
+      correct: 'b',
+      answer: 'Only two witnesses testify against Tom — Bob Ewell and Mayella Ewell — and their stories contradict the physical evidence.'
+    },
+    {
+      question: 'What is Dolphus Raymond\'s secret?',
+      options: ['He is actually rich', 'He is the real father of Mayella\'s child', 'His bottle contains Coca-Cola, not whiskey', 'He is secretly friends with Atticus'],
+      correct: 'c',
+      answer: 'Raymond pretends to be a drunk by drinking from a paper bag — but it\'s actually Coca-Cola, giving people an excuse for his lifestyle.'
+    },
+    {
+      question: 'What does Atticus mean when he says all men are "equal in the courtroom"?',
+      options: ['Everyone gets the same sentence', 'The law should treat all people equally, even if society doesn\'t', 'The courtroom is the only place where prejudice doesn\'t exist', 'Only white men are equal in court'],
+      correct: 'b',
+      answer: 'Atticus argues that while society treats people unequally, the court must be the place where true equality prevails.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

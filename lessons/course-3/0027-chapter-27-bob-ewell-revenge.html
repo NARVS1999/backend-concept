@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0027: Chapter 27 — Bob Ewell's Revenge</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 6 of 10
+      </div>
+
+      <h1>Chapter 27 — Bob Ewell's Revenge</h1>
+      <p><em>The threat grows</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Bob Ewell continues harassing anyone connected to the trial. The Halloween pageant preparations continue — tension builds.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Bob Ewell loses his WPA job — blames Atticus</li>
+        <li>Judge Taylor's house: someone prowls outside (Ewell)</li>
+        <li>Helen Robinson is harassed — Link Deas escorts her to work</li>
+        <li>"He's a mean one... he'll do something"</li>
+        <li>The Halloween pageant is a major event</li>
+        <li>Cecil Jacobs says he'll scare them on the way back</li>
+        <li>Scout misses her cue because she fell asleep</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Trace Bob Ewell's actions since the trial. What purpose does his character serve as a foil to Atticus?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "He's a mean one... he'll do something" — Link Deas on Bob Ewell
+      </blockquote>
+      <p>This warning creates suspense — everyone knows Ewell will act, but no one knows when.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Bob Ewell's harassment escalates</li>
+        <li>The stage is set for the Halloween pageant</li>
+        <li>Tension builds as Ewell's threats grow more serious</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0027';
+  var questions = [
+    {
+      question: 'What happens to Bob Ewell\'s WPA job?',
+      options: ['He gets promoted', 'He loses it and blames Atticus', 'He quits', 'He passes it to his son'],
+      correct: 'b',
+      answer: 'Bob Ewell loses his WPA job and blames Atticus, continuing his campaign of harassment.'
+    },
+    {
+      question: 'How does Link Deas protect Helen Robinson?',
+      options: ['He gives her a gun', 'He escorts her to work past Ewell\'s property', 'He reports Ewell to the police', 'He hides her in his home'],
+      correct: 'b',
+      answer: 'Link Deas escorts Helen past Ewell\'s property after Ewell harasses her, using his authority to protect her.'
+    },
+    {
+      question: 'What is Scout\'s costume for the Halloween pageant?',
+      options: ['A ghost', 'A witch', 'A ham made of wire mesh', 'A fairy'],
+      correct: 'c',
+      answer: 'Scout\'s ham costume — made of wire mesh — will later protect her from Bob Ewell\'s knife.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

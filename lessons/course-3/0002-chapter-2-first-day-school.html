@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0002: Chapter 2 — First Day of School</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part One: Childhood in Maycomb</strong> — Lesson 2 of 8
+      </div>
+
+      <h1>Chapter 2 — First Day of School</h1>
+      <p><em>Scout's disastrous introduction to formal education</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Scout's first day of school is a disaster. Miss Caroline Fisher, the new teacher from Winston County, doesn't understand Maycomb's ways. She scolds Scout for already knowing how to read, and the Cunningham family's pride becomes a lesson in poverty and dignity.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Miss Caroline: young, inexperienced, from Northern Alabama — doesn't fit in</li>
+        <li>Scout can read and write — Atticus taught her by reading together each night</li>
+        <li>Miss Caroline: "Your father does not know how to teach"</li>
+        <li>Walter Cunningham refuses lunch money — Cunningham family pride</li>
+        <li>Scout gets punished for explaining the Cunninghams to Miss Caroline</li>
+        <li>Theme: formal education vs. the education of home and experience</li>
+        <li>Scout is smarter than the teacher but gets in trouble for it</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Contrast the education Scout receives at home (from Atticus) with what she experiences at school. What is Lee suggesting about different kinds of intelligence?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "I never went to school but once" — Scout (ironic, since she was eager to go)
+      </blockquote>
+      <p>Scout's disappointment with school contrasts with her rich education at home.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Scout's formal education begins badly — Miss Caroline punishes her for being advanced</li>
+        <li>The Cunninghams' code of pride and self-reliance is introduced</li>
+        <li>Lee critiques rigid education systems that don't adapt to individual students</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0002';
+  var questions = [
+    {
+      question: 'Why does Miss Caroline get upset with Scout on the first day?',
+      options: ['Scout talks too much in class', 'Scout already knows how to read', 'Scout is late to school', 'Scout fights with another student'],
+      correct: 'b',
+      answer: 'Miss Caroline is upset that Atticus taught Scout to read — she believes fathers don\'t know how to teach.'
+    },
+    {
+      question: "Why won't Walter Cunningham accept Miss Caroline's quarter for lunch?",
+      options: ["He doesn't like the food", "He knows he can't pay it back", 'His mother packed him lunch', 'He is allergic to the food'],
+      correct: 'b',
+      answer: 'The Cunninghams are proud people who never take what they can\'t repay — Walter knows accepting the quarter means a debt.'
+    },
+    {
+      question: 'What does this chapter suggest about formal education vs. home education?',
+      options: ['School is always better', 'Home education is worthless', 'Real learning happens in different forms', 'Only teachers should teach children'],
+      correct: 'c',
+      answer: 'Lee suggests that valuable education happens both at home and at school — but the system fails to recognize Scout\'s intelligence.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

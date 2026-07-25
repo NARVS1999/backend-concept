@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0006: Chapter 6 — Jem Loses His Pants</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part One: Childhood in Maycomb</strong> — Lesson 6 of 8
+      </div>
+
+      <h1>Chapter 6 — Jem Loses His Pants</h1>
+      <p><em>The night visit to the Radley house</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        On Dill's last night in Maycomb, the children sneak to the Radley house to peek through a window. They're spotted, Jem loses his pants, and returns later to retrieve them — finding them mysteriously mended.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Dill's last night before returning to Meridian</li>
+        <li>The children creep to the Radley house, look through a loose shutter</li>
+        <li>A shadow of a man with a hat appears — they run</li>
+        <li>Jem's pants catch on the fence — he abandons them</li>
+        <li>Nathan Radley fires a shotgun — neighbors gather</li>
+        <li>Jem goes back at 2 AM to retrieve his pants</li>
+        <li>Jem returns "moody and silent" — won't tell Scout what happened</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Jem's pants were "sewed up" and "folded across the fence" when he retrieved them. What does this tell us about Boo? Why does Jem keep this secret?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "Jem's white shirt-tail dipped and bobbed like a small ghost" — Scout watching Jem run
+      </blockquote>
+      <p>The image of Jem running creates suspense and foreshadows the supernatural feeling of the Radley mystery.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>The children's dare goes wrong — they are discovered at the Radley house</li>
+        <li>Boo secretly mends Jem's pants — the first act of unseen kindness</li>
+        <li>Jem's silence shows he is beginning to see Boo as a real person</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0006';
+  var questions = [
+    {
+      question: 'What does Jem find when he returns to retrieve his pants?',
+      options: ['They are gone', 'They are torn beyond repair', 'They are mended and folded neatly', 'There is a note in the pocket'],
+      correct: 'c',
+      answer: "Jem's pants are sewed up and folded across the fence — Boo mended them for him."
+    },
+    {
+      question: 'Why does Jem refuse to tell Scout what he saw when he got his pants back?',
+      options: ["He didn't see anything", 'He is protecting someone — likely Boo', 'He is too scared to talk about it', 'He forgot'],
+      correct: 'b',
+      answer: 'Jem is protecting the secret of Boo\'s kindness — he is beginning to understand Boo as a person, not a monster.'
+    },
+    {
+      question: "What does Nathan Radley's shotgun firing suggest about his attitude?",
+      options: ['He is a hunter', 'He is hostile toward the children\'s intrusion', 'He is playing a game', 'He is warning them about something else'],
+      correct: 'b',
+      answer: 'Nathan Radley fires a shotgun to scare the children away, showing he is hostile to their intrusions on his property.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

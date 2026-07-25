@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0013: Chapter 13 — Aunt Alexandra Arrives</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Three: The Trial</strong> — Lesson 2 of 10
+      </div>
+
+      <h1>Chapter 13 — Aunt Alexandra Arrives</h1>
+      <p><em>Tradition and "gentle breeding" come to the Finch house</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Aunt Alexandra moves in to provide "feminine influence" for Scout. She brings Finch family pride, Southern tradition, and tension with Atticus.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Alexandra arrives to help raise the children</li>
+        <li>Obsessed with "gentle breeding" — family heritage, social status</li>
+        <li>The Finches are "ancient and rich" — actually just old, not wealthy</li>
+        <li>She wants Atticus to fire Calpurnia — Atticus refuses</li>
+        <li>"Alexandra, Calpurnia's not leaving this house until she wants to"</li>
+        <li>Jem: "I think I'm beginning to understand why Boo Radley stays shut up... it's because he wants to stay inside"</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Jem says he understands why Boo stays inside — "he wants to." What does Jem mean? How does Alexandra's arrival change the Finch house?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "I think I'm beginning to understand why Boo Radley stays shut up... it's because he wants to stay inside." — Jem
+      </blockquote>
+      <p>Jem recognizes that sometimes people isolate themselves to escape the pressures and hypocrisies of society.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Aunt Alexandra represents traditional Southern womanhood and class consciousness</li>
+        <li>She creates tension in the Finch household</li>
+        <li>Jem's empathy for Boo deepens</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0013';
+  var questions = [
+    {
+      question: 'Why does Aunt Alexandra move in with the Finches?',
+      options: ['She is ill and needs care', 'To provide feminine influence for Scout', 'To help with the trial', 'She lost her house'],
+      correct: 'b',
+      answer: 'Alexandra believes Scout needs a feminine role model, so she moves in to provide "proper" upbringing.'
+    },
+    {
+      question: 'What does Alexandra want Atticus to do regarding Calpurnia?',
+      options: ['Give her a raise', 'Fire her', 'Send her to school', 'Let her move into the house'],
+      correct: 'b',
+      answer: 'Alexandra wants Atticus to fire Calpurnia, believing she is not a proper influence for the children.'
+    },
+    {
+      question: 'Why does Jem suddenly understand Boo Radley\'s desire to stay inside?',
+      options: ['He met Boo', 'He feels the pressure of family expectations and society', 'He read a book about it', 'Atticus explained it'],
+      correct: 'b',
+      answer: 'Jem, feeling the weight of Aunt Alexandra\'s expectations and family pride, begins to understand why someone would choose isolation.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0028: Chapter 28 — The Attack</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 7 of 10
+      </div>
+
+      <h1>Chapter 28 — The Attack</h1>
+      <p><em>The climax — Bob Ewell attacks the children</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Walking home from the pageant, Scout and Jem are attacked. Jem's arm is broken. Bob Ewell is dead.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Cecil Jacobs tries to scare them — anticlimactic</li>
+        <li>The walk home: dark, quiet</li>
+        <li>Footsteps follow — someone attacks</li>
+        <li>Jem is grabbed, arm broken, dragged</li>
+        <li>Scout in the ham costume is protected (wire mesh saves her)</li>
+        <li>A stranger pulls the attacker off Jem and kills him</li>
+        <li>Bob Ewell is dead — stabbed with his own knife</li>
+        <li>Heck Tate arrives, carries Jem home</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>How does Lee create suspense in this chapter? What role does Scout's ham costume play in protecting her?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "Someone was staggering around... someone was carrying Jem home" — Scout
+      </blockquote>
+      <p>Scout's confused narration conveys the chaos and terror of the attack.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Bob Ewell attacks the children in the dark</li>
+        <li>Scout's ham costume saves her life</li>
+        <li>Boo Radley emerges as the children's protector</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0028';
+  var questions = [
+    {
+      question: 'What saves Scout\'s life during the attack?',
+      options: ['Her running speed', 'Her ham costume made of wire mesh', 'Jem shielding her', 'Atticus arriving in time'],
+      correct: 'b',
+      answer: 'The wire mesh of Scout\'s ham costume prevents Bob Ewell\'s knife from reaching her body.'
+    },
+    {
+      question: 'How does Bob Ewell die?',
+      options: ['Atticus shoots him', 'He is stabbed with his own knife during the struggle', 'He falls and breaks his neck', 'He has a heart attack'],
+      correct: 'b',
+      answer: 'Boo Radley stabs Bob Ewell with Ewell\'s own knife while protecting the children.'
+    },
+    {
+      question: 'Who saves Jem and Scout from Bob Ewell?',
+      options: ['Atticus', 'Heck Tate', 'Boo Radley', 'Mr. Cunningham'],
+      correct: 'c',
+      answer: 'Boo Radley emerges from his house to save the children, killing Bob Ewell in the process.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

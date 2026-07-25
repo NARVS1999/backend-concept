@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0030: Chapter 30 — Standing in His Shoes</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part Four: Aftermath and Resolution</strong> — Lesson 9 of 10
+      </div>
+
+      <h1>Chapter 30 — Standing in His Shoes</h1>
+      <p><em>Protecting the mockingbird</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Heck Tate insists Bob Ewell fell on his own knife — protecting Boo from the public eye. Scout walks Boo home and stands on his porch, seeing the world from his perspective.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Heck Tate: Bob Ewell "fell on his knife" — case closed</li>
+        <li>Atticus thinks Jem killed Ewell — wants to protect Jem</li>
+        <li>Tate: "I never heard tell it was against the law for a man to try and save his own life"</li>
+        <li>Tate insists Ewell's death stay quiet — to protect Boo</li>
+        <li>"Let the dead bury the dead"</li>
+        <li>Exposing Boo would be "like shootin' a mockingbird"</li>
+        <li>Scout on the Radley porch: she sees the street from Boo's view</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>Why does Tate insist on protecting Boo? Connect this to the mockingbird theme — who is the mockingbird in this chapter?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "Let the dead bury the dead" — Heck Tate
+      </blockquote>
+      <p>Tate argues that exposing Boo to public scrutiny would destroy him — it's better to leave the tragedy buried.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Tate decides to protect Boo from public attention</li>
+        <li>The mockingbird metaphor is applied to Boo</li>
+        <li>Scout stands on the Radley porch, finally seeing the world from Boo's perspective</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0030';
+  var questions = [
+    {
+      question: 'What does Heck Tate insist happened to Bob Ewell?',
+      options: ['Atticus killed him', 'Jem killed him in self-defense', 'He fell on his own knife', 'Boo Radley murdered him'],
+      correct: 'c',
+      answer: 'Tate insists Bob Ewell "fell on his own knife" — a cover story to protect Boo from public exposure.'
+    },
+    {
+      question: 'Why does Atticus initially argue against covering up Ewell\'s death?',
+      options: ['He wants justice for Ewell', 'He thinks Jem killed Ewell and doesn\'t want to hide it', 'He wants to expose Boo', 'He doesn\'t trust Tate'],
+      correct: 'b',
+      answer: 'Atticus initially believes Jem killed Ewell and wants to handle it legally — he doesn\'t yet know it was Boo.'
+    },
+    {
+      question: 'Why is exposing Boo compared to "shootin\' a mockingbird"?',
+      options: ['Boo is dangerous', 'Boo has done nothing but protect the children — exposing him would hurt an innocent', 'Boo is a criminal', 'Boo is a birdkeeper'],
+      correct: 'b',
+      answer: 'Like a mockingbird, Boo has only done good — exposing him to the town\'s scrutiny would destroy his peaceful existence.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

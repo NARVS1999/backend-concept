@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0004: Chapter 4 — The Knothole Gifts</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part One: Childhood in Maycomb</strong> — Lesson 4 of 8
+      </div>
+
+      <h1>Chapter 4 — The Knothole Gifts</h1>
+      <p><em>The Radley oak yields its first secrets</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        Scout discovers gum and polished pennies in the Radley oak's knothole — someone is leaving gifts. The children invent the "Boo Radley" game, acting out the Radley family history.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>First knothole gift: Wrigley's Double-Mint gum (Scout is suspicious)</li>
+        <li>Second gift: two polished Indian-head pennies</li>
+        <li>The knothole is in the Radley oak tree on the Radley property line</li>
+        <li>The "Boo Radley" game: acting out Radley family stories</li>
+        <li>Scout feels the game is wrong but can't articulate why</li>
+        <li>Atticus catches them playing but doesn't stop them directly</li>
+        <li>The gifts connect Boo to the children — a silent communication</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>What do the knothole gifts suggest about Boo Radley's personality and intentions? Why does Scout feel uneasy about the Boo Radley game?</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "I sometimes think of the Radley tree" — Scout, retrospectively
+      </blockquote>
+      <p>Looking back, Scout recognizes the significance of the tree as a symbol of Boo's connection to them.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Someone is leaving gifts in the Radley tree — the first sign of Boo's kindness</li>
+        <li>The children's "Boo Radley game" reduces a real person to folklore</li>
+        <li>Scout shows early moral sensitivity by sensing the game is wrong</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0004';
+  var questions = [
+    {
+      question: "What is the first gift found in the Radley oak's knothole?",
+      options: ['A pocket watch', 'Indian-head pennies', "Wrigley's Double-Mint gum", 'Soap carvings'],
+      correct: 'c',
+      answer: "The first gift is Wrigley's Double-Mint gum, which Scout finds and eventually chews despite being suspicious."
+    },
+    {
+      question: 'Why does Scout feel uneasy about the "Boo Radley" game?',
+      options: ['She is afraid of getting caught', 'She senses the game disrespects a real person', 'Her costume doesn\'t fit', "Jem won't let her play"],
+      correct: 'b',
+      answer: 'Scout intuits that the game is wrong — it treats Boo, a real human being, as a character in their story without his consent.'
+    },
+    {
+      question: 'What do the knothole gifts reveal about Boo?',
+      options: ['He is dangerous', 'He wants to harm the children', 'He is reaching out with kindness', 'He is being manipulated'],
+      correct: 'c',
+      answer: 'The gifts — gum, pennies, and later carvings — show Boo is gentle, thoughtful, and wants to connect with the children.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0001: Chapter 1 — Introduction to Maycomb</title>
+  <meta name="course-home" content="../../landing-page/eris.html">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../../assets/course-3.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+      <div class="info" style="margin-bottom:1rem;">
+        <strong>Part One: Childhood in Maycomb</strong> — Lesson 1 of 8
+      </div>
+
+      <h1>Chapter 1 — Introduction to Maycomb</h1>
+      <p><em>Setting the stage — the Radley Place, the Finch family, and the arrival of Dill</em></p>
+
+      <div class="info">
+        <strong>Focus</strong>
+        First-person narrator Scout Finch introduces Maycomb, Alabama during the Depression. She lives with her father Atticus (a lawyer) and older brother Jem. They meet Dill, a summer visitor obsessed with the Radley Place — a haunted house occupied by the mysterious Boo Radley, a recluse who hasn't been seen in years.
+      </div>
+
+      <h2>Key Details</h2>
+      <ul>
+        <li>Narrator: Jean Louise "Scout" Finch (age ~6), told retrospectively by adult Scout</li>
+        <li>Setting: Maycomb, Alabama, 1930s — tired, old, poor Southern town</li>
+        <li>Atticus: widower, respected lawyer, unusually old parent (~50)</li>
+        <li>Jem: 10 years old, protective older brother</li>
+        <li>Calpurnia: Finch cook and housekeeper, strict but loving</li>
+        <li>Dill (Charles Baker Harris): based on Harper Lee's childhood friend Truman Capote</li>
+        <li>Boo Radley (Arthur Radley): local legend — stabbed his father with scissors, hasn't been seen in years</li>
+        <li>Gothic elements: the closed shutters, the folklore, the mystery</li>
+      </ul>
+
+      <h2>Study Task</h2>
+      <div class="project">
+        <h3>Analysis Exercise</h3>
+        <p>What specific details make the Radley Place frightening to the children? Identify three Gothic elements in this chapter that establish the mood of the novel.</p>
+      </div>
+
+      <h2>Important Quote</h2>
+      <blockquote>
+        "People said he existed, but Jem and I had never seen him." — Scout on Boo Radley
+      </blockquote>
+      <p>This line establishes Boo as a legend rather than a real person — the children know him only through rumor and fear.</p>
+
+      <h2>Quiz</h2>
+      <div id="quizContainer"></div>
+      <div id="ankiExportContainer" style="margin-top:1rem;"></div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Scout Finch narrates from memory about her childhood in Maycomb, Alabama</li>
+        <li>The Radley Place is surrounded by mystery and fear — Boo Radley is the local legend</li>
+        <li>Dill arrives and sparks the children's obsession with the Radleys</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        If any part of this chapter is unclear, ask for clarification. The Sword King's path demands understanding.
+      </div>
+
+      <div class="lesson-nav"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../../assets/lessons-data-course3.js"></script>
+<script src="../../assets/sidebar.js"></script>
+<script src="../../assets/lesson-nav.js"></script>
+<script src="../../assets/quiz-widget.js"></script>
+<script>
+(function() {
+  var lessonId = '0001';
+  var questions = [
+    {
+      question: 'The narrator of To Kill a Mockingbird is Jean Louise "Scout" Finch. How old is she at the start of the novel?',
+      options: ['About 6', 'About 10', 'About 13', 'About 16'],
+      correct: 'a',
+      answer: 'Scout is about 6 years old at the start of the novel, with Jem being about 10.'
+    },
+    {
+      question: 'Who is Charles Baker Harris?',
+      options: ["Scout's cousin", 'A neighbor boy called Dill', "Atticus's law clerk", "Boo Radley's brother"],
+      correct: 'b',
+      answer: 'Charles Baker Harris is Dill, the summer visitor who becomes obsessed with the Radley mystery.'
+    },
+    {
+      question: 'What makes the Radley Place frightening to the children?',
+      options: ['It is haunted by ghosts', 'The rumors and folklore about Boo Radley', 'A sign warning trespassers', 'The overgrown garden'],
+      correct: 'b',
+      answer: 'The children are frightened by the neighborhood folklore and rumors about Boo Radley — not by actual events.'
+    }
+  ];
+
+  QuizWidget.register(lessonId, questions);
+  QuizWidget.render('quizContainer', questions);
+
+  var ankiDiv = document.getElementById('ankiExportContainer');
+  var btn = document.createElement('button');
+  btn.className = 'quiz-submit quiz-anki-btn';
+  btn.textContent = 'Export All to Anki CSV';
+  btn.onclick = function() { QuizWidget.exportLesson(lessonId); };
+  ankiDiv.appendChild(btn);
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+      else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+    });
+  }
+})();
+</script>
+</body>
+</html>
